@@ -161,15 +161,16 @@ body {
 /* ── TCOT FLOATING BUTTON (bottom-right) ── */
 .tcot-fab {
   position: fixed; bottom: 20px; right: 16px; z-index: 90;
-  width: 44px; height: 44px;
-  border-radius: 12px; overflow: hidden;
+  width: 80px; height: 80px;
+  border-radius: 16px; overflow: hidden;
   box-shadow: 0 4px 16px rgba(45,42,38,0.18);
   border: 1px solid rgba(45,42,38,0.08);
   transition: filter 0.2s, box-shadow 0.2s, transform 0.15s;
   display: block;
 }
 .tcot-fab img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
+  width: 114%; height: 114%; object-fit: cover; display: block;
+  margin: -7% 0 0 -7%;
 }
 .tcot-fab:hover {
   filter: brightness(1.08);
@@ -655,6 +656,21 @@ body {
   background: var(--sage-light);
   color: var(--sage-dark);
   font-weight: 500;
+}
+
+/* ── MOBILE: FILTER BAR TWO ROWS ── */
+@media (max-width: 639px) {
+  .filter-bar {
+    flex-wrap: wrap;
+  }
+  .filter-bar .search-wrap {
+    flex: 1; width: auto; order: 1;
+  }
+  .filter-bar .search-wrap:focus-within { width: auto; }
+  .filter-bar .sort-select { order: 2; }
+  .filter-bar .filter-chips {
+    order: 3; width: 100%;
+  }
 }
 
 /* ── RESPONSIVE ── */
