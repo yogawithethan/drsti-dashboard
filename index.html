@@ -7,7 +7,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.json">
-<title>Dṛṣṭi</title>
+<link rel="icon" type="image/png" href="drsti.png">
+<link rel="apple-touch-icon" href="drsti.png">
+<title>The Course Management</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&display=swap');
 
@@ -369,26 +371,29 @@ body {
 
 /* ── CONTACT ROW ── */
 .contact-row {
-  display: flex; gap: 6px;
-  margin: 12px 0; flex-wrap: wrap;
+  display: flex; gap: 10px;
+  margin: 14px 0; justify-content: center;
 }
 .contact-btn {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 8px 14px;
-  border-radius: var(--radius-sm);
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 46px; height: 46px;
+  border-radius: 50%;
   text-decoration: none;
-  font-size: 12px; font-weight: 500;
-  font-family: var(--font-body);
-  transition: all 0.2s;
+  transition: all 0.2s var(--ease-out);
   border: none; cursor: pointer;
+  box-shadow: var(--shadow-sm);
 }
-.contact-btn:active { transform: scale(0.96); }
-.btn-email { background: var(--sage-light); color: var(--sage-dark); }
-.btn-call { background: #e8f0e8; color: var(--sage-dark); }
-.btn-wa { background: #dcf8c6; color: #128c7e; }
-.btn-wa:hover { background: #c5f0a9; }
-.btn-ig { background: #fce4ec; color: #e1306c; }
-.btn-ig:hover { background: #f8bbd0; }
+.contact-btn svg { width: 22px; height: 22px; }
+.contact-btn:active { transform: scale(0.92); }
+.contact-btn:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.btn-email { background: #ffffff; }
+.btn-email svg { fill: #ea4335; }
+.btn-call { background: var(--sage-light); }
+.btn-call svg { fill: var(--sage-dark); }
+.btn-wa { background: #25d366; }
+.btn-wa svg { fill: #ffffff; }
+.btn-ig { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+.btn-ig svg { fill: #ffffff; }
 
 /* ── EDIT SECTION ── */
 .edit-section {
@@ -600,7 +605,7 @@ body {
   <div class="config-card">
     <img src="drsti.png" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;margin-bottom:12px">
     <h1>Dṛṣṭi</h1>
-    <p class="subtitle">retreat management</p>
+    <p class="subtitle">the course management</p>
     <input type="password" id="configPassword" placeholder="Password" autocomplete="off" spellcheck="false">
     <div id="loginError" style="color:#990000;font-size:12px;margin-top:8px;display:none">Incorrect password</div>
     <button onclick="saveConfig()">Enter</button>
@@ -930,10 +935,21 @@ function renderCard(a) {
     waLink = 'https://wa.me/' + digits;
   }
 
-  // Status select options
+  // Status select options — grouped with section dividers
+  var STATUS_GROUPS = [
+    { label: 'Incoming', statuses: ['Applied','First Outreach'] },
+    { label: 'Decision', statuses: ['Hard Yes','Needs Call','Call Scheduled','Waitlist','Not Aligned'] },
+    { label: 'Offer', statuses: ['Offer Sent','Deposit Paid'] },
+    { label: 'Payment', statuses: ['Payment Plan','Paid in Full'] },
+    { label: 'Closed', statuses: ['No Longer Interested','Maybe Next Year','Ghosted','Cancelled','Other'] }
+  ];
   var statusOpts = '';
-  STATUSES.forEach(function(s) {
-    statusOpts += '<option value="'+s+'"'+(s===a.status?' selected':'')+'>'+s+'</option>';
+  STATUS_GROUPS.forEach(function(g) {
+    statusOpts += '<optgroup label="── '+g.label+' ──">';
+    g.statuses.forEach(function(s) {
+      statusOpts += '<option value="'+s+'"'+(s===a.status?' selected':'')+'>'+s+'</option>';
+    });
+    statusOpts += '</optgroup>';
   });
 
   // Accommodation select
@@ -961,12 +977,12 @@ function renderCard(a) {
     + '</div>'
     + '<div class="card-body"><div class="card-body-inner">'
 
-    // Contact row
+    // Contact row — icon buttons
     + '<div class="contact-row">'
-    + (a.email ? '<a href="mailto:'+esc(a.email)+'" class="contact-btn btn-email">&#9993; Email</a>' : '')
-    + (a.phone ? '<a href="tel:'+esc(String(a.phone))+'" class="contact-btn btn-call">&#9742; Call</a>' : '')
-    + (a.phone ? '<a href="'+waLink+'" target="_blank" class="contact-btn btn-wa">&#128172; WhatsApp</a>' : '')
-    + (a.instagram ? '<a href="https://instagram.com/'+esc(a.instagram)+'" target="_blank" class="contact-btn btn-ig">&#128247; @'+esc(a.instagram)+'</a>' : '')
+    + (a.email ? '<a href="mailto:'+esc(a.email)+'" class="contact-btn btn-email" title="Email"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>' : '')
+    + (a.phone ? '<a href="tel:'+esc(String(a.phone))+'" class="contact-btn btn-call" title="Call"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></a>' : '')
+    + (a.phone ? '<a href="'+waLink+'" target="_blank" class="contact-btn btn-wa" title="WhatsApp"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12.05 21.785c-1.813 0-3.59-.487-5.14-1.41l-.369-.218-3.826 1.004 1.022-3.735-.24-.381A9.862 9.862 0 012.1 12.05C2.1 6.565 6.565 2.1 12.05 2.1c2.653 0 5.148 1.034 7.025 2.91a9.874 9.874 0 012.91 7.025c0 5.485-4.465 9.95-9.95 9.95h-.005zM12.05 0C5.405 0 .005 5.4.005 12.05c0 2.125.555 4.2 1.61 6.03L0 24l6.075-1.594A11.98 11.98 0 0012.05 24.1C18.695 24.1 24.1 18.695 24.1 12.05 24.1 5.405 18.695 0 12.05 0z"/></svg></a>' : '')
+    + (a.instagram ? '<a href="https://instagram.com/'+esc(a.instagram)+'" target="_blank" class="contact-btn btn-ig" title="@'+esc(a.instagram)+'"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>' : '')
     + '</div>'
 
     // Edit section
@@ -974,6 +990,7 @@ function renderCard(a) {
     + '<div class="edit-row"><label>Status</label><select onchange="updateField('+a.row+',\'status\',this.value)">'+statusOpts+'</select></div>'
     + '<div class="edit-row"><label>Accommodation</label><select onchange="updateField('+a.row+',\'accommodation\',this.value)">'+accomOpts+'</select></div>'
     + '<div class="edit-row"><label>Price Type</label><select onchange="updateField('+a.row+',\'priceType\',this.value)">'+priceOpts+'</select></div>'
+    + '<div class="edit-row"><label>Scholarship</label><div style="display:flex;align-items:center;gap:4px"><span style="font-size:13px;color:var(--text-secondary)">€</span><input type="number" min="0" step="50" value="'+(a.scholarship||'')+'" placeholder="0" style="width:80px;padding:7px 10px;border:1.5px solid var(--sand);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font-body);background:var(--bg-card);color:var(--text)" onblur="updateField('+a.row+',\'scholarship\',this.value)"></div></div>'
     + '<div class="edit-row"><label class="wa-check"><input type="checkbox" onchange="updateField('+a.row+',\'whatsappSent\',this.checked?\'Yes\':\'\')"'+(a.whatsappSent==='Yes'?' checked':'')+'>WhatsApp Sent</label></div>'
     + '<div class="edit-row notes-row"><label>Notes</label><textarea onblur="updateField('+a.row+',\'notes\',this.value)">'+esc(a.notes||'')+'</textarea></div>'
     + '</div>'
@@ -1004,7 +1021,7 @@ function renderCard(a) {
     + answerItem('Add-ons Interested In', a.addonsInterested)
     + answerItem('Travel Assistance', a.travelAssist)
     + answerItem('Free Flight Contest', a.flightContest)
-    + answerItem('How Heard', a.howHeard)
+    + answerItem('How They Found Us', a.howHeard)
     + answerItem('Referral', a.referral)
     + '</div></details>'
 
