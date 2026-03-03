@@ -156,6 +156,19 @@ body {
   font-size: 11px; color: var(--text-muted);
   text-align: right; line-height: 1.4;
 }
+.sync-status {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.02em;
+  padding: 2px 0;
+}
+.sync-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  display: inline-block;
+}
+.sync-status.synced .sync-dot { background: var(--sage); }
+.sync-status.synced { color: var(--sage); }
+.sync-status.offline .sync-dot { background: #d4a017; }
+.sync-status.offline { color: #b8860b; }
 .header-meta .refresh-btn {
   background: none; border: none;
   color: var(--sage); cursor: pointer;
@@ -371,29 +384,23 @@ body {
 
 /* ── CONTACT ROW ── */
 .contact-row {
-  display: flex; gap: 10px;
+  display: flex; gap: 8px;
   margin: 14px 0; justify-content: center;
 }
 .contact-btn {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 46px; height: 46px;
+  width: 34px; height: 34px;
   border-radius: 50%;
   text-decoration: none;
   transition: all 0.2s var(--ease-out);
-  border: none; cursor: pointer;
-  box-shadow: var(--shadow-sm);
+  border: 1.5px solid rgba(74,107,78,0.15);
+  cursor: pointer;
+  background: var(--bg-card);
+  box-shadow: none;
 }
-.contact-btn svg { width: 22px; height: 22px; }
+.contact-btn svg { width: 16px; height: 16px; fill: var(--sage-dark); }
 .contact-btn:active { transform: scale(0.92); }
-.contact-btn:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-.btn-email { background: #ffffff; }
-.btn-email svg { fill: #ea4335; }
-.btn-call { background: var(--sage-light); }
-.btn-call svg { fill: var(--sage-dark); }
-.btn-wa { background: #25d366; }
-.btn-wa svg { fill: #ffffff; }
-.btn-ig { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-.btn-ig svg { fill: #ffffff; }
+.contact-btn:hover { border-color: var(--sage); background: var(--sage-light); }
 
 /* ── EDIT SECTION ── */
 .edit-section {
@@ -623,6 +630,7 @@ body {
   <div class="header-top">
     <div class="brand"><img src="drsti.png" alt="" class="brand-logo">Dṛṣṭi</div>
     <div class="header-meta">
+      <div class="sync-status synced" id="syncStatus"><span class="sync-dot"></span> Synced</div>
       <button class="refresh-btn" onclick="loadAll()">Refresh</button>
       <div id="lastUpdated"></div>
     </div>
@@ -739,7 +747,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Pause polling when hidden
   document.addEventListener('visibilitychange', function() {
     if (document.hidden) { stopPolling(); }
-    else { loadAll(); startPolling(); }
+    else { flushPendingQueue(); loadAll(); startPolling(); }
   });
 
   // Register SW
@@ -761,27 +769,75 @@ function saveConfig() {
   startPolling();
 }
 
+// ── SYNC STATUS ──
+var syncOnline = true;
+var pendingQueue = JSON.parse(localStorage.getItem('drsti_pending_queue') || '[]');
+
+function setSyncStatus(online) {
+  syncOnline = online;
+  var el = document.getElementById('syncStatus');
+  if (!el) return;
+  if (online && pendingQueue.length === 0) {
+    el.className = 'sync-status synced';
+    el.innerHTML = '<span class="sync-dot"></span> Synced';
+  } else {
+    el.className = 'sync-status offline';
+    el.innerHTML = '<span class="sync-dot"></span> Offline — ' + pendingQueue.length + ' pending';
+  }
+}
+
+function savePendingQueue() {
+  localStorage.setItem('drsti_pending_queue', JSON.stringify(pendingQueue));
+}
+
+async function flushPendingQueue() {
+  if (pendingQueue.length === 0) return;
+  var remaining = [];
+  for (var i = 0; i < pendingQueue.length; i++) {
+    var item = pendingQueue[i];
+    var result = await apiPost(item.action, item.body, true);
+    if (!result || !result.ok) {
+      remaining.push(item); // Keep failed items
+    }
+  }
+  pendingQueue = remaining;
+  savePendingQueue();
+  setSyncStatus(remaining.length === 0);
+}
+
 // ── API ──
 async function apiGet(action) {
   try {
     var resp = await fetch(API_URL + '?action=' + action);
-    return await resp.json();
+    var data = await resp.json();
+    if (data) {
+      setSyncStatus(true);
+      flushPendingQueue(); // Try to push any pending changes
+    }
+    return data;
   } catch(e) {
     console.error('API GET error:', e);
+    setSyncStatus(false);
     return null;
   }
 }
 
-async function apiPost(action, body) {
+async function apiPost(action, body, isRetry) {
   try {
     var resp = await fetch(API_URL + '?action=' + action, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(body)
     });
-    return await resp.json();
+    var data = await resp.json();
+    setSyncStatus(true);
+    return data;
   } catch(e) {
-    showToast('Offline — change saved locally','warning');
+    if (!isRetry) {
+      pendingQueue.push({ action: action, body: body });
+      savePendingQueue();
+      setSyncStatus(false);
+    }
     return null;
   }
 }
@@ -991,7 +1047,7 @@ function renderCard(a) {
     + '<div class="edit-row"><label>Accommodation</label><select onchange="updateField('+a.row+',\'accommodation\',this.value)">'+accomOpts+'</select></div>'
     + '<div class="edit-row"><label>Price Type</label><select onchange="updateField('+a.row+',\'priceType\',this.value)">'+priceOpts+'</select></div>'
     + '<div class="edit-row"><label>Scholarship</label><div style="display:flex;align-items:center;gap:4px"><span style="font-size:13px;color:var(--text-secondary)">€</span><input type="number" min="0" step="50" value="'+(a.scholarship||'')+'" placeholder="0" style="width:80px;padding:7px 10px;border:1.5px solid var(--sand);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font-body);background:var(--bg-card);color:var(--text)" onblur="updateField('+a.row+',\'scholarship\',this.value)"></div></div>'
-    + '<div class="edit-row"><label class="wa-check"><input type="checkbox" onchange="updateField('+a.row+',\'whatsappSent\',this.checked?\'Yes\':\'\')"'+(a.whatsappSent==='Yes'?' checked':'')+'>WhatsApp Sent</label></div>'
+    + ((a.status === 'Hard Yes' || a.status === 'Needs Call') ? '<div class="edit-row"><label class="wa-check"><input type="checkbox" onchange="updateField('+a.row+',\'whatsappSent\',this.checked?\'Yes\':\'\')"'+(a.whatsappSent==='Yes'?' checked':'')+'>Personal Video Sent</label></div>' : '')
     + '<div class="edit-row notes-row"><label>Notes</label><textarea onblur="updateField('+a.row+',\'notes\',this.value)">'+esc(a.notes||'')+'</textarea></div>'
     + '</div>'
 
@@ -1070,6 +1126,8 @@ async function updateField(row, field, value) {
       var card = document.querySelector('[data-row="'+row+'"]');
       if (card) card.dataset.status = value;
       renderFilterChips();
+      // Re-render card to show/hide Personal Video Sent
+      renderCards();
     }
   }
 
@@ -1078,6 +1136,8 @@ async function updateField(row, field, value) {
     showToast(capitalize(field) + ' updated', 'success');
   } else if (result && result.error) {
     showToast('Error: ' + result.error, 'error');
+  } else if (!result) {
+    showToast('Saved offline — will sync when connected', 'warning');
   }
 }
 
