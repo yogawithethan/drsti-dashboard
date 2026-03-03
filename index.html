@@ -953,7 +953,7 @@ async function flushPendingQueue() {
   var remaining = [];
   for (var i = 0; i < pendingQueue.length; i++) {
     var item = pendingQueue[i];
-    var result = await apiPost(item.action, item.body, true);
+    var result = await apiUpdate(item.action, item.body, true);
     if (!result || !result.ok) {
       remaining.push(item); // Keep failed items
     }
@@ -982,28 +982,24 @@ async function apiGet(action, retreatId) {
   }
 }
 
-async function apiPost(action, body, isRetry) {
+async function apiUpdate(action, body, isRetry) {
+  // Use GET with URL-encoded JSON payload — POST is unreliable with Apps Script
   try {
-    var resp = await fetch(API_URL + '?action=' + action, {
-      method: 'POST',
-      headers: {'Content-Type':'text/plain'},
-      body: JSON.stringify(body),
-      redirect: 'follow'
-    });
+    var url = API_URL + '?action=' + action + '&payload=' + encodeURIComponent(JSON.stringify(body));
+    var resp = await fetch(url);
     var text = await resp.text();
     try {
       var data = JSON.parse(text);
       setSyncStatus(true);
       return data;
     } catch(parseErr) {
-      // Apps Script returned HTML error page instead of JSON
-      console.error('API POST returned non-JSON:', text.substring(0, 300));
-      var match = text.match(/margin:50px[^>]*>([^<]+)</);
+      console.error('API update returned non-JSON:', text.substring(0, 300));
+      var match = text.match(/margin:50px[^>]*>([^<]+)/);
       var errMsg = match ? match[1] : 'Server returned an error';
       return { error: errMsg };
     }
   } catch(e) {
-    console.error('API POST network error:', e);
+    console.error('API update network error:', e);
     if (!isRetry) {
       pendingQueue.push({ action: action, body: body });
       savePendingQueue();
@@ -1342,7 +1338,7 @@ async function saveCardChanges(row) {
     renderFilterChips();
   }
 
-  var result = await apiPost('updateApplicant', { row: row, fields: fields });
+  var result = await apiUpdate('updateApplicant', { row: row, fields: fields });
   if (result && result.ok) {
     showToast('Changes saved', 'success');
     if (btn) { btn.textContent = 'Saved!'; btn.classList.add('saved'); }
@@ -1363,7 +1359,7 @@ async function updateField(row, field, value) {
   var a = state.applicants.find(function(x){return x.row === row;});
   if (a) a[field] = value;
 
-  var result = await apiPost('updateApplicant', { row: row, fields: (function(){var o={};o[field]=value;return o;})() });
+  var result = await apiUpdate('updateApplicant', { row: row, fields: (function(){var o={};o[field]=value;return o;})() });
   if (result && result.ok) {
     showToast(capitalize(field) + ' updated', 'success');
   } else if (result && result.error) {
