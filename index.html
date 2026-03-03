@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#f5f0eb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<title>Dṛṣṭi</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg: #faf8f5;
+  --bg-warm: #f5f0eb;
+  --bg-card: #ffffff;
+  --bg-section: #faf6f1;
+  --bg-overlay: rgba(250,248,245,0.97);
+
+  --sage: #7a9e7e;
+  --sage-dark: #4a6b4e;
+  --sage-light: #e8f0e8;
+  --sage-mist: #f0f5f0;
+
+  --earth: #8b7355;
+  --earth-light: #c4a882;
+  --terra: #b07d62;
+  --sand: #d4c5b0;
+
+  --text: #2d2a26;
+  --text-secondary: #6b6560;
+  --text-muted: #9a948d;
+
+  --shadow-xs: 0 1px 2px rgba(45,42,38,0.04);
+  --shadow-sm: 0 1px 3px rgba(45,42,38,0.06), 0 1px 2px rgba(45,42,38,0.04);
+  --shadow-md: 0 4px 12px rgba(45,42,38,0.08);
+  --shadow-lg: 0 8px 24px rgba(45,42,38,0.10);
+  --shadow-glow: 0 0 0 3px rgba(122,158,126,0.15);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 50px;
+
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'DM Sans', -apple-system, system-ui, sans-serif;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+html { background: var(--bg); }
+
+body {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── CONFIG OVERLAY ── */
+.config-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(20px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.6s var(--ease-out);
+}
+.config-overlay.hidden { display: none; }
+.config-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 40px 32px;
+  max-width: 400px; width: 100%;
+  text-align: center;
+}
+.config-card h1 {
+  font-family: var(--font-display);
+  font-size: 36px; font-weight: 300;
+  letter-spacing: 0.02em;
+  color: var(--sage-dark);
+  margin-bottom: 4px;
+}
+.config-card .subtitle {
+  font-size: 12px; color: var(--text-muted);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  margin-bottom: 32px;
+}
+.config-card input {
+  width: 100%; padding: 12px 16px;
+  border: 1.5px solid var(--sand);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  margin-bottom: 12px;
+}
+.config-card input:focus {
+  outline: none;
+  border-color: var(--sage);
+  box-shadow: var(--shadow-glow);
+}
+.config-card input::placeholder { color: var(--text-muted); }
+.config-card button {
+  width: 100%; padding: 13px;
+  background: var(--sage-dark);
+  color: #fff; border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 14px; font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 8px;
+}
+.config-card button:active { transform: scale(0.98); }
+.config-card button:hover { background: #3d5c40; }
+
+/* ── HEADER ── */
+.app-header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--bg-warm);
+  border-bottom: 1px solid rgba(45,42,38,0.06);
+  padding: 0;
+  transition: box-shadow 0.3s;
+}
+.app-header.scrolled { box-shadow: var(--shadow-md); }
+
+.header-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px 8px;
+}
+.brand {
+  font-family: var(--font-display);
+  font-size: 28px; font-weight: 300;
+  color: var(--sage-dark);
+  letter-spacing: 0.02em;
+  display: flex; align-items: center; gap: 8px;
+}
+.brand-logo {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.header-meta {
+  font-size: 11px; color: var(--text-muted);
+  text-align: right; line-height: 1.4;
+}
+.header-meta .refresh-btn {
+  background: none; border: none;
+  color: var(--sage); cursor: pointer;
+  font-size: 11px; font-family: var(--font-body);
+  font-weight: 500; padding: 2px 0;
+}
+.header-meta .refresh-btn:hover { color: var(--sage-dark); }
+
+/* ── RETREAT SELECTOR ── */
+.retreat-bar {
+  display: flex; gap: 6px;
+  padding: 0 16px 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.retreat-bar::-webkit-scrollbar { display: none; }
+.retreat-tab {
+  flex-shrink: 0;
+  background: transparent; border: 1.5px solid var(--sand);
+  border-radius: var(--radius-pill);
+  padding: 5px 16px;
+  font-family: var(--font-body); font-size: 12px; font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer; transition: all 0.25s var(--ease-out);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.retreat-tab:hover { border-color: var(--sage); color: var(--sage-dark); }
+.retreat-tab.active {
+  background: var(--sage); color: #fff; border-color: var(--sage);
+}
+
+/* ── INVENTORY STRIP ── */
+.inv-strip {
+  display: flex; gap: 8px;
+  overflow-x: auto; padding: 8px 16px 12px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.inv-strip::-webkit-scrollbar { display: none; }
+
+.inv-pill {
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  box-shadow: var(--shadow-xs);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px;
+  border: 1px solid rgba(45,42,38,0.05);
+  transition: all 0.3s var(--ease-out);
+}
+.inv-pill .inv-label {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  font-weight: 400;
+}
+.inv-pill .inv-nums {
+  font-weight: 600;
+  color: var(--sage-dark);
+  white-space: nowrap;
+}
+.inv-pill.full {
+  background: #fef2f2;
+  border-color: rgba(153,0,0,0.1);
+}
+.inv-pill.full .inv-nums { color: #990000; }
+.inv-pill.total-pill {
+  background: var(--sage-mist);
+  border-color: rgba(122,158,126,0.15);
+}
+.inv-pill.total-pill .inv-nums { color: var(--sage-dark); font-weight: 700; }
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  display: flex; align-items: center;
+  padding: 8px 16px 12px; gap: 8px;
+  border-bottom: 1px solid rgba(45,42,38,0.04);
+  background: var(--bg);
+}
+.filter-chips {
+  display: flex; gap: 6px;
+  overflow-x: auto; flex: 1;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.filter-chips::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(45,42,38,0.1);
+  background: var(--bg-card);
+  font-size: 12px; font-weight: 400;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.25s var(--ease-out);
+  font-family: var(--font-body);
+  white-space: nowrap;
+}
+.chip:active { transform: scale(0.96); }
+.chip.active {
+  background: var(--sage);
+  color: #fff;
+  border-color: var(--sage);
+  font-weight: 500;
+}
+.chip .chip-count {
+  font-size: 10px; opacity: 0.7;
+  margin-left: 3px;
+}
+.chip.active .chip-count { opacity: 0.85; }
+
+.sort-select {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border: 1px solid rgba(45,42,38,0.1);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  font-family: var(--font-body);
+  font-size: 12px; color: var(--text-secondary);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239a948d' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 24px;
+}
+
+/* ── CARDS CONTAINER ── */
+.cards {
+  padding: 8px 12px 80px;
+}
+.cards-empty {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.cards-empty .empty-icon { font-size: 32px; margin-bottom: 12px; }
+
+/* ── APPLICANT CARD ── */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  border: 1px solid rgba(45,42,38,0.04);
+  transition: box-shadow 0.3s var(--ease-out), border-color 0.3s;
+}
+.card.expanded {
+  box-shadow: var(--shadow-md);
+  border-color: rgba(122,158,126,0.12);
+}
+
+.card-header {
+  display: flex; align-items: center;
+  padding: 14px 14px;
+  cursor: pointer; gap: 10px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.status-badge {
+  font-size: 10px; font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.card-info { flex: 1; min-width: 0; }
+.card-name {
+  font-weight: 500; font-size: 14px;
+  color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card-meta {
+  font-size: 11px; color: var(--text-muted);
+  margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.card-chevron {
+  flex-shrink: 0;
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted);
+  transition: transform 0.35s var(--ease-out);
+  font-size: 12px;
+}
+.card.expanded .card-chevron { transform: rotate(180deg); }
+
+.card-body {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.45s var(--ease-out);
+}
+.card.expanded .card-body {
+  max-height: 3000px;
+  transition: max-height 0.6s var(--ease-out);
+}
+.card-body-inner {
+  padding: 0 14px 16px;
+  border-top: 1px solid rgba(45,42,38,0.05);
+}
+
+/* ── CONTACT ROW ── */
+.contact-row {
+  display: flex; gap: 6px;
+  margin: 12px 0; flex-wrap: wrap;
+}
+.contact-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-size: 12px; font-weight: 500;
+  font-family: var(--font-body);
+  transition: all 0.2s;
+  border: none; cursor: pointer;
+}
+.contact-btn:active { transform: scale(0.96); }
+.btn-email { background: var(--sage-light); color: var(--sage-dark); }
+.btn-call { background: #e8f0e8; color: var(--sage-dark); }
+.btn-wa { background: #dcf8c6; color: #128c7e; }
+.btn-wa:hover { background: #c5f0a9; }
+.btn-ig { background: #fce4ec; color: #e1306c; }
+.btn-ig:hover { background: #f8bbd0; }
+
+/* ── EDIT SECTION ── */
+.edit-section {
+  background: var(--bg-section);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin: 12px 0;
+}
+.edit-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(45,42,38,0.05);
+  gap: 12px;
+}
+.edit-row:last-child { border-bottom: none; }
+.edit-row label {
+  font-size: 12px; color: var(--text-secondary);
+  font-weight: 500; flex-shrink: 0;
+}
+.edit-row select,
+.edit-row textarea {
+  border: 1.5px solid var(--sand);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-size: 13px; font-family: var(--font-body);
+  background: var(--bg-card);
+  color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  max-width: 180px;
+}
+.edit-row select:focus,
+.edit-row textarea:focus {
+  outline: none;
+  border-color: var(--sage);
+  box-shadow: var(--shadow-glow);
+}
+.edit-row textarea {
+  max-width: 100%; width: 100%;
+  min-height: 60px; resize: vertical;
+}
+.edit-row .notes-row { flex-direction: column; align-items: stretch; }
+.edit-row.notes-row { flex-direction: column; align-items: stretch; }
+.edit-row.notes-row label { margin-bottom: 6px; }
+
+.wa-check {
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer; font-size: 13px;
+}
+.wa-check input[type="checkbox"] {
+  width: 18px; height: 18px;
+  accent-color: var(--sage);
+  cursor: pointer;
+}
+
+/* ── DETAILS / COLLAPSIBLE SECTIONS ── */
+.answer-section {
+  margin: 8px 0; border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.answer-section summary {
+  padding: 10px 14px;
+  background: var(--bg-section);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px; font-weight: 500;
+  color: var(--text-secondary);
+  list-style: none;
+  display: flex; align-items: center; justify-content: space-between;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 0.2s;
+}
+.answer-section summary:hover { background: #f0ebe5; }
+.answer-section summary::after {
+  content: ''; display: block;
+  width: 8px; height: 8px;
+  border-right: 1.5px solid var(--text-muted);
+  border-bottom: 1.5px solid var(--text-muted);
+  transform: rotate(-45deg);
+  transition: transform 0.25s var(--ease-out);
+  flex-shrink: 0;
+}
+.answer-section[open] summary::after { transform: rotate(45deg); }
+.answer-section summary::-webkit-details-marker { display: none; }
+
+.answer-grid {
+  padding: 12px 14px;
+  background: var(--bg);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+.answer-item { margin-bottom: 14px; }
+.answer-item:last-child { margin-bottom: 0; }
+.answer-label {
+  font-size: 11px; font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.answer-text {
+  font-size: 13px; color: var(--text);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.answer-text:empty::after {
+  content: '—';
+  color: var(--text-muted);
+}
+
+.info-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; padding: 12px 14px;
+  background: var(--bg);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+.info-item {
+  font-size: 12px;
+}
+.info-item .info-label { color: var(--text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+.info-item .info-value { color: var(--text); font-weight: 500; margin-top: 2px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px;
+  left: 50%; transform: translateX(-50%) translateY(10px);
+  padding: 10px 24px;
+  border-radius: var(--radius-pill);
+  font-size: 13px; font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  z-index: 500;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s var(--ease-spring);
+  font-family: var(--font-body);
+  white-space: nowrap;
+}
+.toast.visible {
+  opacity: 1; pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.toast.success { background: var(--sage-dark); color: #fff; }
+.toast.error { background: #990000; color: #fff; }
+.toast.warning { background: var(--earth); color: #fff; }
+
+/* ── LOADING ── */
+.loading-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--bg-overlay);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 16px;
+}
+.loading-overlay.hidden { display: none; }
+.spinner {
+  width: 32px; height: 32px;
+  border: 2.5px solid var(--sand);
+  border-top-color: var(--sage);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.loading-text {
+  font-size: 13px; color: var(--text-muted);
+  font-family: var(--font-body);
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card { animation: slideUp 0.4s var(--ease-out) both; }
+.card:nth-child(1) { animation-delay: 0s; }
+.card:nth-child(2) { animation-delay: 0.03s; }
+.card:nth-child(3) { animation-delay: 0.06s; }
+.card:nth-child(4) { animation-delay: 0.09s; }
+.card:nth-child(5) { animation-delay: 0.12s; }
+.card:nth-child(6) { animation-delay: 0.15s; }
+.card:nth-child(7) { animation-delay: 0.18s; }
+.card:nth-child(8) { animation-delay: 0.21s; }
+
+/* ── ADDONS BADGES ── */
+.addon-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+.addon-badge {
+  font-size: 10px; padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--sage-light);
+  color: var(--sage-dark);
+  font-weight: 500;
+}
+
+/* ── RESPONSIVE ── */
+@media (min-width: 640px) {
+  .cards { padding: 12px 24px 80px; max-width: 600px; margin: 0 auto; }
+  .header-top { padding: 16px 24px 8px; }
+  .retreat-bar { padding: 0 24px 8px; }
+  .inv-strip { padding: 8px 24px 12px; }
+  .filter-bar { padding: 8px 24px 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- CONFIG OVERLAY -->
+<div class="config-overlay" id="configOverlay">
+  <div class="config-card">
+    <img src="drsti.png" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;margin-bottom:12px">
+    <h1>Dṛṣṭi</h1>
+    <p class="subtitle">retreat management</p>
+    <input type="url" id="configUrl" placeholder="Apps Script Web App URL" autocomplete="off" spellcheck="false">
+    <button onclick="saveConfig()">Connect</button>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading applicants...</div>
+</div>
+
+<!-- HEADER -->
+<header class="app-header" id="appHeader">
+  <div class="header-top">
+    <div class="brand"><img src="drsti.png" alt="" class="brand-logo">Dṛṣṭi</div>
+    <div class="header-meta">
+      <button class="refresh-btn" onclick="loadAll()">Refresh</button>
+      <div id="lastUpdated"></div>
+    </div>
+  </div>
+  <div class="retreat-bar" id="retreatBar"></div>
+  <div class="inv-strip" id="invStrip"></div>
+</header>
+
+<!-- FILTER BAR -->
+<nav class="filter-bar" id="filterBar">
+  <div class="filter-chips" id="filterChips"></div>
+  <select class="sort-select" id="sortSelect" onchange="applySort(this.value)">
+    <option value="newest">Newest</option>
+    <option value="oldest">Oldest</option>
+    <option value="name">Name</option>
+    <option value="status">Status</option>
+  </select>
+</nav>
+
+<!-- CARDS -->
+<main class="cards" id="cardsContainer"></main>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──
+var API_URL = localStorage.getItem('drsti_api_url') || '';
+var POLL_INTERVAL = 45000;
+var pollTimer = null;
+var toastTimer = null;
+
+// ── STATE ──
+var state = {
+  applicants: [],
+  inventory: [],
+  lastFetch: null,
+  activeFilter: 'all',
+  sortBy: 'newest',
+  expandedCards: {}
+};
+
+// ── CONSTANTS ──
+var STATUSES = [
+  'Applied','First Outreach','Hard Yes','Needs Call','Call Scheduled',
+  'Waitlist','Not Aligned','Offer Sent','Deposit Paid','Payment Plan',
+  'Paid in Full','No Longer Interested','Maybe Next Year','Ghosted',
+  'Cancelled','Other'
+];
+
+var STATUS_COLORS = {
+  'Applied':              {bg:'#cfe2f3',fg:'#1155cc'},
+  'First Outreach':       {bg:'#a4c2f4',fg:'#1a44a0'},
+  'Hard Yes':             {bg:'#b6d7a8',fg:'#274e13'},
+  'Needs Call':           {bg:'#d9ead3',fg:'#38761d'},
+  'Call Scheduled':       {bg:'#93c47d',fg:'#274e13'},
+  'Waitlist':             {bg:'#fff2cc',fg:'#7f6003'},
+  'Not Aligned':          {bg:'#f4cccc',fg:'#990000'},
+  'Offer Sent':           {bg:'#d0e0e3',fg:'#0c343d'},
+  'Deposit Paid':         {bg:'#a2d9ce',fg:'#0e6251'},
+  'Payment Plan':         {bg:'#76d7c4',fg:'#0e6251'},
+  'Paid in Full':         {bg:'#45b39d',fg:'#ffffff'},
+  'No Longer Interested': {bg:'#e6b8af',fg:'#85200c'},
+  'Maybe Next Year':      {bg:'#fce5cd',fg:'#783f04'},
+  'Ghosted':              {bg:'#d9d9d9',fg:'#666666'},
+  'Cancelled':            {bg:'#ea9999',fg:'#990000'},
+  'Other':                {bg:'#efefef',fg:'#999999'}
+};
+
+var PRICE_TYPES = ['','Payment Plan','Pay Full','EB Plan','EB Full'];
+
+// ── RETREATS ──
+var RETREATS = {
+  'tcot-pt-2026': {
+    label: 'Portugal 2026',
+    accommodations: ['','Triple','Double','Glamping']
+  }
+  // Future example:
+  // 'tcot-bali-2027': {
+  //   label: 'Bali 2027',
+  //   accommodations: ['','Single Villa','Shared Villa','Garden Bungalow']
+  // }
+};
+var RETREAT_IDS = Object.keys(RETREATS);
+var activeRetreat = localStorage.getItem('drsti_active_retreat') || RETREAT_IDS[0];
+
+function getAccommodations() {
+  return (RETREATS[activeRetreat] || RETREATS[RETREAT_IDS[0]]).accommodations;
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', function() {
+  renderRetreatBar();
+
+  if (!API_URL) {
+    document.getElementById('configOverlay').classList.remove('hidden');
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  } else {
+    document.getElementById('configOverlay').classList.add('hidden');
+    loadAll();
+    startPolling();
+  }
+
+  // Sticky header shadow
+  window.addEventListener('scroll', function() {
+    document.getElementById('appHeader').classList.toggle('scrolled', window.scrollY > 4);
+  });
+
+  // Pause polling when hidden
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) { stopPolling(); }
+    else { loadAll(); startPolling(); }
+  });
+
+  // Register SW
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  }
+});
+
+function saveConfig() {
+  var url = document.getElementById('configUrl').value.trim();
+  if (!url) return;
+  localStorage.setItem('drsti_api_url', url);
+  API_URL = url;
+  document.getElementById('configOverlay').classList.add('hidden');
+  loadAll();
+  startPolling();
+}
+
+// ── API ──
+async function apiGet(action) {
+  try {
+    var resp = await fetch(API_URL + '?action=' + action);
+    return await resp.json();
+  } catch(e) {
+    console.error('API GET error:', e);
+    return null;
+  }
+}
+
+async function apiPost(action, body) {
+  try {
+    var resp = await fetch(API_URL + '?action=' + action, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    return await resp.json();
+  } catch(e) {
+    showToast('Offline — change saved locally','warning');
+    return null;
+  }
+}
+
+// ── DATA ──
+async function loadAll() {
+  var showLoader = state.applicants.length === 0;
+  if (showLoader) document.getElementById('loadingOverlay').classList.remove('hidden');
+
+  var results = await Promise.all([apiGet('getApplicants'), apiGet('getInventory')]);
+  var appData = results[0], invData = results[1];
+
+  if (appData && appData.ok) {
+    state.applicants = appData.applicants;
+    state.lastFetch = appData.ts;
+    localStorage.setItem('drsti_cache_app', JSON.stringify(appData.applicants));
+  } else {
+    var c = localStorage.getItem('drsti_cache_app');
+    if (c) state.applicants = JSON.parse(c);
+  }
+
+  if (invData && invData.ok) {
+    state.inventory = invData.inventory;
+    localStorage.setItem('drsti_cache_inv', JSON.stringify(invData.inventory));
+  } else {
+    var c = localStorage.getItem('drsti_cache_inv');
+    if (c) state.inventory = JSON.parse(c);
+  }
+
+  renderRetreatBar();
+  renderInventory();
+  renderFilterChips();
+  renderCards();
+  updateLastFetched();
+  if (showLoader) document.getElementById('loadingOverlay').classList.add('hidden');
+}
+
+function startPolling() {
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(loadAll, POLL_INTERVAL);
+}
+function stopPolling() { if (pollTimer) clearInterval(pollTimer); }
+
+function updateLastFetched() {
+  var el = document.getElementById('lastUpdated');
+  if (state.lastFetch) {
+    el.textContent = 'Updated ' + timeAgo(state.lastFetch);
+  }
+}
+
+// ── RENDER: INVENTORY ──
+function renderInventory() {
+  var strip = document.getElementById('invStrip');
+  var html = '';
+  var inv = state.inventory;
+  for (var i = 0; i < inv.length; i++) {
+    var item = inv[i];
+    var isTotal = item.item === 'TOTAL PARTICIPANTS';
+    var isFull = item.remaining <= 0;
+    var cls = 'inv-pill' + (isFull ? ' full' : '') + (isTotal ? ' total-pill' : '');
+    var label = isTotal ? 'Total' : item.item.replace(' Sessions','').replace(' Packages','').replace(' Rooms','');
+    html += '<div class="'+cls+'">'
+      + '<span class="inv-label">'+esc(label)+'</span>'
+      + '<span class="inv-nums">'+item.remaining+'/'+item.total+'</span>'
+      + '</div>';
+  }
+  strip.innerHTML = html;
+}
+
+// ── RENDER: RETREAT BAR ──
+function renderRetreatBar() {
+  var bar = document.getElementById('retreatBar');
+  var html = '';
+  for (var i = 0; i < RETREAT_IDS.length; i++) {
+    var id = RETREAT_IDS[i];
+    var r = RETREATS[id];
+    var active = id === activeRetreat ? ' active' : '';
+    html += '<button class="retreat-tab'+active+'" onclick="switchRetreat(\''+id+'\')">'+esc(r.label)+'</button>';
+  }
+  bar.innerHTML = html;
+}
+
+function switchRetreat(retreatId) {
+  if (retreatId === activeRetreat) return;
+  activeRetreat = retreatId;
+  localStorage.setItem('drsti_active_retreat', retreatId);
+  renderRetreatBar();
+  renderCards(); // Re-render cards with new accommodation options
+  showToast('Switched to ' + RETREATS[retreatId].label, 'success');
+  // When multi-retreat API support is added, call loadAll() here
+  // to fetch data from the other retreat's spreadsheet
+}
+
+// ── RENDER: FILTER CHIPS ──
+function renderFilterChips() {
+  var container = document.getElementById('filterChips');
+  var counts = {};
+  STATUSES.forEach(function(s) { counts[s] = 0; });
+  state.applicants.forEach(function(a) { if (counts[a.status] !== undefined) counts[a.status]++; });
+
+  var html = '<button class="chip'+(state.activeFilter==='all'?' active':'')+'" onclick="applyFilter(\'all\')">All <span class="chip-count">'+state.applicants.length+'</span></button>';
+  STATUSES.forEach(function(s) {
+    if (counts[s] === 0) return;
+    var active = state.activeFilter === s ? ' active' : '';
+    html += '<button class="chip'+active+'" onclick="applyFilter(\''+s+'\')">'+esc(s)+' <span class="chip-count">'+counts[s]+'</span></button>';
+  });
+  container.innerHTML = html;
+}
+
+// ── RENDER: CARDS ──
+function renderCards() {
+  var container = document.getElementById('cardsContainer');
+  var list = getFilteredSorted();
+
+  if (list.length === 0) {
+    container.innerHTML = '<div class="cards-empty"><img src="drsti.png" alt="" style="width:48px;height:48px;border-radius:50%;opacity:0.6;margin-bottom:8px">No applicants found</div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    html += renderCard(list[i]);
+  }
+  container.innerHTML = html;
+}
+
+function renderCard(a) {
+  var sc = STATUS_COLORS[a.status] || {bg:'#efefef',fg:'#999'};
+  var expanded = state.expandedCards[a.row] ? ' expanded' : '';
+  var name = esc(a.firstName + ' ' + a.lastName);
+  var meta = esc(a.country || '—') + ' &middot; ' + timeAgo(a.timestamp);
+
+  // Addons
+  var addons = [];
+  if (a.addonBodywork === 'Yes') addons.push('Bodywork');
+  if (a.addonHealing === 'Yes') addons.push('Healing');
+  if (a.addonPhotoshoot === 'Yes') addons.push('Photoshoot');
+  if (a.addonCoaching === 'Yes') addons.push('Coaching');
+  var addonHtml = '';
+  if (addons.length) {
+    addonHtml = '<div class="addon-badges">' + addons.map(function(x){return '<span class="addon-badge">'+x+'</span>';}).join('') + '</div>';
+  }
+
+  // Room preference (show whichever one is filled)
+  var roomPref = a.roomPlan || a.roomFull || a.roomEB || a.roomEBFull || '—';
+
+  // WhatsApp link
+  var waLink = '#';
+  if (a.phone) {
+    var digits = String(a.phone).replace(/\D/g,'');
+    waLink = 'https://wa.me/' + digits;
+  }
+
+  // Status select options
+  var statusOpts = '';
+  STATUSES.forEach(function(s) {
+    statusOpts += '<option value="'+s+'"'+(s===a.status?' selected':'')+'>'+s+'</option>';
+  });
+
+  // Accommodation select
+  var accomOpts = '';
+  getAccommodations().forEach(function(x) {
+    var label = x || '—';
+    accomOpts += '<option value="'+x+'"'+(x===a.accommodation?' selected':'')+'>'+label+'</option>';
+  });
+
+  // Price type select
+  var priceOpts = '';
+  PRICE_TYPES.forEach(function(x) {
+    var label = x || '—';
+    priceOpts += '<option value="'+x+'"'+(x===a.priceType?' selected':'')+'>'+label+'</option>';
+  });
+
+  return '<article class="card'+expanded+'" data-row="'+a.row+'" data-status="'+esc(a.status)+'">'
+    + '<div class="card-header" onclick="toggleCard('+a.row+')">'
+    + '<span class="status-badge" style="background:'+sc.bg+';color:'+sc.fg+'">'+esc(a.status)+'</span>'
+    + '<div class="card-info">'
+    + '<div class="card-name">'+name+'</div>'
+    + '<div class="card-meta">'+meta+'</div>'
+    + '</div>'
+    + '<span class="card-chevron">&#9662;</span>'
+    + '</div>'
+    + '<div class="card-body"><div class="card-body-inner">'
+
+    // Contact row
+    + '<div class="contact-row">'
+    + (a.email ? '<a href="mailto:'+esc(a.email)+'" class="contact-btn btn-email">&#9993; Email</a>' : '')
+    + (a.phone ? '<a href="tel:'+esc(String(a.phone))+'" class="contact-btn btn-call">&#9742; Call</a>' : '')
+    + (a.phone ? '<a href="'+waLink+'" target="_blank" class="contact-btn btn-wa">&#128172; WhatsApp</a>' : '')
+    + (a.instagram ? '<a href="https://instagram.com/'+esc(a.instagram)+'" target="_blank" class="contact-btn btn-ig">&#128247; @'+esc(a.instagram)+'</a>' : '')
+    + '</div>'
+
+    // Edit section
+    + '<div class="edit-section">'
+    + '<div class="edit-row"><label>Status</label><select onchange="updateField('+a.row+',\'status\',this.value)">'+statusOpts+'</select></div>'
+    + '<div class="edit-row"><label>Accommodation</label><select onchange="updateField('+a.row+',\'accommodation\',this.value)">'+accomOpts+'</select></div>'
+    + '<div class="edit-row"><label>Price Type</label><select onchange="updateField('+a.row+',\'priceType\',this.value)">'+priceOpts+'</select></div>'
+    + '<div class="edit-row"><label class="wa-check"><input type="checkbox" onchange="updateField('+a.row+',\'whatsappSent\',this.checked?\'Yes\':\'\')"'+(a.whatsappSent==='Yes'?' checked':'')+'>WhatsApp Sent</label></div>'
+    + '<div class="edit-row notes-row"><label>Notes</label><textarea onblur="updateField('+a.row+',\'notes\',this.value)">'+esc(a.notes||'')+'</textarea></div>'
+    + '</div>'
+
+    + addonHtml
+
+    // Application answers
+    + '<details class="answer-section">'
+    + '<summary>Application Answers</summary>'
+    + '<div class="answer-grid">'
+    + answerItem('What Inspired You', a.inspired)
+    + answerItem('Yoga / Spiritual Experience', a.yogaExperience)
+    + answerItem('Health Goals', a.healthGoals)
+    + answerItem('Injuries / Conditions', a.injuries)
+    + answerItem('Food Restrictions', a.foodRestrictions)
+    + answerItem('Substances', a.substances)
+    + answerItem('Comfortable w/ Detox/Silence/Phones', a.comfortableWith)
+    + answerItem('Questions / Concerns', a.questionsConcerns)
+    + answerItem('Additional Info', a.additionalInfo)
+    + '</div></details>'
+
+    // Room & Payment
+    + '<details class="answer-section">'
+    + '<summary>Room &amp; Payment Preferences</summary>'
+    + '<div class="answer-grid">'
+    + answerItem('Payment Preference', a.paymentPreference)
+    + answerItem('Room Selection', roomPref)
+    + answerItem('Add-ons Interested In', a.addonsInterested)
+    + answerItem('Travel Assistance', a.travelAssist)
+    + answerItem('Free Flight Contest', a.flightContest)
+    + answerItem('How Heard', a.howHeard)
+    + answerItem('Referral', a.referral)
+    + '</div></details>'
+
+    // System info
+    + '<details class="answer-section">'
+    + '<summary>System Info</summary>'
+    + '<div class="info-grid">'
+    + infoItem('Status Changed', a.statusChangedDate ? formatDate(a.statusChangedDate) : '—')
+    + infoItem('Email Sent', a.emailSent ? formatDate(a.emailSent) : '—')
+    + infoItem('Ghost Step', a.ghostStep || '0')
+    + infoItem('Last SMS', a.lastSmsDate ? formatDate(a.lastSmsDate) : '—')
+    + infoItem('CK Tag', a.ckTag || '—')
+    + infoItem('WhatsApp Prompt', a.whatsappPrompt || '—')
+    + '</div></details>'
+
+    + '</div></div></article>';
+}
+
+function answerItem(label, text) {
+  return '<div class="answer-item"><div class="answer-label">'+esc(label)+'</div><p class="answer-text">'+esc(text||'')+'</p></div>';
+}
+function infoItem(label, value) {
+  return '<div class="info-item"><div class="info-label">'+esc(label)+'</div><div class="info-value">'+esc(String(value))+'</div></div>';
+}
+
+// ── INTERACTIONS ──
+function toggleCard(row) {
+  state.expandedCards[row] = !state.expandedCards[row];
+  var card = document.querySelector('[data-row="'+row+'"]');
+  if (card) card.classList.toggle('expanded', state.expandedCards[row]);
+}
+
+async function updateField(row, field, value) {
+  // Optimistic update
+  var a = state.applicants.find(function(x){return x.row === row;});
+  if (a) {
+    a[field] = value;
+    if (field === 'status') {
+      var badge = document.querySelector('[data-row="'+row+'"] .status-badge');
+      if (badge) {
+        var sc = STATUS_COLORS[value] || {bg:'#efefef',fg:'#999'};
+        badge.style.background = sc.bg;
+        badge.style.color = sc.fg;
+        badge.textContent = value;
+      }
+      var card = document.querySelector('[data-row="'+row+'"]');
+      if (card) card.dataset.status = value;
+      renderFilterChips();
+    }
+  }
+
+  var result = await apiPost('updateApplicant', { row: row, fields: (function(){var o={};o[field]=value;return o;})() });
+  if (result && result.ok) {
+    showToast(capitalize(field) + ' updated', 'success');
+  } else if (result && result.error) {
+    showToast('Error: ' + result.error, 'error');
+  }
+}
+
+function applyFilter(filter) {
+  state.activeFilter = filter;
+  renderFilterChips();
+  renderCards();
+}
+
+function applySort(sortBy) {
+  state.sortBy = sortBy;
+  renderCards();
+}
+
+function getFilteredSorted() {
+  var list = state.applicants;
+  if (state.activeFilter !== 'all') {
+    list = list.filter(function(a){ return a.status === state.activeFilter; });
+  }
+  list = list.slice();
+  switch(state.sortBy) {
+    case 'newest': list.sort(function(a,b){return new Date(b.timestamp)-new Date(a.timestamp);}); break;
+    case 'oldest': list.sort(function(a,b){return new Date(a.timestamp)-new Date(b.timestamp);}); break;
+    case 'name': list.sort(function(a,b){return (a.firstName+a.lastName).localeCompare(b.firstName+b.lastName);}); break;
+    case 'status': list.sort(function(a,b){return STATUSES.indexOf(a.status)-STATUSES.indexOf(b.status);}); break;
+  }
+  return list;
+}
+
+// ── HELPERS ──
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type||'success') + ' visible';
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('visible'); }, 2400);
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '—';
+  var now = Date.now();
+  var then = new Date(dateStr).getTime();
+  if (isNaN(then)) return '—';
+  var diff = now - then;
+  var mins = Math.floor(diff/60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  var hrs = Math.floor(mins/60);
+  if (hrs < 24) return hrs + 'h ago';
+  var days = Math.floor(hrs/24);
+  if (days < 30) return days + 'd ago';
+  var months = Math.floor(days/30);
+  return months + 'mo ago';
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  var d = new Date(dateStr);
+  if (isNaN(d.getTime())) return String(dateStr);
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+}
+
+function esc(str) {
+  if (!str) return '';
+  var d = document.createElement('div');
+  d.textContent = String(str);
+  return d.innerHTML;
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1).replace(/([A-Z])/g, ' $1');
+}
+</script>
+</body>
+</html>
