@@ -177,29 +177,26 @@ body {
 }
 .header-meta .refresh-btn:hover { color: var(--sage-dark); }
 
-/* ── RETREAT SELECTOR ── */
-.retreat-bar {
-  display: flex; gap: 6px;
-  padding: 0 16px 8px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-.retreat-bar::-webkit-scrollbar { display: none; }
+/* ── RETREAT SELECTOR (inline with brand) ── */
 .retreat-tab {
   flex-shrink: 0;
-  background: transparent; border: 1.5px solid var(--sand);
+  background: var(--sage-mist); border: 1.5px solid rgba(122,158,126,0.25);
   border-radius: var(--radius-pill);
-  padding: 5px 16px;
-  font-family: var(--font-body); font-size: 12px; font-weight: 500;
-  color: var(--text-secondary);
+  padding: 6px 16px 6px 12px;
+  font-family: var(--font-body); font-size: 13px; font-weight: 500;
+  color: var(--sage-dark);
   cursor: pointer; transition: all 0.25s var(--ease-out);
   letter-spacing: 0.01em;
   white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-left: 10px;
 }
-.retreat-tab:hover { border-color: var(--sage); color: var(--sage-dark); }
+.retreat-tab svg {
+  width: 16px; height: 16px; fill: currentColor; flex-shrink: 0;
+}
+.retreat-tab:hover { border-color: var(--sage); background: var(--sage-light); }
 .retreat-tab.active {
-  background: var(--sage); color: #fff; border-color: var(--sage);
+  background: var(--sage-dark); color: #fff; border-color: var(--sage-dark);
 }
 
 /* ── INVENTORY STRIP ── */
@@ -243,38 +240,37 @@ body {
 }
 .inv-pill.total-pill .inv-nums { color: var(--sage-dark); font-weight: 700; }
 
-/* ── SEARCH BAR ── */
-.search-bar {
-  padding: 4px 16px 8px;
-  background: var(--bg);
+/* ── INLINE SEARCH (compact, inside filter bar) ── */
+.search-wrap {
+  position: relative; flex-shrink: 0;
+  width: 120px;
+  transition: width 0.25s var(--ease-out);
+}
+.search-wrap:focus-within { width: 170px; }
+.search-wrap svg {
+  position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+  width: 13px; height: 13px; fill: var(--text-muted);
+  pointer-events: none;
 }
 .search-input {
-  width: 100%; padding: 9px 14px 9px 36px;
-  border: 1.5px solid rgba(45,42,38,0.1);
+  width: 100%; padding: 6px 24px 6px 26px;
+  border: 1px solid rgba(45,42,38,0.1);
   border-radius: var(--radius-pill);
-  font-family: var(--font-body); font-size: 13px;
+  font-family: var(--font-body); font-size: 11px;
   background: var(--bg-card);
   color: var(--text);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, width 0.2s;
 }
 .search-input:focus {
   outline: none;
   border-color: var(--sage);
-  box-shadow: var(--shadow-glow);
+  box-shadow: 0 0 0 2px rgba(122,158,126,0.1);
 }
-.search-input::placeholder { color: var(--text-muted); }
-.search-wrap {
-  position: relative;
-}
-.search-wrap svg {
-  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-  width: 16px; height: 16px; fill: var(--text-muted);
-  pointer-events: none;
-}
+.search-input::placeholder { color: var(--text-muted); font-size: 11px; }
 .search-clear {
-  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
   background: none; border: none; cursor: pointer;
-  color: var(--text-muted); font-size: 16px; padding: 2px 6px;
+  color: var(--text-muted); font-size: 13px; padding: 1px 3px;
   display: none; line-height: 1;
 }
 .search-clear.visible { display: block; }
@@ -635,9 +631,10 @@ body {
 @media (min-width: 640px) {
   .cards { padding: 12px 24px 80px; max-width: 600px; margin: 0 auto; }
   .header-top { padding: 16px 24px 8px; }
-  .retreat-bar { padding: 0 24px 8px; }
   .inv-strip { padding: 8px 24px 12px; }
   .filter-bar { padding: 8px 24px 12px; }
+  .search-wrap { width: 150px; }
+  .search-wrap:focus-within { width: 200px; }
 }
 </style>
 </head>
@@ -664,29 +661,27 @@ body {
 <!-- HEADER -->
 <header class="app-header" id="appHeader">
   <div class="header-top">
-    <div class="brand"><img src="drsti.png" alt="" class="brand-logo">Dṛṣṭi Dashboard</div>
+    <div class="brand">
+      <img src="drsti.png" alt="" class="brand-logo">Dṛṣṭi Dashboard
+      <span id="retreatBar"></span>
+    </div>
     <div class="header-meta">
       <div class="sync-status synced" id="syncStatus"><span class="sync-dot"></span> Synced</div>
       <button class="refresh-btn" onclick="loadAll()">Refresh</button>
       <div id="lastUpdated"></div>
     </div>
   </div>
-  <div class="retreat-bar" id="retreatBar"></div>
   <div class="inv-strip" id="invStrip"></div>
 </header>
-
-<!-- SEARCH -->
-<div class="search-bar">
-  <div class="search-wrap">
-    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-    <input type="text" class="search-input" id="searchInput" placeholder="Search by name..." oninput="applySearch(this.value)" autocomplete="off" spellcheck="false">
-    <button class="search-clear" id="searchClear" onclick="clearSearch()">&times;</button>
-  </div>
-</div>
 
 <!-- FILTER BAR -->
 <nav class="filter-bar" id="filterBar">
   <div class="filter-chips" id="filterChips"></div>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    <input type="text" class="search-input" id="searchInput" placeholder="Search..." oninput="applySearch(this.value)" autocomplete="off" spellcheck="false">
+    <button class="search-clear" id="searchClear" onclick="clearSearch()">&times;</button>
+  </div>
   <select class="sort-select" id="sortSelect" onchange="applySort(this.value)">
     <option value="newest">Newest</option>
     <option value="oldest">Oldest</option>
@@ -954,6 +949,7 @@ function renderInventory() {
 }
 
 // ── RENDER: RETREAT BAR ──
+var RETREAT_ICON = '<svg viewBox="0 0 256 256"><path d="M128,16a88.1,88.1,0,0,0-88,88c0,75.3,80,132.17,83.41,134.55a8,8,0,0,0,9.18,0C136,236.17,216,179.3,216,104A88.1,88.1,0,0,0,128,16Zm0,56a32,32,0,1,1-32,32A32,32,0,0,1,128,72Z"/></svg>';
 function renderRetreatBar() {
   var bar = document.getElementById('retreatBar');
   var html = '';
@@ -961,7 +957,7 @@ function renderRetreatBar() {
     var id = RETREAT_IDS[i];
     var r = RETREATS[id];
     var active = id === activeRetreat ? ' active' : '';
-    html += '<button class="retreat-tab'+active+'" onclick="switchRetreat(\''+id+'\')">'+esc(r.label)+'</button>';
+    html += '<button class="retreat-tab'+active+'" onclick="switchRetreat(\''+id+'\')">'+RETREAT_ICON+esc(r.label)+'</button>';
   }
   bar.innerHTML = html;
 }
