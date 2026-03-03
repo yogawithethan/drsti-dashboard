@@ -518,6 +518,24 @@ body {
   accent-color: var(--sage);
   cursor: pointer;
 }
+.save-btn {
+  display: block; width: 100%;
+  margin-top: 10px; padding: 10px;
+  border: none; border-radius: var(--radius-sm);
+  background: var(--sage-dark);
+  color: #fff; font-family: var(--font-body);
+  font-size: 13px; font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.save-btn:active { transform: scale(0.97); }
+.save-btn:hover { background: var(--sage); }
+.save-btn:disabled { opacity: 0.5; cursor: default; }
+.save-btn.saved {
+  background: #b6d7a8; color: #274e13;
+  pointer-events: none;
+}
 
 /* ── DETAILS / COLLAPSIBLE SECTIONS ── */
 .answer-section {
@@ -880,7 +898,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Pause polling when hidden
   document.addEventListener('visibilitychange', function() {
     if (document.hidden) { stopPolling(); }
-    else { flushPendingQueue(); loadAll(); startPolling(); }
+    else { startPolling(); flushPendingQueue(); loadAll(); }
   });
 
   // Register SW
@@ -1013,10 +1031,14 @@ async function loadAll() {
     if (c) state.inventory = JSON.parse(c);
   }
 
-  renderRetreatBar();
   renderInventory();
   renderFilterChips();
-  renderCards();
+  // Only re-render cards if no card is currently expanded (user not interacting)
+  var anyExpanded = Object.keys(state.expandedCards).some(function(k) { return state.expandedCards[k]; });
+  if (!anyExpanded) {
+    renderRetreatBar();
+    renderCards();
+  }
   updateLastFetched();
   if (showLoader) document.getElementById('loadingOverlay').classList.add('hidden');
 }
@@ -1189,14 +1211,15 @@ function renderCard(a) {
     + (a.instagram ? (function(){ var igHandle = String(a.instagram).replace(/^@/,''); return '<a href="https://instagram.com/'+esc(igHandle)+'" target="_blank" class="contact-btn btn-ig" title="@'+esc(igHandle)+'"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>'; })() : '')
     + '</div>'
 
-    // Edit section
+    // Edit section — dropdowns are NOT auto-submit, user clicks Save
     + '<div class="edit-section">'
-    + '<div class="edit-row"><label>Status</label><select onchange="updateField('+a.row+',\'status\',this.value)">'+statusOpts+'</select></div>'
-    + '<div class="edit-row"><label>Accommodation</label><select onchange="updateField('+a.row+',\'accommodation\',this.value)">'+accomOpts+'</select></div>'
-    + '<div class="edit-row"><label>Price Type</label><select onchange="updateField('+a.row+',\'priceType\',this.value)">'+priceOpts+'</select></div>'
-    + '<div class="edit-row"><label>Scholarship</label><div style="display:flex;align-items:center;gap:4px"><span style="font-size:13px;color:var(--text-secondary)">€</span><input type="number" min="0" step="50" value="'+(a.scholarship||'')+'" placeholder="0" style="width:80px;padding:7px 10px;border:1.5px solid var(--sand);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font-body);background:var(--bg-card);color:var(--text)" onblur="updateField('+a.row+',\'scholarship\',this.value)"></div></div>'
+    + '<div class="edit-row"><label>Status</label><select id="sel-status-'+a.row+'">'+statusOpts+'</select></div>'
+    + '<div class="edit-row"><label>Accommodation</label><select id="sel-accom-'+a.row+'">'+accomOpts+'</select></div>'
+    + '<div class="edit-row"><label>Price Type</label><select id="sel-price-'+a.row+'">'+priceOpts+'</select></div>'
+    + '<div class="edit-row"><label>Scholarship</label><div style="display:flex;align-items:center;gap:4px"><span style="font-size:13px;color:var(--text-secondary)">€</span><input type="number" id="sel-scholarship-'+a.row+'" min="0" step="50" value="'+(a.scholarship||'')+'" placeholder="0" style="width:80px;padding:7px 10px;border:1.5px solid var(--sand);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font-body);background:var(--bg-card);color:var(--text)"></div></div>'
     + ((a.status === 'Hard Yes' || a.status === 'Needs Call') ? '<div class="edit-row"><label class="wa-check"><input type="checkbox" onchange="updateField('+a.row+',\'whatsappSent\',this.checked?\'Yes\':\'\')"'+(a.whatsappSent==='Yes'?' checked':'')+'>Personal Video Sent</label></div>' : '')
-    + '<div class="edit-row notes-row"><label>Notes</label><textarea onblur="updateField('+a.row+',\'notes\',this.value)">'+esc(a.notes||'')+'</textarea></div>'
+    + '<div class="edit-row notes-row"><label>Notes</label><textarea id="sel-notes-'+a.row+'" onblur="updateField('+a.row+',\'notes\',document.getElementById(\'sel-notes-'+a.row+'\').value)">'+esc(a.notes||'')+'</textarea></div>'
+    + '<button class="save-btn" id="save-btn-'+a.row+'" onclick="saveCardChanges('+a.row+')">Save Changes</button>'
     + '</div>'
 
     + addonHtml
@@ -1258,27 +1281,76 @@ function toggleCard(row) {
   if (card) card.classList.toggle('expanded', state.expandedCards[row]);
 }
 
-async function updateField(row, field, value) {
-  // Optimistic update
+/**
+ * Save all changed fields for a card via the Save button.
+ * Reads current values from the dropdowns and sends them all at once.
+ */
+async function saveCardChanges(row) {
   var a = state.applicants.find(function(x){return x.row === row;});
-  if (a) {
-    a[field] = value;
-    if (field === 'status') {
-      var badge = document.querySelector('[data-row="'+row+'"] .status-badge');
-      if (badge) {
-        var sc = STATUS_COLORS[value] || {bg:'#efefef',fg:'#999'};
-        badge.style.background = sc.bg;
-        badge.style.color = sc.fg;
-        badge.style.boxShadow = value === 'Hard Yes' ? 'inset 0 0 0 2px #274e13' : 'none';
-        badge.textContent = value;
-      }
-      var card = document.querySelector('[data-row="'+row+'"]');
-      if (card) card.dataset.status = value;
-      renderFilterChips();
-      // Re-render card to show/hide Personal Video Sent
-      renderCards();
-    }
+  if (!a) return;
+
+  var statusEl = document.getElementById('sel-status-' + row);
+  var accomEl = document.getElementById('sel-accom-' + row);
+  var priceEl = document.getElementById('sel-price-' + row);
+  var scholarshipEl = document.getElementById('sel-scholarship-' + row);
+  var btn = document.getElementById('save-btn-' + row);
+
+  var fields = {};
+  var newStatus = statusEl ? statusEl.value : a.status;
+  var newAccom = accomEl ? accomEl.value : a.accommodation;
+  var newPrice = priceEl ? priceEl.value : a.priceType;
+  var newScholarship = scholarshipEl ? scholarshipEl.value : (a.scholarship || '');
+
+  if (newStatus !== a.status) fields.status = newStatus;
+  if (newAccom !== a.accommodation) fields.accommodation = newAccom;
+  if (newPrice !== a.priceType) fields.priceType = newPrice;
+  if (newScholarship !== String(a.scholarship || '')) fields.scholarship = newScholarship;
+
+  if (Object.keys(fields).length === 0) {
+    showToast('No changes to save', 'warning');
+    return;
   }
+
+  // Disable button while saving
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+  // Optimistic update
+  for (var k in fields) a[k] = fields[k];
+
+  if (fields.status) {
+    var badge = document.querySelector('[data-row="'+row+'"] .status-badge');
+    if (badge) {
+      var sc = STATUS_COLORS[fields.status] || {bg:'#efefef',fg:'#999'};
+      badge.style.background = sc.bg;
+      badge.style.color = sc.fg;
+      badge.style.boxShadow = fields.status === 'Hard Yes' ? 'inset 0 0 0 2px #274e13' : 'none';
+      badge.textContent = fields.status;
+    }
+    var card = document.querySelector('[data-row="'+row+'"]');
+    if (card) card.dataset.status = fields.status;
+    renderFilterChips();
+  }
+
+  var result = await apiPost('updateApplicant', { row: row, fields: fields });
+  if (result && result.ok) {
+    showToast('Changes saved', 'success');
+    if (btn) { btn.textContent = 'Saved!'; btn.classList.add('saved'); }
+    setTimeout(function(){ if (btn) { btn.textContent = 'Save Changes'; btn.classList.remove('saved'); btn.disabled = false; }}, 1500);
+  } else if (result && result.error) {
+    showToast('Error: ' + result.error, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; }
+  } else if (!result) {
+    showToast('Saved offline — will sync when connected', 'warning');
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; }
+  }
+}
+
+/**
+ * Update a single field immediately (used for notes onblur and whatsapp checkbox).
+ */
+async function updateField(row, field, value) {
+  var a = state.applicants.find(function(x){return x.row === row;});
+  if (a) a[field] = value;
 
   var result = await apiPost('updateApplicant', { row: row, fields: (function(){var o={};o[field]=value;return o;})() });
   if (result && result.ok) {
