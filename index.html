@@ -398,22 +398,11 @@ body {
 }
 
 .card-header {
-  display: flex; align-items: center;
-  padding: 14px 14px;
-  cursor: pointer; gap: 10px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px;
+  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-}
-
-.status-badge {
-  font-size: 10px; font-weight: 600;
-  padding: 4px 10px;
-  border-radius: var(--radius-pill);
-  white-space: nowrap;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  flex-shrink: 0;
-  transition: all 0.3s;
 }
 
 .card-info { flex: 1; min-width: 0; }
@@ -428,15 +417,19 @@ body {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-.card-chevron {
+.status-badge {
+  font-size: 10px; font-weight: 600;
+  padding: 4px 0;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
   flex-shrink: 0;
-  width: 20px; height: 20px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-muted);
-  transition: transform 0.35s var(--ease-out);
-  font-size: 12px;
+  width: 140px;
+  text-align: center;
+  margin-left: 12px;
+  transition: all 0.3s;
 }
-.card.expanded .card-chevron { transform: rotate(180deg); }
 
 .card-body {
   max-height: 0; overflow: hidden;
@@ -1110,12 +1103,11 @@ function renderCard(a) {
 
   return '<article class="card'+expanded+'" data-row="'+a.row+'" data-status="'+esc(a.status)+'">'
     + '<div class="card-header" onclick="toggleCard('+a.row+')">'
-    + '<span class="status-badge" style="background:'+sc.bg+';color:'+sc.fg+'">'+esc(a.status)+'</span>'
     + '<div class="card-info">'
     + '<div class="card-name">'+name+'</div>'
     + '<div class="card-meta">'+meta+'</div>'
     + '</div>'
-    + '<span class="card-chevron">&#9662;</span>'
+    + '<span class="status-badge" style="background:'+sc.bg+';color:'+sc.fg+'">'+esc(a.status)+'</span>'
     + '</div>'
     + '<div class="card-body"><div class="card-body-inner">'
 
