@@ -595,14 +595,15 @@ body {
 </head>
 <body>
 
-<!-- CONFIG OVERLAY -->
+<!-- LOGIN OVERLAY -->
 <div class="config-overlay" id="configOverlay">
   <div class="config-card">
     <img src="drsti.png" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;margin-bottom:12px">
     <h1>Dṛṣṭi</h1>
     <p class="subtitle">retreat management</p>
-    <input type="url" id="configUrl" placeholder="Apps Script Web App URL" autocomplete="off" spellcheck="false">
-    <button onclick="saveConfig()">Connect</button>
+    <input type="password" id="configPassword" placeholder="Password" autocomplete="off" spellcheck="false">
+    <div id="loginError" style="color:#990000;font-size:12px;margin-top:8px;display:none">Incorrect password</div>
+    <button onclick="saveConfig()">Enter</button>
   </div>
 </div>
 
@@ -644,7 +645,9 @@ body {
 
 <script>
 // ── CONFIG ──
-var API_URL = localStorage.getItem('drsti_api_url') || '';
+var API_URL = 'https://script.google.com/macros/s/AKfycbxacNOKceRasLfoQCY_HWTjub-A4grydmZq6Iqff_vs8qApdQKC10W05rnjoeP8O6pu/exec';
+var DASHBOARD_PASSWORD = 'tcot2026';
+var isAuthenticated = localStorage.getItem('drsti_auth') === 'true';
 var POLL_INTERVAL = 45000;
 var pollTimer = null;
 var toastTimer = null;
@@ -711,9 +714,12 @@ function getAccommodations() {
 document.addEventListener('DOMContentLoaded', function() {
   renderRetreatBar();
 
-  if (!API_URL) {
+  if (!isAuthenticated) {
     document.getElementById('configOverlay').classList.remove('hidden');
     document.getElementById('loadingOverlay').classList.add('hidden');
+    document.getElementById('configPassword').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') saveConfig();
+    });
   } else {
     document.getElementById('configOverlay').classList.add('hidden');
     loadAll();
@@ -738,10 +744,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function saveConfig() {
-  var url = document.getElementById('configUrl').value.trim();
-  if (!url) return;
-  localStorage.setItem('drsti_api_url', url);
-  API_URL = url;
+  var pw = document.getElementById('configPassword').value.trim();
+  if (pw !== DASHBOARD_PASSWORD) {
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+  localStorage.setItem('drsti_auth', 'true');
+  isAuthenticated = true;
   document.getElementById('configOverlay').classList.add('hidden');
   loadAll();
   startPolling();
