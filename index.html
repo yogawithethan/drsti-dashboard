@@ -793,7 +793,7 @@ var STATUS_COLORS = {
   'Maybe Next Year':      {bg:'#fce5cd',fg:'#783f04'},
   'Ghosted':              {bg:'#d9d9d9',fg:'#666666'},
   'Cancelled':            {bg:'#ea9999',fg:'#990000'},
-  'Other':                {bg:'#efefef',fg:'#999999'}
+  'Other':                {bg:'#1a1a1a',fg:'#ffffff'}
 };
 
 var PRICE_TYPES = ['','Payment Plan','Pay Full','EB Plan','EB Full'];
@@ -1063,7 +1063,7 @@ function renderCard(a) {
   var sc = STATUS_COLORS[a.status] || {bg:'#efefef',fg:'#999'};
   var expanded = state.expandedCards[a.row] ? ' expanded' : '';
   var name = esc(a.firstName + ' ' + a.lastName);
-  var meta = esc(a.country || '—') + ' &middot; ' + timeAgo(a.timestamp);
+  var meta = esc(countryName(a.country)) + ' &middot; ' + timeAgo(a.timestamp);
 
   // Addons
   var addons = [];
@@ -1123,7 +1123,7 @@ function renderCard(a) {
     + '<div class="card-name">'+name+'</div>'
     + '<div class="card-meta">'+meta+'</div>'
     + '</div>'
-    + '<span class="status-badge" style="background:'+sc.bg+';color:'+sc.fg+'">'+esc(a.status)+'</span>'
+    + '<span class="status-badge" style="background:'+sc.bg+';color:'+sc.fg+(a.status==='Hard Yes'?';box-shadow:inset 0 0 0 2px #274e13':'')+'">'+ esc(a.status)+'</span>'
     + '</div>'
     + '<div class="card-body"><div class="card-body-inner">'
 
@@ -1215,6 +1215,7 @@ async function updateField(row, field, value) {
         var sc = STATUS_COLORS[value] || {bg:'#efefef',fg:'#999'};
         badge.style.background = sc.bg;
         badge.style.color = sc.fg;
+        badge.style.boxShadow = value === 'Hard Yes' ? 'inset 0 0 0 2px #274e13' : 'none';
         badge.textContent = value;
       }
       var card = document.querySelector('[data-row="'+row+'"]');
@@ -1327,6 +1328,21 @@ function esc(str) {
 
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1).replace(/([A-Z])/g, ' $1');
+}
+
+var _countryNames = (function(){
+  try { return new Intl.DisplayNames(['en'], {type:'region'}); } catch(e) { return null; }
+})();
+function countryName(val) {
+  if (!val) return '—';
+  var s = String(val).trim();
+  // If it's a 2-letter code, convert it
+  if (s.length === 2 && /^[A-Z]{2}$/i.test(s)) {
+    if (_countryNames) {
+      try { return _countryNames.of(s.toUpperCase()); } catch(e) {}
+    }
+  }
+  return s;
 }
 </script>
 </body>
