@@ -798,29 +798,69 @@ var STATUS_COLORS = {
 
 var PRICE_TYPES = ['','Payment Plan','Pay Full','EB Plan','EB Full'];
 
-// ── RETREATS ──
-var RETREATS = {
-  'tcot-pt-2026': {
-    label: 'Portugal 2026',
-    accommodations: ['','Triple','Double','Glamping']
-  }
-  // Future example:
-  // 'tcot-bali-2027': {
-  //   label: 'Bali 2027',
-  //   accommodations: ['','Single Villa','Shared Villa','Garden Bungalow']
-  // }
-};
-var RETREAT_IDS = Object.keys(RETREATS);
-var activeRetreat = localStorage.getItem('drsti_active_retreat') || RETREAT_IDS[0];
+// ── RETREATS (loaded from API) ──
+var RETREATS = {};
+var RETREAT_IDS = [];
+var RETREAT_META = {}; // keyed by retreatId: { config, accommodations, addons, priceTypes }
+var activeRetreat = localStorage.getItem('drsti_active_retreat') || '';
 
 function getAccommodations() {
-  return (RETREATS[activeRetreat] || RETREATS[RETREAT_IDS[0]]).accommodations;
+  var meta = RETREAT_META[activeRetreat];
+  if (meta && meta.accommodations) {
+    var names = [''];
+    for (var i = 0; i < meta.accommodations.length; i++) {
+      names.push(meta.accommodations[i].name);
+    }
+    return names;
+  }
+  return ['','Triple','Double','Glamping']; // fallback
+}
+
+async function loadRetreats() {
+  var data = await apiGet('getRetreats');
+  if (data && data.ok && data.retreats && data.retreats.length > 0) {
+    RETREATS = {};
+    RETREAT_IDS = [];
+    for (var i = 0; i < data.retreats.length; i++) {
+      var r = data.retreats[i];
+      RETREATS[r.retreatId] = { label: r.label, retreatId: r.retreatId };
+      RETREAT_IDS.push(r.retreatId);
+    }
+    localStorage.setItem('drsti_cache_retreats', JSON.stringify(RETREATS));
+  } else {
+    var cached = localStorage.getItem('drsti_cache_retreats');
+    if (cached) {
+      RETREATS = JSON.parse(cached);
+      RETREAT_IDS = Object.keys(RETREATS);
+    }
+    if (RETREAT_IDS.length === 0) {
+      RETREATS = { 'tcot-pt-2026': { label: 'Portugal 2026', retreatId: 'tcot-pt-2026' } };
+      RETREAT_IDS = ['tcot-pt-2026'];
+    }
+  }
+  if (!activeRetreat || RETREAT_IDS.indexOf(activeRetreat) === -1) {
+    activeRetreat = RETREAT_IDS[0];
+  }
+}
+
+async function loadRetreatMeta(retreatId) {
+  var data = await apiGet('getRetreatMeta', retreatId);
+  if (data && data.ok) {
+    RETREAT_META[retreatId] = {
+      config: data.config,
+      accommodations: data.accommodations,
+      addons: data.addons,
+      priceTypes: data.priceTypes
+    };
+    localStorage.setItem('drsti_cache_meta_' + retreatId, JSON.stringify(RETREAT_META[retreatId]));
+  } else {
+    var cached = localStorage.getItem('drsti_cache_meta_' + retreatId);
+    if (cached) RETREAT_META[retreatId] = JSON.parse(cached);
+  }
 }
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', function() {
-  renderRetreatBar();
-
   if (!isAuthenticated) {
     document.getElementById('configOverlay').classList.remove('hidden');
     document.getElementById('loadingOverlay').classList.add('hidden');
@@ -829,8 +869,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   } else {
     document.getElementById('configOverlay').classList.add('hidden');
-    loadAll();
-    startPolling();
+    initDashboard();
   }
 
   // Sticky header shadow
@@ -850,6 +889,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
+async function initDashboard() {
+  await loadRetreats();
+  renderRetreatBar();
+  await loadRetreatMeta(activeRetreat);
+  await loadAll();
+  startPolling();
+}
+
 function saveConfig() {
   var pw = document.getElementById('configPassword').value.trim();
   if (pw !== DASHBOARD_PASSWORD) {
@@ -859,8 +906,7 @@ function saveConfig() {
   localStorage.setItem('drsti_auth', 'true');
   isAuthenticated = true;
   document.getElementById('configOverlay').classList.add('hidden');
-  loadAll();
-  startPolling();
+  initDashboard();
 }
 
 // ── SYNC STATUS ──
@@ -900,13 +946,15 @@ async function flushPendingQueue() {
 }
 
 // ── API ──
-async function apiGet(action) {
+async function apiGet(action, retreatId) {
   try {
-    var resp = await fetch(API_URL + '?action=' + action);
+    var url = API_URL + '?action=' + action;
+    if (retreatId) url += '&retreatId=' + encodeURIComponent(retreatId);
+    var resp = await fetch(url);
     var data = await resp.json();
     if (data) {
       setSyncStatus(true);
-      flushPendingQueue(); // Try to push any pending changes
+      flushPendingQueue();
     }
     return data;
   } catch(e) {
@@ -941,23 +989,27 @@ async function loadAll() {
   var showLoader = state.applicants.length === 0;
   if (showLoader) document.getElementById('loadingOverlay').classList.remove('hidden');
 
-  var results = await Promise.all([apiGet('getApplicants'), apiGet('getInventory')]);
+  var rid = activeRetreat;
+  var results = await Promise.all([
+    apiGet('getApplicants', rid),
+    apiGet('getInventory', rid)
+  ]);
   var appData = results[0], invData = results[1];
 
   if (appData && appData.ok) {
     state.applicants = appData.applicants;
     state.lastFetch = appData.ts;
-    localStorage.setItem('drsti_cache_app', JSON.stringify(appData.applicants));
+    localStorage.setItem('drsti_cache_app_' + rid, JSON.stringify(appData.applicants));
   } else {
-    var c = localStorage.getItem('drsti_cache_app');
+    var c = localStorage.getItem('drsti_cache_app_' + rid);
     if (c) state.applicants = JSON.parse(c);
   }
 
   if (invData && invData.ok) {
     state.inventory = invData.inventory;
-    localStorage.setItem('drsti_cache_inv', JSON.stringify(invData.inventory));
+    localStorage.setItem('drsti_cache_inv_' + rid, JSON.stringify(invData.inventory));
   } else {
-    var c = localStorage.getItem('drsti_cache_inv');
+    var c = localStorage.getItem('drsti_cache_inv_' + rid);
     if (c) state.inventory = JSON.parse(c);
   }
 
@@ -1015,15 +1067,17 @@ function renderRetreatBar() {
   bar.innerHTML = html;
 }
 
-function switchRetreat(retreatId) {
+async function switchRetreat(retreatId) {
   if (retreatId === activeRetreat) return;
   activeRetreat = retreatId;
   localStorage.setItem('drsti_active_retreat', retreatId);
   renderRetreatBar();
-  renderCards(); // Re-render cards with new accommodation options
-  showToast('Switched to ' + RETREATS[retreatId].label, 'success');
-  // When multi-retreat API support is added, call loadAll() here
-  // to fetch data from the other retreat's spreadsheet
+  // Load retreat meta if not cached, then reload all data
+  if (!RETREAT_META[retreatId]) {
+    await loadRetreatMeta(retreatId);
+  }
+  await loadAll();
+  showToast('Switched to ' + (RETREATS[retreatId] ? RETREATS[retreatId].label : retreatId), 'success');
 }
 
 // ── RENDER: FILTER CHIPS ──
