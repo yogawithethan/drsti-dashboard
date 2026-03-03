@@ -1,4 +1,4 @@
-var CACHE_NAME = 'drsti-v6';
+var CACHE_NAME = 'drsti-v7';
 var SHELL_FILES = ['index.html', 'manifest.json', 'drsti.png', 'tcot-logo-gold.jpg'];
 
 self.addEventListener('install', function(e) {
