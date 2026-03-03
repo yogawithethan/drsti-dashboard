@@ -986,13 +986,24 @@ async function apiPost(action, body, isRetry) {
   try {
     var resp = await fetch(API_URL + '?action=' + action, {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(body)
+      headers: {'Content-Type':'text/plain'},
+      body: JSON.stringify(body),
+      redirect: 'follow'
     });
-    var data = await resp.json();
-    setSyncStatus(true);
-    return data;
+    var text = await resp.text();
+    try {
+      var data = JSON.parse(text);
+      setSyncStatus(true);
+      return data;
+    } catch(parseErr) {
+      // Apps Script returned HTML error page instead of JSON
+      console.error('API POST returned non-JSON:', text.substring(0, 300));
+      var match = text.match(/margin:50px[^>]*>([^<]+)</);
+      var errMsg = match ? match[1] : 'Server returned an error';
+      return { error: errMsg };
+    }
   } catch(e) {
+    console.error('API POST network error:', e);
     if (!isRetry) {
       pendingQueue.push({ action: action, body: body });
       savePendingQueue();
