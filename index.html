@@ -152,6 +152,37 @@ body {
   border-radius: 50%;
   object-fit: cover;
 }
+.header-right {
+  display: flex; align-items: center; gap: 10px;
+}
+.tcot-link {
+  position: relative; display: block;
+  width: 40px; height: 40px;
+  border-radius: 12px; overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(45,42,38,0.08);
+  transition: filter 0.2s, box-shadow 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+.tcot-link img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.tcot-link:hover {
+  filter: brightness(1.08);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+.tcot-link:active { transform: scale(0.96); }
+.tcot-link .ext-arrow {
+  position: absolute; bottom: 2px; right: 2px;
+  width: 14px; height: 14px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+}
+.tcot-link .ext-arrow svg {
+  width: 9px; height: 9px; fill: var(--text-secondary);
+}
 .header-meta {
   font-size: 11px; color: var(--text-muted);
   text-align: right; line-height: 1.4;
@@ -665,10 +696,16 @@ body {
       <img src="drsti.png" alt="" class="brand-logo">Dṛṣṭi Dashboard
       <span id="retreatBar"></span>
     </div>
-    <div class="header-meta">
-      <div class="sync-status synced" id="syncStatus"><span class="sync-dot"></span> Synced</div>
-      <button class="refresh-btn" onclick="loadAll()">Refresh</button>
-      <div id="lastUpdated"></div>
+    <div class="header-right">
+      <a href="https://thecourseoftransformation.com" target="_blank" class="tcot-link" title="The Course of Transformation">
+        <img src="tcot-logo-gold.jpg" alt="TCOT">
+        <span class="ext-arrow"><svg viewBox="0 0 24 24"><path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h5V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-5h-2v5H5V5z"/></svg></span>
+      </a>
+      <div class="header-meta">
+        <div class="sync-status synced" id="syncStatus"><span class="sync-dot"></span> Synced</div>
+        <button class="refresh-btn" onclick="loadAll()">Refresh</button>
+        <div id="lastUpdated"></div>
+      </div>
     </div>
   </div>
   <div class="inv-strip" id="invStrip"></div>
