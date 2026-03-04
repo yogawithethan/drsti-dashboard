@@ -421,6 +421,11 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .cards {
   padding: 8px 12px 80px;
 }
+.cards-divider {
+  height: 1px;
+  background: rgba(45,42,38,0.1);
+  margin: 16px 4px;
+}
 .cards-empty {
   text-align: center;
   padding: 60px 24px;
@@ -1769,23 +1774,34 @@ function renderFilterSummary() {
       labels.push(f);
     }
   });
-  var list = getFilteredSorted();
-  el.innerHTML = '<strong>Filtered by:</strong> ' + labels.map(esc).join(', ') + ' &middot; ' + list.length + ' applicant' + (list.length !== 1 ? 's' : '');
+  var result = getFilteredSorted();
+  var count = result.active.length + result.archived.length;
+  el.innerHTML = '<strong>Filtered by:</strong> ' + labels.map(esc).join(', ') + ' &middot; ' + count + ' applicant' + (count !== 1 ? 's' : '');
 }
 
 // ── RENDER: CARDS ──
 function renderCards() {
   var container = document.getElementById('cardsContainer');
-  var list = getFilteredSorted();
+  var result = getFilteredSorted();
+  var active = result.active;
+  var archived = result.archived;
 
-  if (list.length === 0) {
+  if (active.length === 0 && archived.length === 0) {
     container.innerHTML = '<div class="cards-empty"><img src="drsti.png" alt="" style="width:48px;height:48px;border-radius:50%;opacity:0.6;margin-bottom:8px">No applicants found</div>';
     return;
   }
 
   var html = '';
-  for (var i = 0; i < list.length; i++) {
-    html += renderCard(list[i]);
+  for (var i = 0; i < active.length; i++) {
+    html += renderCard(active[i]);
+  }
+  if (archived.length > 0) {
+    if (active.length > 0) {
+      html += '<div class="cards-divider"></div>';
+    }
+    for (var i = 0; i < archived.length; i++) {
+      html += renderCard(archived[i]);
+    }
   }
   container.innerHTML = html;
 }
@@ -2438,6 +2454,8 @@ function matchesSmartFilter(a, filterId) {
   return false;
 }
 
+var ARCHIVED_STATUSES = ['Not Aligned', 'No Longer Interested', 'Maybe Next Year', 'Cancelled'];
+
 function getFilteredSorted() {
   var list = state.applicants;
   if (state.activeFilters.length > 0) {
@@ -2468,13 +2486,18 @@ function getFilteredSorted() {
     });
   }
   list = list.slice();
+  // Sort active and archived separately, then combine
+  var active = list.filter(function(a) { return ARCHIVED_STATUSES.indexOf(a.status) === -1; });
+  var archived = list.filter(function(a) { return ARCHIVED_STATUSES.indexOf(a.status) !== -1; });
+  var sortFn;
   switch(state.sortBy) {
-    case 'newest': list.sort(function(a,b){return new Date(b.timestamp)-new Date(a.timestamp);}); break;
-    case 'oldest': list.sort(function(a,b){return new Date(a.timestamp)-new Date(b.timestamp);}); break;
-    case 'name': list.sort(function(a,b){return (a.firstName+a.lastName).localeCompare(b.firstName+b.lastName);}); break;
-    case 'status': list.sort(function(a,b){return STATUSES.indexOf(a.status)-STATUSES.indexOf(b.status);}); break;
+    case 'newest': sortFn = function(a,b){return new Date(b.timestamp)-new Date(a.timestamp);}; break;
+    case 'oldest': sortFn = function(a,b){return new Date(a.timestamp)-new Date(b.timestamp);}; break;
+    case 'name': sortFn = function(a,b){return (a.firstName+a.lastName).localeCompare(b.firstName+b.lastName);}; break;
+    case 'status': sortFn = function(a,b){return STATUSES.indexOf(a.status)-STATUSES.indexOf(b.status);}; break;
   }
-  return list;
+  if (sortFn) { active.sort(sortFn); archived.sort(sortFn); }
+  return { active: active, archived: archived };
 }
 
 // ── HELPERS ──
