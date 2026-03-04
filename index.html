@@ -834,6 +834,21 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   line-height: 1.65; color: var(--text);
   background: var(--bg); resize: none;
 }
+.merge-tag-ref {
+  padding: 0 16px 8px; font-size: 12px; color: var(--text-muted);
+}
+.merge-tag-ref summary {
+  cursor: pointer; font-weight: 500; padding: 4px 0;
+  user-select: none; color: var(--text-secondary);
+}
+.merge-tag-grid {
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0 4px;
+}
+.merge-tag-grid code {
+  padding: 3px 8px; border-radius: 4px; font-size: 11px;
+  background: rgba(45,42,38,0.06); cursor: pointer; transition: background 0.15s;
+}
+.merge-tag-grid code:hover { background: rgba(45,42,38,0.12); }
 .email-modal-footer {
   display: flex; align-items: center; justify-content: flex-end;
   gap: 10px; padding: 12px 16px;
@@ -1376,6 +1391,27 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
       <div class="email-modal-preview" id="emailModalPreview"></div>
       <textarea class="email-modal-textarea" id="emailModalTextarea" style="display:none;"></textarea>
     </div>
+    <details class="merge-tag-ref">
+      <summary>Merge Tags Reference</summary>
+      <div class="merge-tag-grid">
+        <code onclick="insertMergeTag('first_name')">{{first_name}}</code>
+        <code onclick="insertMergeTag('full_name')">{{full_name}}</code>
+        <code onclick="insertMergeTag('retreat_name')">{{retreat_name}}</code>
+        <code onclick="insertMergeTag('country')">{{country}}</code>
+        <code onclick="insertMergeTag('city')">{{city}}</code>
+        <code onclick="insertMergeTag('venue_name')">{{venue_name}}</code>
+        <code onclick="insertMergeTag('retreat_dates')">{{retreat_dates}}</code>
+        <code onclick="insertMergeTag('retreat_month')">{{retreat_month}}</code>
+        <code onclick="insertMergeTag('deposit_amount')">{{deposit_amount}}</code>
+        <code onclick="insertMergeTag('deposit_link')">{{deposit_link}}</code>
+        <code onclick="insertMergeTag('cal_link')">{{cal_link}}</code>
+        <code onclick="insertMergeTag('open_spots')">{{open_spots}}</code>
+        <code onclick="insertMergeTag('accommodation')">{{accommodation}}</code>
+        <code onclick="insertMergeTag('payment_summary')">{{payment_summary}}</code>
+        <code onclick="insertMergeTag('price_plan')">{{price_plan}}</code>
+        <code onclick="insertMergeTag('price_full')">{{price_full}}</code>
+      </div>
+    </details>
     <div class="email-modal-footer">
       <button class="email-modal-cancel" onclick="closeEmailModal()">Cancel</button>
       <button class="email-modal-send" id="emailModalSendBtn" onclick="sendEmailFromModal()">Send Email</button>
@@ -1471,6 +1507,14 @@ var EMAIL_TEMPLATES_JS = {
   'needs-call': {
     subject: 'About your Course application \ud83d\ude4f\ud83c\udffb',
     body: '{{first_name}},\n\nThank you for applying to *{{retreat_name}}*. We\'ve read through your application carefully and we\'d love to connect before moving forward.\n\nThere\'s nothing to be concerned about \ud83d\ude0c \u2014 we simply find that a short conversation makes all the difference. It lets us answer your questions, understand where you are on your path, and make sure *The Course* is the right fit for this moment in your life.\n\n**We\'d love to book a free 20-minute call with Gabi and Ethan:**\n\n\ud83d\udcde [Choose a time \u2192]({{cal_link}})\n\nSpots for {{country}} are filling up, so we\'d love to connect with you this week if possible.\n\nIn the meantime, if anything comes to mind \u2014 questions about the schedule, the food, what to expect \u2014 just reply here. We\'re real people on the other end of this email and genuinely happy to help.\n\nWith love,\nEthan & Gabi \u0950\n\n*{{retreat_name}} \u00b7 {{retreat_dates}} \u00b7 {{venue_name}}, {{city}}, {{country}}*'
+  },
+  'waitlist': {
+    subject: 'Hey, about your Course application \ud83d\ude4f\ud83c\udffb',
+    body: '{{first_name}},\n\nThank you so much for applying to *{{retreat_name}}*. It means a lot that you felt called to reach out.\n\nWe\'ve reviewed your application and at this stage, the remaining spots have been offered to applicants a little further along in the process. We\'d love to place you on the waitlist for {{country}} \u2014 spots do open up, and when they do, waitlisted applicants are the first to know.\n\nWe\'ll be in touch the moment anything changes. \ud83c\udf3f\n\nIf you\'d prefer not to stay on the waitlist, just reply to this email and let us know \u2014 no problem at all, no explanation needed. Otherwise, consider yourself held.\n\nWith love,\nEthan & Gabi \u0950\n\n*{{retreat_name}} \u00b7 {{retreat_dates}} \u00b7 {{venue_name}}, {{city}}, {{country}}*\n*Questions? Just reply to this email.*'
+  },
+  'not-aligned': {
+    subject: 'Your Course application \ud83d\ude4f\ud83c\udffb',
+    body: '{{first_name}},\n\nThank you for the time and honesty you put into your application.\n\nAfter careful reflection, we don\'t feel that *The Course* is the right fit right now. This isn\'t a judgement of your path or your readiness \u2014 it\'s simply our honest sense that the timing or the container may not be what serves you most in this moment.\n\nThe fact that you\'re asking deep questions, that you\'re seeking something real \u2014 that matters. That impulse will take you far.\n\nWe wish you every grace on the journey ahead. \ud83c\udf3f\n\nWith love,\nEthan & Gabi \u0950\n\n*{{retreat_name}} \u00b7 {{retreat_dates}} \u00b7 {{venue_name}}, {{city}}, {{country}}*'
   }
 };
 
@@ -1997,6 +2041,21 @@ function renderCard(a) {
     + '<div class="offer-email-box"><div class="'+noteClass+'">'+noteText+'</div></div>'
     + sendBtnHtml + '</div>';
 
+  // Status-based email (Waitlist, Not Aligned) — compose available without accommodation/price
+  var statusEmailStatuses = { 'Waitlist': 'waitlist', 'Not Aligned': 'not-aligned' };
+  var statusEmailHtml = '';
+  var statusTemplateKey = statusEmailStatuses[a.status];
+  if (statusTemplateKey && !offerSent) {
+    statusEmailHtml = '<div class="divider"></div>'
+      + '<div><div class="slabel">' + esc(a.status) + ' Email</div>'
+      + '<div class="offer-email-box"><div class="offer-email-note ready">&#10003; Template ready</div></div>'
+      + '<button class="btn-send-email" onclick="openEmailModal('+a.row+')">&#9993; Compose &amp; Send Email</button></div>';
+  } else if (statusTemplateKey && offerSent) {
+    statusEmailHtml = '<div class="divider"></div>'
+      + '<div><div class="slabel">' + esc(a.status) + ' Email</div>'
+      + '<div class="offer-email-box"><div class="offer-email-note sent">&#10003; Email sent ' + formatDate(a.emailSent) + '</div></div></div>';
+  }
+
   // Room preference
   var roomPref = a.roomPlan || a.roomFull || a.roomEB || a.roomEBFull || '—';
 
@@ -2039,6 +2098,7 @@ function renderCard(a) {
     + '<div id="status-extras-'+a.row+'" style="'+(showStatusExtras?'':'display:none;')+'">'
     + offerHtml
     + '</div>'
+    + statusEmailHtml
     + '<div class="field"><div class="field-label">Notes</div><textarea id="sel-notes-'+a.row+'" rows="3" oninput="markCardChanged('+a.row+')" placeholder="Internal notes...">'+esc(a.notes||'')+'</textarea></div>'
     + '</div></div></div>'
 
@@ -2231,7 +2291,8 @@ function formatNumberPlain(num) {
 }
 
 function resolveEmailTemplate(a) {
-  var templateKey = (a.status === 'Hard Yes') ? 'hard-yes' : 'needs-call';
+  var STATUS_TEMPLATE_MAP = { 'Hard Yes': 'hard-yes', 'Needs Call': 'needs-call', 'Waitlist': 'waitlist', 'Not Aligned': 'not-aligned' };
+  var templateKey = STATUS_TEMPLATE_MAP[a.status] || 'hard-yes';
   var tpl = EMAIL_TEMPLATES_JS[templateKey];
   if (!tpl) return { subject: '', body: '' };
 
@@ -2341,6 +2402,18 @@ function openEmailModal(row) {
 function closeEmailModal() {
   document.getElementById('emailModal').classList.add('hidden');
   emailModalRow = null;
+}
+
+function insertMergeTag(tag) {
+  var textarea = document.getElementById('emailModalTextarea');
+  var val = '{{' + tag + '}}';
+  // Switch to edit mode if in preview
+  if (textarea.style.display === 'none') toggleEmailView('edit');
+  var start = textarea.selectionStart;
+  var end = textarea.selectionEnd;
+  textarea.value = textarea.value.substring(0, start) + val + textarea.value.substring(end);
+  textarea.selectionStart = textarea.selectionEnd = start + val.length;
+  textarea.focus();
 }
 
 function toggleEmailView(mode) {
@@ -3022,19 +3095,23 @@ async function sendBulkEmailFromModal() {
   sendBtn.disabled = false;
   progress.textContent = '';
 
+  console.log('Bulk email result:', result);
+  var banner = document.getElementById('emailModalBanner');
   if (result && result.ok) {
     var sent = result.sent || rows.length;
     var failed = result.failed || 0;
+    var errList = result.errors && result.errors.length ? result.errors : [];
     showToast('Bulk email sent to ' + sent + ' applicants' + (failed > 0 ? ' (' + failed + ' failed)' : ''), 'success');
     closeEmailModal();
-    // Reset bulk mode
     toggleBulkMode();
     loadAll();
-  } else if (result && result.error) {
-    showToast('Error: ' + result.error, 'error');
-    sendBtn.textContent = 'Retry Send';
   } else {
-    showToast('Failed to send — check connection', 'error');
+    var errMsg = (result && result.error) ? result.error : 'Failed to send — check connection';
+    banner.textContent = 'Error: ' + errMsg;
+    banner.style.background = '#fef2f2';
+    banner.style.color = '#b91c1c';
+    banner.classList.remove('hidden');
+    showToast('Error: ' + errMsg, 'error');
     sendBtn.textContent = 'Retry Send';
   }
 }
