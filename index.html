@@ -837,10 +837,6 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .merge-tag-ref {
   padding: 0 16px 8px; font-size: 12px; color: var(--text-muted);
 }
-.merge-tag-ref summary {
-  cursor: pointer; font-weight: 500; padding: 4px 0;
-  user-select: none; color: var(--text-secondary);
-}
 .merge-tag-grid {
   display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0 4px;
 }
@@ -1391,8 +1387,8 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
       <div class="email-modal-preview" id="emailModalPreview"></div>
       <textarea class="email-modal-textarea" id="emailModalTextarea" style="display:none;"></textarea>
     </div>
-    <details class="merge-tag-ref">
-      <summary>Merge Tags Reference</summary>
+    <div class="merge-tag-ref">
+      <div style="font-weight:500;color:var(--text-secondary);padding:4px 0;">Merge Tags <span style="font-weight:400;color:var(--text-muted);">— click to insert</span></div>
       <div class="merge-tag-grid">
         <code onclick="insertMergeTag('first_name')">{{first_name}}</code>
         <code onclick="insertMergeTag('full_name')">{{full_name}}</code>
@@ -1411,7 +1407,7 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
         <code onclick="insertMergeTag('price_plan')">{{price_plan}}</code>
         <code onclick="insertMergeTag('price_full')">{{price_full}}</code>
       </div>
-    </details>
+    </div>
     <div class="email-modal-footer">
       <button class="email-modal-cancel" onclick="closeEmailModal()">Cancel</button>
       <button class="email-modal-send" id="emailModalSendBtn" onclick="sendEmailFromModal()">Send Email</button>
@@ -1701,12 +1697,13 @@ async function apiUpdate(action, body, isRetry) {
     }
   } catch(e) {
     console.error('API update network error:', e);
-    if (!isRetry) {
+    // Never queue email sends — avoid accidental re-sends
+    if (!isRetry && action !== 'sendCustomEmail' && action !== 'sendBulkEmail') {
       pendingQueue.push({ action: action, body: body });
       savePendingQueue();
       setSyncStatus(false);
     }
-    return null;
+    return { error: 'Network error: ' + (e.message || 'request failed'), networkError: true };
   }
 }
 
@@ -2454,10 +2451,9 @@ async function sendEmailFromModal() {
     if (a) a.emailSent = new Date().toISOString();
     closeEmailModal();
     rerenderSingleCard(emailModalRow);
-  } else if (result && result.error) {
-    showToast('Error: ' + result.error, 'error');
-  } else if (!result) {
-    showToast('Failed to send — check connection', 'error');
+  } else {
+    var errMsg = (result && result.error) ? result.error : 'Failed to send';
+    showToast('Error: ' + errMsg, 'error');
   }
 }
 
