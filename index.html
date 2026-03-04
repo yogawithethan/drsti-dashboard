@@ -492,19 +492,26 @@ body {
   stroke: var(--text-muted);
   fill: none;
   stroke-width: 2;
-  transition: transform 0.25s;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
 }
 .card.expanded .card-collapse-arrow {
   transform: rotate(180deg);
 }
 
-/* ── CARD BODY ── */
+/* ── CARD BODY (animated) ── */
 .card-body {
-  display: none;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 1, 1),
+              opacity 0.2s ease;
 }
 .card.expanded .card-body {
-  display: block;
+  max-height: 5000px;
+  opacity: 1;
+  transition: max-height 0.5s cubic-bezier(0, 0, 0.2, 1),
+              opacity 0.35s ease 0.05s;
 }
 
 /* ── ACCORDIONS ── */
@@ -539,18 +546,26 @@ body {
   stroke: currentColor;
   fill: none;
   stroke-width: 2;
-  transition: transform 0.2s;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
   opacity: 0.6;
 }
 .accordion-trigger.open .accordion-arrow { transform: rotate(90deg); opacity: 1; }
 
 .accordion-body {
-  display: none;
-  padding: 4px 16px 18px;
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 16px;
   background: var(--sage-mist);
+  transition: max-height 0.25s cubic-bezier(0.4, 0, 1, 1),
+              padding 0.25s cubic-bezier(0.4, 0, 1, 1);
 }
-.accordion-body.open { display: block; }
+.accordion-body.open {
+  max-height: 3000px;
+  padding: 4px 16px 18px;
+  transition: max-height 0.4s cubic-bezier(0, 0, 0.2, 1),
+              padding 0.3s cubic-bezier(0, 0, 0.2, 1);
+}
 
 /* ── FORM ELEMENTS (inside accordions) ── */
 .field { display: flex; flex-direction: column; gap: 5px; }
@@ -707,7 +722,7 @@ body {
 }
 .divider { height: 1px; background: rgba(45,42,38,0.08); margin: 12px 0; }
 
-/* ── TOOLTIPS ── */
+/* ── TOOLTIPS (portal — rendered in document.body) ── */
 .tooltip-icon {
   display: inline-flex;
   align-items: center;
@@ -720,42 +735,37 @@ body {
   font-weight: 600;
   cursor: help;
   flex-shrink: 0;
-  position: relative;
   vertical-align: middle;
   margin-left: 2px;
 }
-.tooltip-bubble {
-  display: none;
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
+.tooltip-portal {
+  position: fixed;
   background: var(--text);
   color: #fff;
   padding: 8px 12px;
   border-radius: 6px;
+  font-family: var(--font-body);
   font-size: 11px;
   line-height: 1.4;
   white-space: normal;
   width: 220px;
-  z-index: 30;
+  z-index: 9999;
   text-transform: none;
   letter-spacing: 0;
   font-weight: 400;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
 }
-.tooltip-bubble::after {
+.tooltip-portal.visible { opacity: 1; }
+.tooltip-portal::after {
   content: '';
   position: absolute;
   top: 100%;
-  left: 50%;
+  left: var(--arrow-left, 50%);
   transform: translateX(-50%);
   border: 5px solid transparent;
   border-top-color: var(--text);
-}
-.tooltip-icon:hover .tooltip-bubble,
-.tooltip-icon:focus .tooltip-bubble {
-  display: block;
 }
 
 /* ── PAYMENT SECTION ── */
@@ -1189,6 +1199,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('configOverlay').classList.add('hidden');
     initDashboard();
   }
+
+  // Init tooltip portal
+  _initTooltips();
 
   // Sticky header shadow
   window.addEventListener('scroll', function() {
@@ -1638,7 +1651,7 @@ function renderCard(a) {
     + '<div class="accordion">'
     + '<button class="accordion-trigger" onclick="toggleAccordion(this)">Payment '+arrowSvg+'</button>'
     + '<div class="accordion-body">'
-    + buildPaymentSection(a)
+    + '<div id="pay-section-'+a.row+'">'+buildPaymentSection(a)+'</div>'
     + '</div></div>'
 
     // System Info accordion (closed)
@@ -1682,6 +1695,34 @@ function toggleAccordion(trigger) {
   var isOpen = trigger.classList.contains('open');
   trigger.classList.toggle('open', !isOpen);
   body.classList.toggle('open', !isOpen);
+
+  // If opening the Payment accordion, refresh with live dropdown values
+  if (!isOpen && trigger.textContent.trim() === 'Payment') {
+    var card = trigger.closest('[data-row]');
+    if (card) refreshPaymentSection(parseInt(card.dataset.row));
+  }
+}
+
+function refreshPaymentSection(row) {
+  var container = document.getElementById('pay-section-' + row);
+  if (!container) return;
+
+  var a = state.applicants.find(function(x) { return x.row === row; });
+  if (!a) return;
+
+  // Build a copy with live dropdown values
+  var liveA = {};
+  for (var k in a) liveA[k] = a[k];
+
+  var accomEl = document.getElementById('sel-accom-' + row);
+  var priceEl = document.getElementById('sel-price-' + row);
+  var scholarshipEl = document.getElementById('sel-scholarship-' + row);
+
+  if (accomEl) liveA.accommodation = accomEl.value;
+  if (priceEl) liveA.priceType = priceEl.value;
+  if (scholarshipEl) liveA.scholarship = scholarshipEl.value;
+
+  container.innerHTML = buildPaymentSection(liveA);
 }
 
 function markCardChanged(row) {
@@ -1882,7 +1923,75 @@ var _countryNames = (function(){
   try { return new Intl.DisplayNames(['en'], {type:'region'}); } catch(e) { return null; }
 })();
 function tooltip(text) {
-  return '<span class="tooltip-icon" tabindex="0">\u24D8<span class="tooltip-bubble">'+esc(text)+'</span></span>';
+  return '<span class="tooltip-icon" tabindex="0" data-tooltip="'+esc(text).replace(/"/g,'&quot;')+'">\u24D8</span>';
+}
+
+// ── PORTAL TOOLTIP SYSTEM ──
+var _tooltipEl = null;
+function _initTooltips() {
+  _tooltipEl = document.createElement('div');
+  _tooltipEl.className = 'tooltip-portal';
+  document.body.appendChild(_tooltipEl);
+
+  document.addEventListener('mouseenter', function(e) {
+    var icon = e.target.closest && e.target.closest('.tooltip-icon');
+    if (icon && icon.dataset.tooltip) _showTooltip(icon);
+  }, true);
+  document.addEventListener('mouseleave', function(e) {
+    var icon = e.target.closest && e.target.closest('.tooltip-icon');
+    if (icon) _hideTooltip();
+  }, true);
+  document.addEventListener('focusin', function(e) {
+    var icon = e.target.closest && e.target.closest('.tooltip-icon');
+    if (icon && icon.dataset.tooltip) _showTooltip(icon);
+  });
+  document.addEventListener('focusout', function(e) {
+    var icon = e.target.closest && e.target.closest('.tooltip-icon');
+    if (icon) _hideTooltip();
+  });
+  document.addEventListener('touchstart', function(e) {
+    var icon = e.target.closest && e.target.closest('.tooltip-icon');
+    if (icon && icon.dataset.tooltip) {
+      e.preventDefault();
+      _showTooltip(icon);
+      setTimeout(_hideTooltip, 3000);
+    } else {
+      _hideTooltip();
+    }
+  }, { passive: false });
+}
+
+function _showTooltip(icon) {
+  if (!_tooltipEl) return;
+  var rect = icon.getBoundingClientRect();
+  _tooltipEl.textContent = icon.dataset.tooltip;
+  // Measure tooltip size
+  _tooltipEl.style.left = '0';
+  _tooltipEl.style.top = '0';
+  _tooltipEl.style.visibility = 'hidden';
+  _tooltipEl.classList.add('visible');
+  var tipH = _tooltipEl.offsetHeight;
+  var tipW = 220;
+  _tooltipEl.style.visibility = '';
+  // Position above icon, centered
+  var left = rect.left + rect.width / 2 - tipW / 2;
+  if (left < 8) left = 8;
+  if (left + tipW > window.innerWidth - 8) left = window.innerWidth - tipW - 8;
+  var top = rect.top - tipH - 8;
+  // If no room above, show below
+  if (top < 4) {
+    top = rect.bottom + 8;
+    _tooltipEl.style.setProperty('--arrow-pos', 'above');
+  }
+  _tooltipEl.style.left = left + 'px';
+  _tooltipEl.style.top = top + 'px';
+  // Position arrow to point at icon
+  var arrowLeft = rect.left + rect.width / 2 - left;
+  _tooltipEl.style.setProperty('--arrow-left', arrowLeft + 'px');
+}
+
+function _hideTooltip() {
+  if (_tooltipEl) _tooltipEl.classList.remove('visible');
 }
 
 function formatCurrency(amount) {
