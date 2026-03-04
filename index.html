@@ -385,11 +385,13 @@ body {
 
 /* ── APPLICANT CARD ── */
 .card {
+  width: 100%;
   background: var(--bg-card);
-  border-radius: var(--radius-md);
-  margin-bottom: 8px;
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 24px rgba(0,0,0,0.07);
   overflow: hidden;
+  position: relative;
+  margin-bottom: 10px;
   border: 1px solid rgba(45,42,38,0.04);
   transition: box-shadow 0.3s var(--ease-out), border-color 0.3s;
 }
@@ -398,212 +400,316 @@ body {
   border-color: rgba(122,158,126,0.12);
 }
 
+/* ── CARD HEADER ── */
 .card-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+  border-bottom: 1px solid transparent;
+}
+.card-header:active { background: var(--sage-mist); }
+.card.expanded .card-header { border-bottom-color: rgba(45,42,38,0.06); }
+
+.card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+.card-header-name { min-width: 0; }
+.card-header-name h2 {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-header-name p {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.card-info { flex: 1; min-width: 0; }
-.card-name {
-  font-weight: 500; font-size: 14px;
-  color: var(--text);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+.card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
-.card-meta {
-  font-size: 11px; color: var(--text-muted);
-  margin-top: 2px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+.action-icons {
+  display: none;
+  gap: 5px;
 }
+.card.expanded .action-icons { display: flex; }
+
+.action-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(45,42,38,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--bg-card);
+  text-decoration: none;
+}
+.action-icon:hover { background: var(--sage-light); border-color: rgba(122,158,126,0.3); }
+.action-icon:active { transform: scale(0.92); }
+
+.action-icon svg {
+  width: 13px;
+  height: 13px;
+  stroke: var(--sage-dark);
+  fill: none;
+  stroke-width: 2;
+}
+.action-icon.btn-wa svg { stroke: #25d366; }
+.action-icon.btn-ig svg { stroke: #e1306c; }
 
 .status-badge {
-  font-size: 10px; font-weight: 600;
-  padding: 4px 0;
-  border-radius: var(--radius-pill);
-  white-space: nowrap;
-  letter-spacing: 0.02em;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
   flex-shrink: 0;
-  width: 140px;
-  text-align: center;
-  margin-left: 12px;
-  transition: all 0.3s;
 }
 
+.card-collapse-arrow {
+  width: 14px;
+  height: 14px;
+  stroke: var(--text-muted);
+  fill: none;
+  stroke-width: 2;
+  transition: transform 0.25s;
+  flex-shrink: 0;
+}
+.card.expanded .card-collapse-arrow {
+  transform: rotate(180deg);
+}
+
+/* ── CARD BODY ── */
 .card-body {
-  max-height: 0; overflow: hidden;
-  transition: max-height 0.45s var(--ease-out);
+  display: none;
 }
 .card.expanded .card-body {
-  max-height: 3000px;
-  transition: max-height 0.6s var(--ease-out);
-}
-.card-body-inner {
-  padding: 0 14px 16px;
-  border-top: 1px solid rgba(45,42,38,0.05);
+  display: block;
 }
 
-/* ── CONTACT ROW ── */
-.contact-row {
-  display: flex; gap: 8px;
-  margin: 14px 0; justify-content: center;
-}
-.contact-btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  text-decoration: none;
-  transition: all 0.2s var(--ease-out);
-  border: 1.5px solid rgba(74,107,78,0.15);
-  cursor: pointer;
-  background: var(--bg-card);
-  box-shadow: none;
-}
-.contact-btn svg { width: 16px; height: 16px; fill: var(--sage-dark); }
-.contact-btn:active { transform: scale(0.92); }
-.contact-btn:hover { border-color: var(--sage); background: var(--sage-light); }
+/* ── ACCORDIONS ── */
+.accordion { border-bottom: 1px solid rgba(45,42,38,0.06); }
+.accordion:last-of-type { border-bottom: none; }
 
-/* ── EDIT SECTION ── */
-.edit-section {
-  background: var(--bg-section);
-  border-radius: var(--radius-sm);
-  padding: 14px;
-  margin: 12px 0;
-}
-.edit-row {
-  display: flex; align-items: center;
+.accordion-trigger {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 13px 16px;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(45,42,38,0.05);
-  gap: 12px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  text-align: left;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
-.edit-row:last-child { border-bottom: none; }
-.edit-row label {
-  font-size: 12px; color: var(--text-secondary);
-  font-weight: 500; flex-shrink: 0;
+.accordion-trigger:hover { background: var(--sage-mist); }
+.accordion-trigger.open { color: var(--sage-dark); background: var(--sage-mist); }
+
+.accordion-arrow {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+  opacity: 0.6;
 }
-.edit-row select,
-.edit-row textarea {
-  border: 1.5px solid var(--sand);
+.accordion-trigger.open .accordion-arrow { transform: rotate(90deg); opacity: 1; }
+
+.accordion-body {
+  display: none;
+  padding: 4px 16px 18px;
+  background: var(--sage-mist);
+}
+.accordion-body.open { display: block; }
+
+/* ── FORM ELEMENTS (inside accordions) ── */
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.field select, .field input, .field textarea {
+  width: 100%;
+  padding: 9px 11px;
   border-radius: var(--radius-sm);
-  padding: 7px 10px;
-  font-size: 13px; font-family: var(--font-body);
+  border: 1px solid rgba(45,42,38,0.12);
+  font-family: var(--font-body);
+  font-size: 13px;
   background: var(--bg-card);
   color: var(--text);
-  transition: border-color 0.2s, box-shadow 0.2s;
-  max-width: 180px;
-}
-.edit-row select:focus,
-.edit-row textarea:focus {
+  transition: border-color 0.15s;
   outline: none;
+}
+.field select:focus, .field input:focus, .field textarea:focus {
   border-color: var(--sage);
   box-shadow: var(--shadow-glow);
 }
-.edit-row textarea {
-  max-width: 100%; width: 100%;
-  min-height: 60px; resize: vertical;
-}
-.edit-row .notes-row { flex-direction: column; align-items: stretch; }
-.edit-row.notes-row { flex-direction: column; align-items: stretch; }
-.edit-row.notes-row label { margin-bottom: 6px; }
+.field textarea { resize: vertical; min-height: 60px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-.wa-check {
-  display: flex; align-items: center; gap: 8px;
-  cursor: pointer; font-size: 13px;
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(45,42,38,0.08);
+  border-bottom: 1px solid rgba(45,42,38,0.08);
+  margin: 4px 0;
 }
-.wa-check input[type="checkbox"] {
-  width: 18px; height: 18px;
-  accent-color: var(--sage);
+.checkbox-row input[type="checkbox"] {
+  width: 16px; height: 16px;
+  accent-color: var(--sage-dark);
+  flex-shrink: 0;
   cursor: pointer;
 }
-.save-btn {
-  display: block; width: 100%;
-  margin-top: 10px; padding: 10px;
-  border: none; border-radius: var(--radius-sm);
-  background: var(--sage-dark);
-  color: #fff; font-family: var(--font-body);
-  font-size: 13px; font-weight: 600;
-  letter-spacing: 0.03em;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
-}
-.save-btn:active { transform: scale(0.97); }
-.save-btn:hover { background: var(--sage); }
-.save-btn:disabled { opacity: 0.5; cursor: default; }
-.save-btn.saved {
-  background: #b6d7a8; color: #274e13;
-  pointer-events: none;
-}
+.checkbox-row label { font-size: 13px; cursor: pointer; }
 
-/* ── DETAILS / COLLAPSIBLE SECTIONS ── */
-.answer-section {
-  margin: 8px 0; border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-.answer-section summary {
-  padding: 10px 14px;
-  background: var(--bg-section);
+/* ── OFFER EMAIL SECTION ── */
+.offer-email-box {
+  background: var(--bg-card);
+  border: 1px solid rgba(45,42,38,0.1);
   border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 12px; font-weight: 500;
-  color: var(--text-secondary);
-  list-style: none;
-  display: flex; align-items: center; justify-content: space-between;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  transition: background 0.2s;
+  overflow: hidden;
+  margin-top: 4px;
 }
-.answer-section summary:hover { background: #f0ebe5; }
-.answer-section summary::after {
-  content: ''; display: block;
-  width: 8px; height: 8px;
-  border-right: 1.5px solid var(--text-muted);
-  border-bottom: 1.5px solid var(--text-muted);
-  transform: rotate(-45deg);
-  transition: transform 0.25s var(--ease-out);
+.offer-email-note {
+  padding: 9px 13px;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.offer-email-note.ready {
+  color: var(--sage-dark);
+  background: var(--sage-light);
+}
+.offer-email-note.sent {
+  color: var(--sage-dark);
+  background: var(--sage-light);
+}
+
+/* ── STICKY SAVE FOOTER ── */
+.save-footer {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-card);
+  border-top: 1px solid rgba(45,42,38,0.06);
+  padding: 12px 16px;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.04);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.save-footer-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  flex: 1;
+}
+.save-footer-note.has-changes { color: #f39c12; }
+.save-footer-note.saved { color: var(--sage); }
+
+.btn-save {
+  padding: 10px 24px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: rgba(45,42,38,0.08);
+  color: var(--text-muted);
+  transition: all 0.2s;
+  white-space: nowrap;
   flex-shrink: 0;
 }
-.answer-section[open] summary::after { transform: rotate(45deg); }
-.answer-section summary::-webkit-details-marker { display: none; }
+.btn-save.has-changes {
+  background: var(--sage-dark);
+  color: white;
+}
+.btn-save.has-changes:hover { background: #3d5c40; }
+.btn-save.has-changes:active { transform: scale(0.97); }
+.btn-save.saved { background: var(--sage-light); color: var(--sage-dark); cursor: default; }
 
-.answer-grid {
-  padding: 12px 14px;
-  background: var(--bg);
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+/* ── QA ROWS (Application Answers) ── */
+.qa-row {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(45,42,38,0.06);
+  font-size: 13px;
 }
-.answer-item { margin-bottom: 14px; }
-.answer-item:last-child { margin-bottom: 0; }
-.answer-label {
-  font-size: 11px; font-weight: 500;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 4px;
+.qa-row:last-child { border-bottom: none; }
+.qa-q {
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.7px; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 3px;
 }
-.answer-text {
-  font-size: 13px; color: var(--text);
-  line-height: 1.55;
+.qa-a {
+  line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
 }
-.answer-text:empty::after {
-  content: '—';
-  color: var(--text-muted);
-}
+.qa-a:empty::after { content: '—'; color: var(--text-muted); }
 
-.info-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 8px; padding: 12px 14px;
-  background: var(--bg);
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-}
-.info-item {
+/* ── SYSTEM INFO ROWS ── */
+.sysrow {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(45,42,38,0.06);
   font-size: 12px;
 }
-.info-item .info-label { color: var(--text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
-.info-item .info-value { color: var(--text); font-weight: 500; margin-top: 2px; }
+.sysrow:last-child { border-bottom: none; }
+.sysrow-label { color: var(--text-muted); }
+.sysrow-value { font-weight: 500; text-align: right; }
+
+/* ── SECTION LABELS & DIVIDERS ── */
+.slabel {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.divider { height: 1px; background: rgba(45,42,38,0.08); margin: 12px 0; }
 
 /* ── TOAST ── */
 .toast {
@@ -667,13 +773,14 @@ body {
 .card:nth-child(8) { animation-delay: 0.21s; }
 
 /* ── ADDONS BADGES ── */
-.addon-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+.addon-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
 .addon-badge {
-  font-size: 10px; padding: 2px 8px;
+  font-size: 9px; padding: 2px 7px;
   border-radius: var(--radius-pill);
   background: var(--sage-light);
   color: var(--sage-dark);
   font-weight: 500;
+  letter-spacing: 0.3px;
 }
 
 /* ── MOBILE: FILTER BAR TWO ROWS ── */
@@ -1144,7 +1251,8 @@ function renderCards() {
 
 function renderCard(a) {
   var sc = STATUS_COLORS[a.status] || {bg:'#efefef',fg:'#999'};
-  var expanded = state.expandedCards[a.row] ? ' expanded' : '';
+  var expanded = state.expandedCards[a.row];
+  var cardClass = 'card' + (expanded ? ' expanded' : '');
   var name = esc(a.firstName + ' ' + a.lastName);
   var meta = esc(countryName(a.country)) + ' &middot; ' + timeAgo(a.timestamp);
 
@@ -1154,13 +1262,17 @@ function renderCard(a) {
   if (a.addonHealing === 'Yes') addons.push('Healing');
   if (a.addonPhotoshoot === 'Yes') addons.push('Photoshoot');
   if (a.addonCoaching === 'Yes') addons.push('Coaching');
+  // Also parse addonsJson
+  if (a.addonsJson) {
+    try {
+      var aj = JSON.parse(a.addonsJson);
+      for (var ak in aj) { if (aj[ak] && addons.indexOf(ak) === -1) addons.push(ak); }
+    } catch(e) {}
+  }
   var addonHtml = '';
   if (addons.length) {
-    addonHtml = '<div class="addon-badges">' + addons.map(function(x){return '<span class="addon-badge">'+x+'</span>';}).join('') + '</div>';
+    addonHtml = '<div class="addon-badges">' + addons.map(function(x){return '<span class="addon-badge">'+esc(x)+'</span>';}).join('') + '</div>';
   }
-
-  // Room preference (show whichever one is filled)
-  var roomPref = a.roomPlan || a.roomFull || a.roomEB || a.roomEBFull || '—';
 
   // WhatsApp link
   var waLink = '#';
@@ -1168,8 +1280,16 @@ function renderCard(a) {
     var digits = String(a.phone).replace(/\D/g,'');
     waLink = 'https://wa.me/' + digits;
   }
+  var igHandle = a.instagram ? String(a.instagram).replace(/^@/,'') : '';
 
-  // Status select options — grouped with section dividers
+  // Contact icons (stroke-based SVGs)
+  var contactIcons = '';
+  if (a.email) contactIcons += '<a href="mailto:'+esc(a.email)+'" class="action-icon" title="Email" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg></a>';
+  if (a.phone) contactIcons += '<a href="tel:'+esc(String(a.phone))+'" class="action-icon" title="Call" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.17 10.5 19.79 19.79 0 01.1 1.83 2 2 0 012.08 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></a>';
+  if (a.phone) contactIcons += '<a href="'+waLink+'" target="_blank" class="action-icon btn-wa" title="WhatsApp" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></a>';
+  if (igHandle) contactIcons += '<a href="https://instagram.com/'+esc(igHandle)+'" target="_blank" class="action-icon btn-ig" title="@'+esc(igHandle)+'" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>';
+
+  // Status select options — grouped
   var STATUS_GROUPS = [
     { label: 'Incoming', statuses: ['Applied','First Outreach'] },
     { label: 'Decision', statuses: ['Hard Yes','Needs Call','Call Scheduled','Waitlist','Not Aligned'] },
@@ -1200,85 +1320,126 @@ function renderCard(a) {
     priceOpts += '<option value="'+x+'"'+(x===a.priceType?' selected':'')+'>'+label+'</option>';
   });
 
-  return '<article class="card'+expanded+'" data-row="'+a.row+'" data-status="'+esc(a.status)+'">'
+  // Offer email status (for Hard Yes / Needs Call)
+  var showOfferSection = (a.status === 'Hard Yes' || a.status === 'Needs Call');
+  var offerHtml = '';
+  if (showOfferSection) {
+    var offerReady = a.accommodation && a.priceType;
+    var offerSent = !!a.emailSent;
+    var noteClass = 'offer-email-note';
+    var noteText = '';
+    if (offerSent) {
+      noteClass += ' sent';
+      noteText = '&#10003; Email sent ' + formatDate(a.emailSent);
+    } else if (offerReady) {
+      noteClass += ' ready';
+      noteText = '&#10003; Ready — check Personal Video Sent, then Save to trigger email';
+    } else {
+      noteText = 'Set accommodation and price type to enable offer email';
+    }
+    offerHtml = '<div class="divider"></div>'
+      + '<div><div class="slabel">Offer Email</div>'
+      + '<div class="offer-email-box"><div class="'+noteClass+'">'+noteText+'</div></div></div>';
+  }
+
+  // Room preference
+  var roomPref = a.roomPlan || a.roomFull || a.roomEB || a.roomEBFull || '—';
+
+  // SVG arrows
+  var arrowSvg = '<svg class="accordion-arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+  var collapseArrow = '<svg class="card-collapse-arrow" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>';
+
+  return '<article class="'+cardClass+'" data-row="'+a.row+'" data-status="'+esc(a.status)+'">'
+
+    // ── HEADER ──
     + '<div class="card-header" onclick="toggleCard('+a.row+')">'
-    + '<div class="card-info">'
-    + '<div class="card-name">'+name+'</div>'
-    + '<div class="card-meta">'+meta+'</div>'
+    + '<div class="card-header-left">'
+    + '<div class="card-header-name">'
+    + '<h2>'+name+'</h2>'
+    + '<p>'+meta+addonHtml+'</p>'
+    + '</div></div>'
+    + '<div class="card-header-right">'
+    + '<div class="action-icons">'+contactIcons+'</div>'
+    + '<div style="display:flex;align-items:center;gap:8px;">'
+    + '<div class="status-badge" style="background:'+sc.bg+';color:'+sc.fg+'">'+esc(a.status)+'</div>'
+    + collapseArrow
+    + '</div></div></div>'
+
+    // ── BODY ──
+    + '<div class="card-body">'
+
+    // Overview accordion (open by default when card expands)
+    + '<div class="accordion">'
+    + '<button class="accordion-trigger open" onclick="toggleAccordion(this)">Overview '+arrowSvg+'</button>'
+    + '<div class="accordion-body open">'
+    + '<div style="padding-top:14px;display:flex;flex-direction:column;gap:12px;">'
+    + '<div class="field"><div class="field-label">Status</div><select id="sel-status-'+a.row+'" onchange="markCardChanged('+a.row+')">'+statusOpts+'</select></div>'
+    + '<div class="field-row">'
+    + '<div class="field"><div class="field-label">Accommodation</div><select id="sel-accom-'+a.row+'" onchange="markCardChanged('+a.row+')">'+accomOpts+'</select></div>'
+    + '<div class="field"><div class="field-label">Price Type</div><select id="sel-price-'+a.row+'" onchange="markCardChanged('+a.row+')">'+priceOpts+'</select></div>'
     + '</div>'
-    + '<span class="status-badge" style="background:'+sc.bg+';color:'+sc.fg+(a.status==='Hard Yes'?';box-shadow:inset 0 0 0 2px #274e13':'')+'">'+ esc(a.status)+'</span>'
+    + '<div class="field"><div class="field-label">Scholarship</div><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;color:var(--text-muted);flex-shrink:0;">€</span><input type="number" id="sel-scholarship-'+a.row+'" min="0" step="50" value="'+(a.scholarship||'')+'" placeholder="0" oninput="markCardChanged('+a.row+')"></div></div>'
+    + ((a.status === 'Hard Yes' || a.status === 'Needs Call') ? '<div class="checkbox-row"><input type="checkbox" id="wa-'+a.row+'"'+(a.whatsappSent==='Yes'?' checked':'')+' onchange="markCardChanged('+a.row+')"><label for="wa-'+a.row+'">Personal Video Sent</label></div>' : '')
+    + '<div class="field"><div class="field-label">Notes</div><textarea id="sel-notes-'+a.row+'" rows="3" oninput="markCardChanged('+a.row+')" placeholder="Internal notes...">'+esc(a.notes||'')+'</textarea></div>'
+    + offerHtml
+    + '</div></div></div>'
+
+    // Application Answers accordion (closed)
+    + '<div class="accordion">'
+    + '<button class="accordion-trigger" onclick="toggleAccordion(this)">Application Answers '+arrowSvg+'</button>'
+    + '<div class="accordion-body">'
+    + '<div style="padding-top:8px;">'
+    + qaRow('What inspired you to apply?', a.inspired)
+    + qaRow('Yoga / Spiritual Experience', a.yogaExperience)
+    + qaRow('Health Goals', a.healthGoals)
+    + qaRow('Injuries / Conditions', a.injuries)
+    + qaRow('Food Restrictions', a.foodRestrictions)
+    + qaRow('Substances', a.substances)
+    + qaRow('Comfortable with digital detox / silence?', a.comfortableWith)
+    + qaRow('Questions or Concerns', a.questionsConcerns)
+    + qaRow('Additional Info', a.additionalInfo)
+    + '</div></div></div>'
+
+    // Room & Payment accordion (closed)
+    + '<div class="accordion">'
+    + '<button class="accordion-trigger" onclick="toggleAccordion(this)">Room &amp; Payment '+arrowSvg+'</button>'
+    + '<div class="accordion-body">'
+    + '<div style="padding-top:8px;">'
+    + qaRow('Payment Preference', a.paymentPreference)
+    + qaRow('Room Selection', roomPref)
+    + qaRow('Add-ons Interested', a.addonsInterested || addons.join(', '))
+    + qaRow('Travel Assistance', a.travelAssist)
+    + qaRow('How They Found Us', a.howHeard)
+    + qaRow('Referral', a.referral)
+    + '</div></div></div>'
+
+    // System Info accordion (closed)
+    + '<div class="accordion">'
+    + '<button class="accordion-trigger" onclick="toggleAccordion(this)">System Info '+arrowSvg+'</button>'
+    + '<div class="accordion-body">'
+    + '<div style="padding-top:8px;">'
+    + sysRow('Status Changed', a.statusChangedDate ? formatDate(a.statusChangedDate) : '—')
+    + sysRow('Applied', a.timestamp ? formatDate(a.timestamp) : '—')
+    + sysRow('Email Sent', a.emailSent ? formatDate(a.emailSent) : '—')
+    + sysRow('Ghost Step', a.ghostStep || '0')
+    + sysRow('CK Tag', a.ckTag || '—')
+    + sysRow('Migration Import', a.migrationImport ? 'Yes' : 'No')
+    + '</div></div></div>'
+
+    // Sticky save footer
+    + '<div class="save-footer" id="saveFooter-'+a.row+'">'
+    + '<span class="save-footer-note" id="saveNote-'+a.row+'">No unsaved changes</span>'
+    + '<button class="btn-save" id="saveBtn-'+a.row+'" onclick="saveCardChanges('+a.row+')">Saved</button>'
     + '</div>'
-    + '<div class="card-body"><div class="card-body-inner">'
 
-    // Contact row — icon buttons
-    + '<div class="contact-row">'
-    + (a.email ? '<a href="mailto:'+esc(a.email)+'" class="contact-btn btn-email" title="Email"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>' : '')
-    + (a.phone ? '<a href="tel:'+esc(String(a.phone))+'" class="contact-btn btn-call" title="Call"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></a>' : '')
-    + (a.phone ? '<a href="'+waLink+'" target="_blank" class="contact-btn btn-wa" title="WhatsApp"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12.05 21.785c-1.813 0-3.59-.487-5.14-1.41l-.369-.218-3.826 1.004 1.022-3.735-.24-.381A9.862 9.862 0 012.1 12.05C2.1 6.565 6.565 2.1 12.05 2.1c2.653 0 5.148 1.034 7.025 2.91a9.874 9.874 0 012.91 7.025c0 5.485-4.465 9.95-9.95 9.95h-.005zM12.05 0C5.405 0 .005 5.4.005 12.05c0 2.125.555 4.2 1.61 6.03L0 24l6.075-1.594A11.98 11.98 0 0012.05 24.1C18.695 24.1 24.1 18.695 24.1 12.05 24.1 5.405 18.695 0 12.05 0z"/></svg></a>' : '')
-    + (a.instagram ? (function(){ var igHandle = String(a.instagram).replace(/^@/,''); return '<a href="https://instagram.com/'+esc(igHandle)+'" target="_blank" class="contact-btn btn-ig" title="@'+esc(igHandle)+'"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>'; })() : '')
-    + '</div>'
-
-    // Edit section — dropdowns are NOT auto-submit, user clicks Save
-    + '<div class="edit-section">'
-    + '<div class="edit-row"><label>Status</label><select id="sel-status-'+a.row+'">'+statusOpts+'</select></div>'
-    + '<div class="edit-row"><label>Accommodation</label><select id="sel-accom-'+a.row+'">'+accomOpts+'</select></div>'
-    + '<div class="edit-row"><label>Price Type</label><select id="sel-price-'+a.row+'">'+priceOpts+'</select></div>'
-    + '<div class="edit-row"><label>Scholarship</label><div style="display:flex;align-items:center;gap:4px"><span style="font-size:13px;color:var(--text-secondary)">€</span><input type="number" id="sel-scholarship-'+a.row+'" min="0" step="50" value="'+(a.scholarship||'')+'" placeholder="0" style="width:80px;padding:7px 10px;border:1.5px solid var(--sand);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font-body);background:var(--bg-card);color:var(--text)"></div></div>'
-    + ((a.status === 'Hard Yes' || a.status === 'Needs Call') ? '<div class="edit-row"><label class="wa-check"><input type="checkbox" onchange="updateField('+a.row+',\'whatsappSent\',this.checked?\'Yes\':\'\')"'+(a.whatsappSent==='Yes'?' checked':'')+'>Personal Video Sent</label></div>' : '')
-    + '<div class="edit-row notes-row"><label>Notes</label><textarea id="sel-notes-'+a.row+'" onblur="updateField('+a.row+',\'notes\',document.getElementById(\'sel-notes-'+a.row+'\').value)">'+esc(a.notes||'')+'</textarea></div>'
-    + '<button class="save-btn" id="save-btn-'+a.row+'" onclick="saveCardChanges('+a.row+')">Save Changes</button>'
-    + '</div>'
-
-    + addonHtml
-
-    // Application answers
-    + '<details class="answer-section">'
-    + '<summary>Application Answers</summary>'
-    + '<div class="answer-grid">'
-    + answerItem('What Inspired You', a.inspired)
-    + answerItem('Yoga / Spiritual Experience', a.yogaExperience)
-    + answerItem('Health Goals', a.healthGoals)
-    + answerItem('Injuries / Conditions', a.injuries)
-    + answerItem('Food Restrictions', a.foodRestrictions)
-    + answerItem('Substances', a.substances)
-    + answerItem('Comfortable w/ Detox/Silence/Phones', a.comfortableWith)
-    + answerItem('Questions / Concerns', a.questionsConcerns)
-    + answerItem('Additional Info', a.additionalInfo)
-    + '</div></details>'
-
-    // Room & Payment
-    + '<details class="answer-section">'
-    + '<summary>Room &amp; Payment Preferences</summary>'
-    + '<div class="answer-grid">'
-    + answerItem('Payment Preference', a.paymentPreference)
-    + answerItem('Room Selection', roomPref)
-    + answerItem('Add-ons Interested In', a.addonsInterested)
-    + answerItem('Travel Assistance', a.travelAssist)
-    + answerItem('Free Flight Contest', a.flightContest)
-    + answerItem('How They Found Us', a.howHeard)
-    + answerItem('Referral', a.referral)
-    + '</div></details>'
-
-    // System info
-    + '<details class="answer-section">'
-    + '<summary>System Info</summary>'
-    + '<div class="info-grid">'
-    + infoItem('Status Changed', a.statusChangedDate ? formatDate(a.statusChangedDate) : '—')
-    + infoItem('Email Sent', a.emailSent ? formatDate(a.emailSent) : '—')
-    + infoItem('Ghost Step', a.ghostStep || '0')
-    + infoItem('Last SMS', a.lastSmsDate ? formatDate(a.lastSmsDate) : '—')
-    + infoItem('CK Tag', a.ckTag || '—')
-    + infoItem('WhatsApp Prompt', a.whatsappPrompt || '—')
-    + '</div></details>'
-
-    + '</div></div></article>';
+    + '</div></article>';
 }
 
-function answerItem(label, text) {
-  return '<div class="answer-item"><div class="answer-label">'+esc(label)+'</div><p class="answer-text">'+esc(text||'')+'</p></div>';
+function qaRow(label, text) {
+  return '<div class="qa-row"><div class="qa-q">'+esc(label)+'</div><div class="qa-a">'+esc(text||'')+'</div></div>';
 }
-function infoItem(label, value) {
-  return '<div class="info-item"><div class="info-label">'+esc(label)+'</div><div class="info-value">'+esc(String(value))+'</div></div>';
+function sysRow(label, value) {
+  return '<div class="sysrow"><span class="sysrow-label">'+esc(label)+'</span><span class="sysrow-value">'+esc(String(value))+'</span></div>';
 }
 
 // ── INTERACTIONS ──
@@ -1286,6 +1447,20 @@ function toggleCard(row) {
   state.expandedCards[row] = !state.expandedCards[row];
   var card = document.querySelector('[data-row="'+row+'"]');
   if (card) card.classList.toggle('expanded', state.expandedCards[row]);
+}
+
+function toggleAccordion(trigger) {
+  var body = trigger.nextElementSibling;
+  var isOpen = trigger.classList.contains('open');
+  trigger.classList.toggle('open', !isOpen);
+  body.classList.toggle('open', !isOpen);
+}
+
+function markCardChanged(row) {
+  var note = document.getElementById('saveNote-' + row);
+  var btn = document.getElementById('saveBtn-' + row);
+  if (note) { note.textContent = 'Unsaved changes'; note.className = 'save-footer-note has-changes'; }
+  if (btn) { btn.textContent = 'Save Changes'; btn.className = 'btn-save has-changes'; }
 }
 
 /**
@@ -1300,18 +1475,25 @@ async function saveCardChanges(row) {
   var accomEl = document.getElementById('sel-accom-' + row);
   var priceEl = document.getElementById('sel-price-' + row);
   var scholarshipEl = document.getElementById('sel-scholarship-' + row);
-  var btn = document.getElementById('save-btn-' + row);
+  var notesEl = document.getElementById('sel-notes-' + row);
+  var waEl = document.getElementById('wa-' + row);
+  var note = document.getElementById('saveNote-' + row);
+  var btn = document.getElementById('saveBtn-' + row);
 
   var fields = {};
   var newStatus = statusEl ? statusEl.value : a.status;
   var newAccom = accomEl ? accomEl.value : a.accommodation;
   var newPrice = priceEl ? priceEl.value : a.priceType;
   var newScholarship = scholarshipEl ? scholarshipEl.value : (a.scholarship || '');
+  var newNotes = notesEl ? notesEl.value : (a.notes || '');
+  var newWa = waEl ? (waEl.checked ? 'Yes' : '') : (a.whatsappSent || '');
 
   if (newStatus !== a.status) fields.status = newStatus;
   if (newAccom !== a.accommodation) fields.accommodation = newAccom;
   if (newPrice !== a.priceType) fields.priceType = newPrice;
   if (newScholarship !== String(a.scholarship || '')) fields.scholarship = newScholarship;
+  if (newNotes !== (a.notes || '')) fields.notes = newNotes;
+  if (newWa !== (a.whatsappSent || '')) fields.whatsappSent = newWa;
 
   if (Object.keys(fields).length === 0) {
     showToast('No changes to save', 'warning');
@@ -1319,7 +1501,7 @@ async function saveCardChanges(row) {
   }
 
   // Disable button while saving
-  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+  if (btn) { btn.textContent = 'Saving...'; btn.className = 'btn-save has-changes'; btn.disabled = true; }
 
   // Optimistic update
   for (var k in fields) a[k] = fields[k];
@@ -1330,7 +1512,6 @@ async function saveCardChanges(row) {
       var sc = STATUS_COLORS[fields.status] || {bg:'#efefef',fg:'#999'};
       badge.style.background = sc.bg;
       badge.style.color = sc.fg;
-      badge.style.boxShadow = fields.status === 'Hard Yes' ? 'inset 0 0 0 2px #274e13' : 'none';
       badge.textContent = fields.status;
     }
     var card = document.querySelector('[data-row="'+row+'"]');
@@ -1341,14 +1522,20 @@ async function saveCardChanges(row) {
   var result = await apiUpdate('updateApplicant', { row: row, fields: fields });
   if (result && result.ok) {
     showToast('Changes saved', 'success');
-    if (btn) { btn.textContent = 'Saved!'; btn.classList.add('saved'); }
-    setTimeout(function(){ if (btn) { btn.textContent = 'Save Changes'; btn.classList.remove('saved'); btn.disabled = false; }}, 1500);
+    if (note) { note.textContent = 'All changes saved'; note.className = 'save-footer-note saved'; }
+    if (btn) { btn.textContent = 'Saved'; btn.className = 'btn-save saved'; btn.disabled = false; }
+    setTimeout(function(){
+      if (note) { note.textContent = 'No unsaved changes'; note.className = 'save-footer-note'; }
+      if (btn) { btn.textContent = 'Saved'; btn.className = 'btn-save'; }
+    }, 2000);
   } else if (result && result.error) {
     showToast('Error: ' + result.error, 'error');
-    if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; }
+    if (note) { note.textContent = 'Save failed'; note.className = 'save-footer-note has-changes'; }
+    if (btn) { btn.textContent = 'Retry'; btn.className = 'btn-save has-changes'; btn.disabled = false; }
   } else if (!result) {
     showToast('Saved offline — will sync when connected', 'warning');
-    if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; }
+    if (note) { note.textContent = 'Saved offline'; note.className = 'save-footer-note'; }
+    if (btn) { btn.textContent = 'Saved'; btn.className = 'btn-save'; btn.disabled = false; }
   }
 }
 
