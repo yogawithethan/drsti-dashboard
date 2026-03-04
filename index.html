@@ -3086,32 +3086,45 @@ async function sendBulkEmailFromModal() {
 
   var sendBtn = document.getElementById('emailModalSendBtn');
   var progress = document.getElementById('bulkProgress');
+  var banner = document.getElementById('emailModalBanner');
   sendBtn.textContent = 'Sending...';
   sendBtn.disabled = true;
-  progress.textContent = 'Sending 0/' + rows.length + '...';
 
-  var result = await apiUpdate('sendBulkEmail', { rows: rows, subject: subject, body: body });
+  var sent = 0;
+  var errors = [];
+
+  for (var i = 0; i < rows.length; i++) {
+    progress.textContent = 'Sending ' + (i + 1) + '/' + rows.length + '...';
+    banner.textContent = 'Sending email ' + (i + 1) + ' of ' + rows.length + '...';
+    banner.style.background = '';
+    banner.style.color = '';
+    banner.classList.remove('hidden');
+
+    var result = await apiUpdate('sendCustomEmail', { row: rows[i], subject: subject, body: body, resolveTags: true });
+    console.log('Bulk send row ' + rows[i] + ':', result);
+
+    if (result && result.ok) {
+      sent++;
+    } else {
+      var errMsg = (result && result.error) ? result.error : 'Network error';
+      errors.push('Row ' + rows[i] + ': ' + errMsg);
+    }
+  }
 
   sendBtn.disabled = false;
   progress.textContent = '';
 
-  console.log('Bulk email result:', result);
-  var banner = document.getElementById('emailModalBanner');
-  if (result && result.ok) {
-    var sent = result.sent || rows.length;
-    var failed = result.failed || 0;
-    var errList = result.errors && result.errors.length ? result.errors : [];
-    showToast('Bulk email sent to ' + sent + ' applicants' + (failed > 0 ? ' (' + failed + ' failed)' : ''), 'success');
+  if (errors.length === 0) {
+    showToast('Sent to ' + sent + ' applicants', 'success');
     closeEmailModal();
     toggleBulkMode();
     loadAll();
   } else {
-    var errMsg = (result && result.error) ? result.error : 'Failed to send — check connection';
-    banner.textContent = 'Error: ' + errMsg;
+    banner.textContent = 'Sent ' + sent + '/' + rows.length + '. Errors: ' + errors.join('; ');
     banner.style.background = '#fef2f2';
     banner.style.color = '#b91c1c';
     banner.classList.remove('hidden');
-    showToast('Error: ' + errMsg, 'error');
+    showToast(sent + ' sent, ' + errors.length + ' failed', 'error');
     sendBtn.textContent = 'Retry Send';
   }
 }
