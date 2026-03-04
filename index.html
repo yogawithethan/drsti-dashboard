@@ -872,6 +872,71 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .btn-send-email:hover { background: #3d5c40; }
 .btn-send-email:active { transform: scale(0.97); }
 
+/* ── BULK EMAIL MODE ── */
+.bulk-toggle {
+  padding: 5px 12px; border-radius: var(--radius-pill);
+  border: 1px solid rgba(45,42,38,0.12); background: none;
+  font-family: var(--font-body); font-size: 11px; font-weight: 500;
+  color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+  margin-left: 8px;
+}
+.bulk-toggle:hover { border-color: var(--sage); color: var(--sage-dark); }
+.bulk-toggle.active { background: var(--sage-dark); color: #fff; border-color: var(--sage-dark); }
+.bulk-bar {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 95;
+  background: var(--bg-card); border-top: 1px solid rgba(45,42,38,0.1);
+  box-shadow: 0 -2px 12px rgba(45,42,38,0.08);
+  padding: 10px 16px; gap: 10px;
+  align-items: center; justify-content: space-between;
+}
+.bulk-bar.visible { display: flex; }
+.bulk-bar-left { display: flex; align-items: center; gap: 10px; }
+.bulk-bar-count { font-size: 13px; font-weight: 500; color: var(--text); }
+.bulk-bar-select-all {
+  padding: 5px 12px; border-radius: var(--radius-sm);
+  border: 1px solid rgba(45,42,38,0.12); background: none;
+  font-family: var(--font-body); font-size: 11px; font-weight: 500;
+  color: var(--text-secondary); cursor: pointer;
+}
+.bulk-bar-select-all:hover { border-color: var(--sage); }
+.bulk-bar-send {
+  padding: 8px 20px; border-radius: var(--radius-sm);
+  border: none; background: var(--sage-dark);
+  font-family: var(--font-body); font-size: 13px; font-weight: 500;
+  color: #fff; cursor: pointer; transition: background 0.2s;
+}
+.bulk-bar-send:hover { background: #3d5c40; }
+.bulk-bar-send:disabled { opacity: 0.5; cursor: not-allowed; }
+.bulk-bar-cancel {
+  padding: 5px 12px; border-radius: var(--radius-sm);
+  border: 1px solid rgba(45,42,38,0.12); background: none;
+  font-family: var(--font-body); font-size: 11px;
+  color: var(--text-muted); cursor: pointer;
+}
+.bulk-check-wrap {
+  display: none; padding: 0 12px 0 0;
+}
+body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
+.bulk-check {
+  width: 18px; height: 18px; accent-color: var(--sage-dark);
+  cursor: pointer;
+}
+.email-modal-banner {
+  padding: 10px 16px; background: var(--sage-light);
+  font-size: 12px; color: var(--sage-dark); font-weight: 500;
+  border-bottom: 1px solid rgba(45,42,38,0.06);
+  flex-shrink: 0;
+}
+.bulk-progress {
+  font-size: 12px; color: var(--text-secondary); font-weight: 500;
+}
+/* Sequence mini-tags in System Info */
+.seq-tag { display: inline-block; padding: 2px 6px; border-radius: 4px;
+  font-size: 10px; font-weight: 500; margin: 1px 2px; }
+.seq-tag.sent { background: var(--sage-light); color: var(--sage-dark); }
+.seq-tag.pending { background: #fff2cc; color: #7f6003; }
+.seq-tag.cancelled { background: #f4cccc; color: #990000; }
+
 /* ── QA ROWS (Application Answers) ── */
 .qa-row {
   padding: 10px 0;
@@ -1231,8 +1296,11 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
       <img src="drsti.png" alt="" class="brand-logo">Dṛṣṭi Dashboard
     </div>
     <div class="header-meta">
-      <div class="sync-status synced" id="syncStatus"><span class="sync-dot"></span> Synced</div>
-      <button class="refresh-btn" onclick="loadAll()">Refresh</button>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <div class="sync-status synced" id="syncStatus"><span class="sync-dot"></span> Synced</div>
+        <button class="refresh-btn" onclick="loadAll()">Refresh</button>
+        <button class="bulk-toggle" id="bulkToggle" onclick="toggleBulkMode()">Bulk Email</button>
+      </div>
       <div id="lastUpdated"></div>
     </div>
   </div>
@@ -1277,13 +1345,27 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   <button class="floating-save-btn" id="floatingSaveBtn" onclick="saveActiveCard()">Save Changes</button>
 </div>
 
+<!-- BULK EMAIL BAR -->
+<div class="bulk-bar" id="bulkBar">
+  <div class="bulk-bar-left">
+    <button class="bulk-bar-select-all" id="bulkSelectAllBtn" onclick="bulkSelectAll()">Select All</button>
+    <span class="bulk-bar-count" id="bulkCount">0 selected</span>
+    <span class="bulk-progress" id="bulkProgress"></span>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button class="bulk-bar-cancel" onclick="toggleBulkMode()">Cancel</button>
+    <button class="bulk-bar-send" id="bulkSendBtn" onclick="openBulkEmailModal()" disabled>Compose Email</button>
+  </div>
+</div>
+
 <!-- EMAIL COMPOSER MODAL -->
 <div class="email-modal hidden" id="emailModal">
   <div class="email-modal-card">
     <div class="email-modal-header">
-      <h3>Email Preview</h3>
+      <h3 id="emailModalTitle">Email Preview</h3>
       <button class="email-modal-close" onclick="closeEmailModal()">&times;</button>
     </div>
+    <div class="email-modal-banner hidden" id="emailModalBanner"></div>
     <div class="email-modal-to" id="emailModalTo"></div>
     <input class="email-modal-subject" id="emailModalSubject" placeholder="Subject...">
     <div class="email-modal-toggle">
@@ -1375,7 +1457,7 @@ var ADDON_DEFS = [
 var SMART_FILTERS = [
   { id: 'smart-paid', label: 'Paid' },
   { id: 'smart-awaiting', label: 'Awaiting Payment' },
-  { id: 'smart-video', label: 'Video Pending' },
+  { id: 'smart-video', label: 'Needs Email' },
   { id: 'smart-addons', label: 'Has Add-ons' },
   { id: 'smart-waitlist', label: 'Waitlist' }
 ];
@@ -1731,7 +1813,7 @@ function renderFilterChips() {
   var smartCounts = {};
   smartCounts['smart-paid'] = state.applicants.filter(function(a) { return a.status === 'Payment Plan' || a.status === 'Paid in Full'; }).length;
   smartCounts['smart-awaiting'] = state.applicants.filter(function(a) { return a.status === 'Offer Sent'; }).length;
-  smartCounts['smart-video'] = state.applicants.filter(function(a) { return (a.status === 'Hard Yes' || a.status === 'Needs Call') && a.whatsappSent !== 'Yes'; }).length;
+  smartCounts['smart-video'] = state.applicants.filter(function(a) { return (a.status === 'Hard Yes' || a.status === 'Needs Call') && !a.emailSent; }).length;
   smartCounts['smart-addons'] = state.applicants.filter(function(a) { return hasApplicantAddons(a); }).length;
   smartCounts['smart-waitlist'] = counts['Waitlist'] || 0;
 
@@ -1896,20 +1978,16 @@ function renderCard(a) {
   var showStatusExtras = (a.status === 'Hard Yes' || a.status === 'Needs Call');
   var offerReady = a.accommodation && a.priceType;
   var offerSent = !!a.emailSent;
-  var videoSent = (a.whatsappSent === 'Yes');
   var noteClass = 'offer-email-note';
   var noteText = '';
   var sendBtnHtml = '';
   if (offerSent) {
     noteClass += ' sent';
     noteText = '&#10003; Email sent ' + formatDate(a.emailSent);
-  } else if (videoSent && offerReady) {
+  } else if (offerReady) {
     noteClass += ' ready';
     noteText = '&#10003; Ready to send';
     sendBtnHtml = '<button class="btn-send-email" onclick="openEmailModal('+a.row+')">&#9993; Compose &amp; Send Email</button>';
-  } else if (offerReady) {
-    noteClass += ' ready';
-    noteText = '&#10003; Ready — check Personal Video Sent to enable email';
   } else {
     noteText = 'Set accommodation and price type to enable offer email';
   }
@@ -1929,6 +2007,7 @@ function renderCard(a) {
 
     // ── HEADER ──
     + '<div class="card-header" onclick="toggleCard('+a.row+')">'
+    + '<div class="bulk-check-wrap"><input type="checkbox" class="bulk-check" data-row="'+a.row+'" onclick="event.stopPropagation();updateBulkCount()" data-email="'+(a.email||'')+'"></div>'
     + '<div class="card-header-left">'
     + '<div class="card-header-name">'
     + '<h2>'+name+'</h2>'
@@ -1957,7 +2036,6 @@ function renderCard(a) {
     + '<div class="field"><div class="field-label">Scholarship '+tooltip('Amount discounted from total. Deducted automatically from all invoice calculations.')+'</div><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;color:var(--text-muted);flex-shrink:0;">\u20AC</span><input type="number" id="sel-scholarship-'+a.row+'" min="0" step="50" value="'+(a.scholarship||'')+'" placeholder="0" oninput="markCardChanged('+a.row+')"></div></div>'
     + addonCheckboxes
     + '<div id="status-extras-'+a.row+'" style="'+(showStatusExtras?'':'display:none;')+'">'
-    + '<div class="checkbox-row"><input type="checkbox" id="wa-'+a.row+'"'+(a.whatsappSent==='Yes'?' checked':'')+' onchange="markCardChanged('+a.row+')"><label for="wa-'+a.row+'">Personal Video Sent '+tooltip('Tick this after Gabi sends her personal WhatsApp video. This triggers the offer email countdown.')+'</label></div>'
     + offerHtml
     + '</div>'
     + '<div class="field"><div class="field-label">Notes</div><textarea id="sel-notes-'+a.row+'" rows="3" oninput="markCardChanged('+a.row+')" placeholder="Internal notes...">'+esc(a.notes||'')+'</textarea></div>'
@@ -2011,6 +2089,7 @@ function renderCard(a) {
     + sysRow('Applied', a.timestamp ? formatDate(a.timestamp) : '—')
     + sysRow('Email Sent', a.emailSent ? formatDate(a.emailSent) : '—')
     + sysRow('Ghost Step', a.ghostStep || '0')
+    + sysRow('Dep Reminder Step', a.depReminderStep || '0')
     + sysRow('CK Tag', a.ckTag || '—')
     + sysRow('Migration Import', a.migrationImport ? 'Yes' : 'No')
     + '</div></div></div>'
@@ -2321,7 +2400,6 @@ async function saveCardChanges(row) {
   var priceEl = document.getElementById('sel-price-' + row);
   var scholarshipEl = document.getElementById('sel-scholarship-' + row);
   var notesEl = document.getElementById('sel-notes-' + row);
-  var waEl = document.getElementById('wa-' + row);
   var saveBtn = document.getElementById('floatingSaveBtn');
 
   var fields = {};
@@ -2330,7 +2408,6 @@ async function saveCardChanges(row) {
   var newPrice = priceEl ? priceEl.value : a.priceType;
   var newScholarship = scholarshipEl ? scholarshipEl.value : (a.scholarship || '');
   var newNotes = notesEl ? notesEl.value : (a.notes || '');
-  var newWa = waEl ? (waEl.checked ? 'Yes' : '') : (a.whatsappSent || '');
 
   // Read add-on checkboxes
   var liveAddons = {};
@@ -2345,7 +2422,6 @@ async function saveCardChanges(row) {
   if (newPrice !== a.priceType) fields.priceType = newPrice;
   if (newScholarship !== String(a.scholarship || '')) fields.scholarship = newScholarship;
   if (newNotes !== (a.notes || '')) fields.notes = newNotes;
-  if (newWa !== (a.whatsappSent || '')) fields.whatsappSent = newWa;
   if (newAddonsJson !== (a.addonsJson || '')) fields.addonsJson = newAddonsJson;
 
   if (Object.keys(fields).length === 0) {
@@ -2448,7 +2524,7 @@ function clearSearch() {
 function matchesSmartFilter(a, filterId) {
   if (filterId === 'smart-paid') return a.status === 'Payment Plan' || a.status === 'Paid in Full';
   if (filterId === 'smart-awaiting') return a.status === 'Offer Sent';
-  if (filterId === 'smart-video') return (a.status === 'Hard Yes' || a.status === 'Needs Call') && a.whatsappSent !== 'Yes';
+  if (filterId === 'smart-video') return (a.status === 'Hard Yes' || a.status === 'Needs Call') && !a.emailSent;
   if (filterId === 'smart-addons') return hasApplicantAddons(a);
   if (filterId === 'smart-waitlist') return a.status === 'Waitlist';
   return false;
@@ -2838,6 +2914,143 @@ function countryName(val) {
   }
   return s;
 }
+
+// ── BULK EMAIL MODE ──
+var bulkModeActive = false;
+
+function toggleBulkMode() {
+  bulkModeActive = !bulkModeActive;
+  document.body.classList.toggle('bulk-mode', bulkModeActive);
+  var bar = document.getElementById('bulkBar');
+  var btn = document.getElementById('bulkToggle');
+  if (bulkModeActive) {
+    bar.style.display = 'flex';
+    btn.textContent = 'Exit Bulk';
+    btn.style.background = 'var(--danger, #ef4444)';
+  } else {
+    bar.style.display = 'none';
+    btn.textContent = 'Bulk Email';
+    btn.style.background = '';
+    // Uncheck all
+    document.querySelectorAll('.bulk-check').forEach(function(cb) { cb.checked = false; });
+    document.getElementById('bulkSelectAllBtn').textContent = 'Select All';
+    document.getElementById('bulkProgress').textContent = '';
+  }
+  updateBulkCount();
+}
+
+function updateBulkCount() {
+  var checked = document.querySelectorAll('.bulk-check:checked');
+  var n = checked.length;
+  document.getElementById('bulkCount').textContent = n + ' selected';
+  document.getElementById('bulkSendBtn').disabled = n === 0;
+}
+
+function bulkSelectAll() {
+  var checks = document.querySelectorAll('.bulk-check');
+  // Only toggle visible cards (not display:none)
+  var visible = [];
+  checks.forEach(function(cb) {
+    var card = cb.closest('article');
+    if (card && card.style.display !== 'none') visible.push(cb);
+  });
+  var allChecked = visible.every(function(cb) { return cb.checked; });
+  visible.forEach(function(cb) { cb.checked = !allChecked; });
+  document.getElementById('bulkSelectAllBtn').textContent = allChecked ? 'Select All' : 'Deselect All';
+  updateBulkCount();
+}
+
+function openBulkEmailModal() {
+  var checked = document.querySelectorAll('.bulk-check:checked');
+  if (checked.length === 0) return;
+
+  var rows = [];
+  var emails = [];
+  checked.forEach(function(cb) {
+    rows.push(Number(cb.dataset.row));
+    if (cb.dataset.email) emails.push(cb.dataset.email);
+  });
+
+  // Store bulk state
+  emailModalRow = null;
+  window._bulkRows = rows;
+
+  // Set up modal for bulk
+  document.getElementById('emailModalTitle').textContent = 'Bulk Email (' + rows.length + ' recipients)';
+  document.getElementById('emailModalTo').innerHTML = '<strong>To:</strong> ' + rows.length + ' applicants (' + emails.slice(0, 3).join(', ') + (emails.length > 3 ? ', ...' : '') + ')';
+  document.getElementById('emailModalSubject').value = '';
+  document.getElementById('emailModalTextarea').value = '';
+  document.getElementById('emailModalPreview').innerHTML = '<p style="color:#888;">Write your email using merge tags: {{first_name}}, {{retreat_name}}, {{country}}, {{deposit_link}}, {{cal_link}}, {{open_spots}}</p>';
+
+  // Show banner
+  var banner = document.getElementById('emailModalBanner');
+  banner.textContent = 'Sending to ' + rows.length + ' applicants. Merge tags will be resolved per recipient.';
+  banner.classList.remove('hidden');
+
+  // Reset to edit mode for bulk
+  var toggleBtns = document.querySelectorAll('.email-modal-toggle button');
+  toggleBtns[0].classList.remove('active');
+  toggleBtns[1].classList.add('active');
+  document.getElementById('emailModalPreview').style.display = 'none';
+  document.getElementById('emailModalTextarea').style.display = '';
+
+  // Change send button
+  var sendBtn = document.getElementById('emailModalSendBtn');
+  sendBtn.textContent = 'Send to ' + rows.length + ' applicants';
+  sendBtn.onclick = sendBulkEmailFromModal;
+
+  document.getElementById('emailModal').classList.remove('hidden');
+}
+
+async function sendBulkEmailFromModal() {
+  var rows = window._bulkRows;
+  if (!rows || rows.length === 0) return;
+
+  var subject = document.getElementById('emailModalSubject').value;
+  var body = document.getElementById('emailModalTextarea').value;
+  if (!subject || !body) { showToast('Subject and body required', 'error'); return; }
+
+  var sendBtn = document.getElementById('emailModalSendBtn');
+  var progress = document.getElementById('bulkProgress');
+  sendBtn.textContent = 'Sending...';
+  sendBtn.disabled = true;
+  progress.textContent = 'Sending 0/' + rows.length + '...';
+
+  var result = await apiUpdate('sendBulkEmail', { rows: rows, subject: subject, body: body });
+
+  sendBtn.disabled = false;
+  progress.textContent = '';
+
+  if (result && result.ok) {
+    var sent = result.sent || rows.length;
+    var failed = result.failed || 0;
+    showToast('Bulk email sent to ' + sent + ' applicants' + (failed > 0 ? ' (' + failed + ' failed)' : ''), 'success');
+    closeEmailModal();
+    // Reset bulk mode
+    toggleBulkMode();
+    loadAll();
+  } else if (result && result.error) {
+    showToast('Error: ' + result.error, 'error');
+    sendBtn.textContent = 'Retry Send';
+  } else {
+    showToast('Failed to send — check connection', 'error');
+    sendBtn.textContent = 'Retry Send';
+  }
+}
+
+// Override closeEmailModal to reset bulk state
+var _origCloseEmailModal = closeEmailModal;
+closeEmailModal = function() {
+  _origCloseEmailModal();
+  window._bulkRows = null;
+  var banner = document.getElementById('emailModalBanner');
+  banner.classList.add('hidden');
+  banner.textContent = '';
+  document.getElementById('emailModalTitle').textContent = 'Email Preview';
+  var sendBtn = document.getElementById('emailModalSendBtn');
+  sendBtn.onclick = sendEmailFromModal;
+  sendBtn.textContent = 'Send Email';
+};
 </script>
 </body>
 </html>
