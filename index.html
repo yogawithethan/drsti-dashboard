@@ -874,12 +874,12 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 
 /* ── BULK EMAIL MODE ── */
 .bulk-toggle {
-  position: fixed; bottom: 20px; left: 20px; z-index: 900;
-  padding: 10px 18px; border-radius: var(--radius-pill);
-  border: 1px solid rgba(45,42,38,0.15); background: #fff;
-  font-family: var(--font-body); font-size: 13px; font-weight: 600;
+  flex-shrink: 0; margin-left: auto;
+  padding: 6px 14px; border-radius: var(--radius-pill);
+  border: 1px solid rgba(45,42,38,0.12); background: var(--bg-card);
+  font-family: var(--font-body); font-size: 11px; font-weight: 600;
   color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-xs);
 }
 .bulk-toggle:hover { border-color: var(--sage); color: var(--sage-dark); }
 .bulk-toggle.active { background: var(--sage-dark); color: #fff; border-color: var(--sage-dark); }
@@ -1345,8 +1345,6 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
   <button class="floating-save-btn" id="floatingSaveBtn" onclick="saveActiveCard()">Save Changes</button>
 </div>
 
-<button class="bulk-toggle" id="bulkToggle" onclick="toggleBulkMode()">Bulk Email</button>
-
 <!-- BULK EMAIL BAR -->
 <div class="bulk-bar" id="bulkBar">
   <div class="bulk-bar-left">
@@ -1759,6 +1757,7 @@ function renderInventory() {
       + '<span class="inv-nums">'+item.confirmed+'/'+item.total+'</span>'
       + '</div>';
   }
+  html += '<button class="bulk-toggle" id="bulkToggle" onclick="toggleBulkMode()">Bulk Email</button>';
   strip.innerHTML = html;
 }
 
