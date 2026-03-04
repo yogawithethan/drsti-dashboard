@@ -911,14 +911,22 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   color: var(--text-secondary); cursor: pointer;
 }
 .bulk-bar-select-all:hover { border-color: var(--sage); }
-.bulk-bar-send {
-  padding: 8px 20px; border-radius: var(--radius-sm);
-  border: none; background: var(--sage-dark);
-  font-family: var(--font-body); font-size: 13px; font-weight: 500;
-  color: #fff; cursor: pointer; transition: background 0.2s;
+.bulk-bar-action {
+  padding: 8px 16px; border-radius: var(--radius-sm);
+  border: 1px solid rgba(45,42,38,0.12); background: var(--bg-card);
+  font-family: var(--font-body); font-size: 12px; font-weight: 500;
+  color: var(--text); cursor: pointer; transition: all 0.15s;
 }
-.bulk-bar-send:hover { background: #3d5c40; }
-.bulk-bar-send:disabled { opacity: 0.5; cursor: not-allowed; }
+.bulk-bar-action:hover { border-color: var(--sage); }
+.bulk-bar-action:disabled { opacity: 0.4; cursor: not-allowed; }
+.bulk-bar-email { background: var(--sage-dark); color: #fff; border-color: var(--sage-dark); }
+.bulk-bar-email:hover { background: #3d5c40; }
+.bulk-status-select {
+  padding: 7px 10px; border-radius: var(--radius-sm);
+  border: 1px solid rgba(45,42,38,0.12); background: var(--bg-card);
+  font-family: var(--font-body); font-size: 12px; color: var(--text);
+  cursor: pointer; min-width: 140px;
+}
 .bulk-bar-cancel {
   padding: 5px 12px; border-radius: var(--radius-sm);
   border: 1px solid rgba(45,42,38,0.12); background: none;
@@ -1356,16 +1364,20 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
   <button class="floating-save-btn" id="floatingSaveBtn" onclick="saveActiveCard()">Save Changes</button>
 </div>
 
-<!-- BULK EMAIL BAR -->
+<!-- BULK ACTION BAR -->
 <div class="bulk-bar" id="bulkBar">
   <div class="bulk-bar-left">
     <button class="bulk-bar-select-all" id="bulkSelectAllBtn" onclick="bulkSelectAll()">Select All</button>
     <span class="bulk-bar-count" id="bulkCount">0 selected</span>
     <span class="bulk-progress" id="bulkProgress"></span>
   </div>
-  <div style="display:flex;gap:8px;">
+  <div style="display:flex;align-items:center;gap:8px;">
+    <select class="bulk-status-select" id="bulkStatusSelect" onchange="updateBulkCount()">
+      <option value="">Change Status...</option>
+    </select>
+    <button class="bulk-bar-action" id="bulkStatusBtn" onclick="bulkChangeStatus()" disabled>Apply Status</button>
+    <button class="bulk-bar-action bulk-bar-email" id="bulkSendBtn" onclick="openBulkEmailModal()" disabled>Compose Email</button>
     <button class="bulk-bar-cancel" onclick="toggleBulkMode()">Cancel</button>
-    <button class="bulk-bar-send" id="bulkSendBtn" onclick="openBulkEmailModal()" disabled>Compose Email</button>
   </div>
 </div>
 
@@ -1798,7 +1810,7 @@ function renderInventory() {
       + '<span class="inv-nums">'+item.confirmed+'/'+item.total+'</span>'
       + '</div>';
   }
-  html += '<button class="bulk-toggle" id="bulkToggle" onclick="toggleBulkMode()">Bulk Email</button>';
+  html += '<button class="bulk-toggle" id="bulkToggle" onclick="toggleBulkMode()">Select</button>';
   strip.innerHTML = html;
 }
 
@@ -2995,16 +3007,24 @@ function toggleBulkMode() {
   var btn = document.getElementById('bulkToggle');
   if (bulkModeActive) {
     bar.style.display = 'flex';
-    btn.textContent = 'Exit Bulk';
+    btn.textContent = 'Done';
     btn.style.background = 'var(--danger, #ef4444)';
+    btn.style.color = '#fff';
+    // Populate status dropdown
+    var sel = document.getElementById('bulkStatusSelect');
+    sel.innerHTML = '<option value="">Change Status...</option>';
+    STATUSES.forEach(function(s) {
+      sel.innerHTML += '<option value="' + s + '">' + s + '</option>';
+    });
   } else {
     bar.style.display = 'none';
-    btn.textContent = 'Bulk Email';
+    btn.textContent = 'Select';
     btn.style.background = '';
-    // Uncheck all
+    btn.style.color = '';
     document.querySelectorAll('.bulk-check').forEach(function(cb) { cb.checked = false; });
     document.getElementById('bulkSelectAllBtn').textContent = 'Select All';
     document.getElementById('bulkProgress').textContent = '';
+    document.getElementById('bulkStatusSelect').value = '';
   }
   updateBulkCount();
 }
@@ -3013,7 +3033,52 @@ function updateBulkCount() {
   var checked = document.querySelectorAll('.bulk-check:checked');
   var n = checked.length;
   document.getElementById('bulkCount').textContent = n + ' selected';
-  document.getElementById('bulkSendBtn').disabled = n === 0;
+  var hasSelection = n > 0;
+  document.getElementById('bulkSendBtn').disabled = !hasSelection;
+  document.getElementById('bulkStatusBtn').disabled = !hasSelection || !document.getElementById('bulkStatusSelect').value;
+}
+
+async function bulkChangeStatus() {
+  var newStatus = document.getElementById('bulkStatusSelect').value;
+  if (!newStatus) return;
+  var checked = document.querySelectorAll('.bulk-check:checked');
+  if (checked.length === 0) return;
+
+  var rows = [];
+  checked.forEach(function(cb) { rows.push(Number(cb.dataset.row)); });
+
+  var statusBtn = document.getElementById('bulkStatusBtn');
+  var progress = document.getElementById('bulkProgress');
+  statusBtn.textContent = 'Updating...';
+  statusBtn.disabled = true;
+
+  var updated = 0;
+  var errors = [];
+
+  for (var i = 0; i < rows.length; i++) {
+    progress.textContent = 'Updating ' + (i + 1) + '/' + rows.length + '...';
+    var result = await apiUpdate('updateApplicant', { row: rows[i], status: newStatus });
+    if (result && result.ok) {
+      updated++;
+      var a = state.applicants.find(function(x) { return x.row === rows[i]; });
+      if (a) a.status = newStatus;
+    } else {
+      errors.push('Row ' + rows[i] + ': ' + ((result && result.error) || 'failed'));
+    }
+  }
+
+  statusBtn.textContent = 'Apply Status';
+  statusBtn.disabled = false;
+  progress.textContent = '';
+
+  if (errors.length === 0) {
+    showToast('Updated ' + updated + ' applicants to ' + newStatus, 'success');
+    toggleBulkMode();
+    loadAll();
+  } else {
+    showToast(updated + ' updated, ' + errors.length + ' failed', 'error');
+    loadAll();
+  }
 }
 
 function bulkSelectAll() {
