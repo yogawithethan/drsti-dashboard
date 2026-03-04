@@ -166,9 +166,10 @@ body {
   border-radius: 14px; overflow: hidden;
   box-shadow: 0 4px 16px rgba(45,42,38,0.18);
   border: 1px solid rgba(45,42,38,0.08);
-  transition: filter 0.2s, box-shadow 0.2s, transform 0.15s;
+  transition: bottom 0.3s var(--ease-out), filter 0.2s, box-shadow 0.2s, transform 0.15s;
   display: block;
 }
+body.save-bar-visible .tcot-fab { bottom: 72px; }
 .tcot-fab img {
   width: 114%; height: 114%; object-fit: cover; display: block;
   margin: -7% 0 0 -7%;
@@ -405,6 +406,16 @@ body {
   background-position: right 8px center;
   padding-right: 24px;
 }
+
+/* ── FILTER SUMMARY ── */
+.filter-summary {
+  padding: 6px 16px 2px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  letter-spacing: 0.01em;
+}
+.filter-summary strong { font-weight: 600; color: var(--text-secondary); }
 
 /* ── CARDS CONTAINER ── */
 .cards {
@@ -669,30 +680,42 @@ body {
   background: var(--sage-light);
 }
 
-/* ── STICKY SAVE FOOTER ── */
-.save-footer {
-  position: sticky;
-  bottom: 0;
+/* ── FLOATING SAVE BAR ── */
+.floating-save {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 200;
   background: var(--bg-card);
-  border-top: 1px solid rgba(45,42,38,0.06);
+  border-top: 1px solid rgba(45,42,38,0.08);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
   padding: 12px 16px;
-  box-shadow: 0 -4px 16px rgba(0,0,0,0.04);
-  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  transform: translateY(100%);
+  transition: transform 0.3s var(--ease-out);
 }
-.save-footer-note {
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 1.4;
+.floating-save.visible {
+  transform: translateY(0);
+}
+.floating-save-name {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.save-footer-note.has-changes { color: #f39c12; }
-.save-footer-note.saved { color: var(--sage); }
-
-.btn-save {
+.floating-save-note {
+  font-size: 11px;
+  color: #f39c12;
+  flex-shrink: 0;
+}
+.floating-save-btn {
   padding: 10px 24px;
   border-radius: var(--radius-sm);
   font-family: var(--font-body);
@@ -700,19 +723,149 @@ body {
   font-weight: 500;
   cursor: pointer;
   border: none;
-  background: rgba(45,42,38,0.08);
-  color: var(--text-muted);
-  transition: all 0.2s;
+  background: var(--sage-dark);
+  color: white;
+  transition: background 0.2s, transform 0.1s;
   white-space: nowrap;
   flex-shrink: 0;
 }
-.btn-save.has-changes {
-  background: var(--sage-dark);
-  color: white;
+.floating-save-btn:hover { background: #3d5c40; }
+.floating-save-btn:active { transform: scale(0.97); }
+.floating-save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── EMAIL COMPOSER MODAL ── */
+.email-modal {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(12px);
+  display: flex; align-items: stretch; justify-content: center;
+  animation: fadeIn 0.25s var(--ease-out);
 }
-.btn-save.has-changes:hover { background: #3d5c40; }
-.btn-save.has-changes:active { transform: scale(0.97); }
-.btn-save.saved { background: var(--sage-light); color: var(--sage-dark); cursor: default; }
+.email-modal.hidden { display: none; }
+.email-modal-card {
+  width: 100%; max-width: 560px;
+  background: var(--bg-card);
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow-lg);
+}
+@media (min-width: 640px) {
+  .email-modal-card {
+    margin: 24px auto;
+    border-radius: var(--radius-lg);
+    max-height: calc(100dvh - 48px);
+  }
+}
+.email-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(45,42,38,0.08);
+  flex-shrink: 0;
+}
+.email-modal-header h3 {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 400;
+  color: var(--sage-dark);
+}
+.email-modal-close {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(45,42,38,0.1);
+  background: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--text-muted);
+  transition: background 0.15s;
+}
+.email-modal-close:hover { background: var(--sage-mist); }
+.email-modal-to {
+  padding: 10px 16px;
+  font-size: 12px; color: var(--text-muted);
+  border-bottom: 1px solid rgba(45,42,38,0.06);
+  flex-shrink: 0;
+}
+.email-modal-to strong { color: var(--text-secondary); }
+.email-modal-subject {
+  width: 100%; padding: 10px 16px;
+  border: none; border-bottom: 1px solid rgba(45,42,38,0.06);
+  font-family: var(--font-body); font-size: 14px; font-weight: 500;
+  color: var(--text); background: transparent;
+  outline: none; flex-shrink: 0;
+}
+.email-modal-subject:focus { border-bottom-color: var(--sage); }
+.email-modal-toggle {
+  display: flex; gap: 0; padding: 8px 16px 0;
+  flex-shrink: 0;
+}
+.email-modal-toggle button {
+  padding: 6px 14px; border: 1px solid rgba(45,42,38,0.1);
+  background: none; font-family: var(--font-body);
+  font-size: 12px; font-weight: 500; color: var(--text-muted);
+  cursor: pointer; transition: all 0.15s;
+}
+.email-modal-toggle button:first-child { border-radius: 6px 0 0 6px; }
+.email-modal-toggle button:last-child { border-radius: 0 6px 6px 0; border-left: none; }
+.email-modal-toggle button.active {
+  background: var(--sage-dark); color: #fff; border-color: var(--sage-dark);
+}
+.email-modal-body {
+  flex: 1; overflow-y: auto; padding: 0;
+  min-height: 200px;
+}
+.email-modal-preview {
+  padding: 16px;
+  font-family: var(--font-body); font-size: 13px;
+  line-height: 1.65; color: var(--text);
+}
+.email-modal-preview hr {
+  border: none; border-top: 1px solid rgba(45,42,38,0.1);
+  margin: 12px 0;
+}
+.email-modal-preview a { color: var(--sage-dark); }
+.email-modal-preview b, .email-modal-preview strong { font-weight: 600; }
+.email-modal-textarea {
+  width: 100%; height: 100%; min-height: 300px;
+  padding: 16px; border: none; outline: none;
+  font-family: var(--font-body); font-size: 13px;
+  line-height: 1.65; color: var(--text);
+  background: var(--bg); resize: none;
+}
+.email-modal-footer {
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 10px; padding: 12px 16px;
+  border-top: 1px solid rgba(45,42,38,0.08);
+  flex-shrink: 0;
+}
+.email-modal-cancel {
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  border: 1px solid rgba(45,42,38,0.12);
+  background: none; font-family: var(--font-body);
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary); cursor: pointer;
+  transition: background 0.15s;
+}
+.email-modal-cancel:hover { background: var(--bg); }
+.email-modal-send {
+  padding: 10px 24px; border-radius: var(--radius-sm);
+  border: none; background: var(--sage-dark);
+  font-family: var(--font-body); font-size: 13px;
+  font-weight: 500; color: #fff; cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.email-modal-send:hover { background: #3d5c40; }
+.email-modal-send:active { transform: scale(0.97); }
+.email-modal-send:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-send-email {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; margin-top: 8px;
+  border-radius: var(--radius-sm);
+  border: none; background: var(--sage-dark);
+  font-family: var(--font-body); font-size: 12px;
+  font-weight: 500; color: #fff; cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-send-email:hover { background: #3d5c40; }
+.btn-send-email:active { transform: scale(0.97); }
 
 /* ── QA ROWS (Application Answers) ── */
 .qa-row {
@@ -1016,13 +1169,21 @@ body {
     flex-wrap: wrap;
   }
   .filter-bar .search-wrap {
-    flex: 1; width: auto; order: 1;
+    flex: 1; width: auto; min-width: 0; order: 1;
   }
   .filter-bar .search-wrap:focus-within { width: auto; }
-  .filter-bar .sort-select { order: 2; }
+  .filter-bar .sort-select { order: 2; flex-shrink: 0; }
   .filter-bar .filter-chips {
-    order: 3; width: 100%;
+    order: 3; width: 100%; flex: 0 0 100%;
+    padding-right: 16px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    overflow-x: auto;
+    flex-wrap: nowrap;
   }
+  .filter-bar .filter-chips::-webkit-scrollbar { display: none; }
+  .filter-bar .filter-chips .chip { scroll-snap-align: start; }
 }
 
 /* ── RESPONSIVE ── */
@@ -1032,6 +1193,7 @@ body {
   .retreat-bar { padding: 0 24px 10px; }
   .inv-strip { padding: 8px 24px 12px; }
   .filter-bar { padding: 8px 24px 12px; }
+  .filter-summary { padding: 6px 24px 2px; max-width: 600px; margin: 0 auto; }
   .search-wrap { width: 150px; }
   .search-wrap:focus-within { width: 200px; }
 }
@@ -1095,11 +1257,44 @@ body {
   </select>
 </nav>
 
+<!-- FILTER SUMMARY -->
+<div class="filter-summary" id="filterSummary"></div>
+
 <!-- CARDS -->
 <main class="cards" id="cardsContainer"></main>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<div class="floating-save" id="floatingSave">
+  <span class="floating-save-name" id="floatingSaveName"></span>
+  <span class="floating-save-note">Unsaved</span>
+  <button class="floating-save-btn" id="floatingSaveBtn" onclick="saveActiveCard()">Save Changes</button>
+</div>
+
+<!-- EMAIL COMPOSER MODAL -->
+<div class="email-modal hidden" id="emailModal">
+  <div class="email-modal-card">
+    <div class="email-modal-header">
+      <h3>Email Preview</h3>
+      <button class="email-modal-close" onclick="closeEmailModal()">&times;</button>
+    </div>
+    <div class="email-modal-to" id="emailModalTo"></div>
+    <input class="email-modal-subject" id="emailModalSubject" placeholder="Subject...">
+    <div class="email-modal-toggle">
+      <button class="active" onclick="toggleEmailView('preview')">Preview</button>
+      <button onclick="toggleEmailView('edit')">Edit</button>
+    </div>
+    <div class="email-modal-body">
+      <div class="email-modal-preview" id="emailModalPreview"></div>
+      <textarea class="email-modal-textarea" id="emailModalTextarea" style="display:none;"></textarea>
+    </div>
+    <div class="email-modal-footer">
+      <button class="email-modal-cancel" onclick="closeEmailModal()">Cancel</button>
+      <button class="email-modal-send" id="emailModalSendBtn" onclick="sendEmailFromModal()">Send Email</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ── CONFIG ──
@@ -1115,10 +1310,12 @@ var state = {
   applicants: [],
   inventory: [],
   lastFetch: null,
-  activeFilter: 'all',
+  activeFilters: [],
   sortBy: 'newest',
   expandedCards: {},
-  searchQuery: ''
+  searchQuery: '',
+  dirtyCards: {},
+  activeRow: null
 };
 
 // ── CONSTANTS ──
@@ -1177,6 +1374,18 @@ var SMART_FILTERS = [
   { id: 'smart-addons', label: 'Has Add-ons' },
   { id: 'smart-waitlist', label: 'Waitlist' }
 ];
+
+// ── EMAIL TEMPLATES (mirrors emailTemplates.gs) ──
+var EMAIL_TEMPLATES_JS = {
+  'hard-yes': {
+    subject: 'About your Course application \ud83d\ude4f\ud83c\udffb\ud83e\udd73',
+    body: '{{first_name}},\n\nWe\'ve finished reviewing applications \u2014 and yours stood out.\n\nWe don\'t extend this invitation to everyone, so we wanted to reach out directly: we\'d love to hold a spot for you in {{country}} this {{retreat_month}}.\n\nBy now you may have also received a short video from Gabi (or will be receiving one shortly). That\'s her way of saying the same thing \u2014 we mean it personally, not just on paper.\n\n**Here\'s how to make it official:**\n\nA {{deposit_amount}} deposit secures your place. It counts toward your total, and the remaining balance is due within **10 days** of your deposit.\n\n\ud83d\udc49 [Reserve my spot \u2192]({{deposit_link}})\n\nWe\'re holding this for you for **5 days**. After that we\'ll need to release it to the waitlist \u2014 there are only {{open_spots}} spots total and several are already spoken for.\n\n---\n\n\n{{payment_summary}}\n\n---\n\nOnce your payment is confirmed, we\'ll send you everything you need to get ready \u2014 flight details and arrival instructions, an invite to our private group, recommended reading, and a few special surprises. \ud83c\udf81\n\nWe\'d love to talk it through before you commit \u2014 even just 20 minutes makes a big difference. Book a free call with Gabi and Ethan here:\n\n\ud83d\udcde [Schedule a call \u2192]({{cal_link}})\n\nWe hope to see you in {{country}}. \ud83c\udf3f\n\nWith love,\nEthan & Gabi \u0950\n\n*{{retreat_name}} \u00b7 {{retreat_dates}} \u00b7 {{venue_name}}, {{city}}, {{country}}*\n*Questions? Just reply to this email.*'
+  },
+  'needs-call': {
+    subject: 'About your Course application \ud83d\ude4f\ud83c\udffb',
+    body: '{{first_name}},\n\nThank you for applying to *{{retreat_name}}*. We\'ve read through your application carefully and we\'d love to connect before moving forward.\n\nThere\'s nothing to be concerned about \ud83d\ude0c \u2014 we simply find that a short conversation makes all the difference. It lets us answer your questions, understand where you are on your path, and make sure *The Course* is the right fit for this moment in your life.\n\n**We\'d love to book a free 20-minute call with Gabi and Ethan:**\n\n\ud83d\udcde [Choose a time \u2192]({{cal_link}})\n\nSpots for {{country}} are filling up, so we\'d love to connect with you this week if possible.\n\nIn the meantime, if anything comes to mind \u2014 questions about the schedule, the food, what to expect \u2014 just reply here. We\'re real people on the other end of this email and genuinely happy to help.\n\nWith love,\nEthan & Gabi \u0950\n\n*{{retreat_name}} \u00b7 {{retreat_dates}} \u00b7 {{venue_name}}, {{city}}, {{country}}*'
+  }
+};
 
 // ── RETREATS (loaded from API) ──
 var RETREATS = {};
@@ -1500,6 +1709,13 @@ function hasApplicantAddons(a) {
   return false;
 }
 
+function isFilterActive(id) {
+  return state.activeFilters.indexOf(id) !== -1;
+}
+function isAllActive() {
+  return state.activeFilters.length === 0;
+}
+
 function renderFilterChips() {
   var container = document.getElementById('filterChips');
   var counts = {};
@@ -1514,12 +1730,12 @@ function renderFilterChips() {
   smartCounts['smart-addons'] = state.applicants.filter(function(a) { return hasApplicantAddons(a); }).length;
   smartCounts['smart-waitlist'] = counts['Waitlist'] || 0;
 
-  var html = '<button class="chip'+(state.activeFilter==='all'?' active':'')+'" onclick="applyFilter(\'all\')">All <span class="chip-count">'+state.applicants.length+'</span></button>';
+  var html = '<button class="chip'+(isAllActive()?' active':'')+'" onclick="applyFilter(\'all\')">All <span class="chip-count">'+state.applicants.length+'</span></button>';
 
   // Smart filters
   SMART_FILTERS.forEach(function(sf) {
     if (smartCounts[sf.id] === 0) return;
-    var active = state.activeFilter === sf.id ? ' active' : '';
+    var active = isFilterActive(sf.id) ? ' active' : '';
     html += '<button class="chip smart-chip'+active+'" onclick="applyFilter(\''+sf.id+'\')">'+esc(sf.label)+' <span class="chip-count">'+smartCounts[sf.id]+'</span></button>';
   });
 
@@ -1529,10 +1745,32 @@ function renderFilterChips() {
   // Status filters
   STATUSES.forEach(function(s) {
     if (counts[s] === 0) return;
-    var active = state.activeFilter === s ? ' active' : '';
+    var active = isFilterActive(s) ? ' active' : '';
     html += '<button class="chip'+active+'" onclick="applyFilter(\''+s+'\')">'+esc(s)+' <span class="chip-count">'+counts[s]+'</span></button>';
   });
   container.innerHTML = html;
+
+  renderFilterSummary();
+}
+
+function renderFilterSummary() {
+  var el = document.getElementById('filterSummary');
+  if (!el) return;
+  if (isAllActive()) {
+    el.innerHTML = '';
+    return;
+  }
+  var labels = [];
+  state.activeFilters.forEach(function(f) {
+    if (f.indexOf('smart-') === 0) {
+      var sf = SMART_FILTERS.find(function(s) { return s.id === f; });
+      if (sf) labels.push(sf.label);
+    } else {
+      labels.push(f);
+    }
+  });
+  var list = getFilteredSorted();
+  el.innerHTML = '<strong>Filtered by:</strong> ' + labels.map(esc).join(', ') + ' &middot; ' + list.length + ' applicant' + (list.length !== 1 ? 's' : '');
 }
 
 // ── RENDER: CARDS ──
@@ -1638,27 +1876,31 @@ function renderCard(a) {
     priceOpts += '<option value="'+x+'"'+(x===a.priceType?' selected':'')+'>'+label+'</option>';
   });
 
-  // Offer email status (for Hard Yes / Needs Call)
-  var showOfferSection = (a.status === 'Hard Yes' || a.status === 'Needs Call');
-  var offerHtml = '';
-  if (showOfferSection) {
-    var offerReady = a.accommodation && a.priceType;
-    var offerSent = !!a.emailSent;
-    var noteClass = 'offer-email-note';
-    var noteText = '';
-    if (offerSent) {
-      noteClass += ' sent';
-      noteText = '&#10003; Email sent ' + formatDate(a.emailSent);
-    } else if (offerReady) {
-      noteClass += ' ready';
-      noteText = '&#10003; Ready — check Personal Video Sent, then Save to trigger email';
-    } else {
-      noteText = 'Set accommodation and price type to enable offer email';
-    }
-    offerHtml = '<div class="divider"></div>'
-      + '<div><div class="slabel">Offer Email '+tooltip('Creates a Stripe deposit invoice and sends the hard-yes email with the deposit link included. Cannot be undone \u2014 only send when ready.')+'</div>'
-      + '<div class="offer-email-box"><div class="'+noteClass+'">'+noteText+'</div></div></div>';
+  // Offer email status — always built, shown/hidden dynamically
+  var showStatusExtras = (a.status === 'Hard Yes' || a.status === 'Needs Call');
+  var offerReady = a.accommodation && a.priceType;
+  var offerSent = !!a.emailSent;
+  var videoSent = (a.whatsappSent === 'Yes');
+  var noteClass = 'offer-email-note';
+  var noteText = '';
+  var sendBtnHtml = '';
+  if (offerSent) {
+    noteClass += ' sent';
+    noteText = '&#10003; Email sent ' + formatDate(a.emailSent);
+  } else if (videoSent && offerReady) {
+    noteClass += ' ready';
+    noteText = '&#10003; Ready to send';
+    sendBtnHtml = '<button class="btn-send-email" onclick="openEmailModal('+a.row+')">&#9993; Compose &amp; Send Email</button>';
+  } else if (offerReady) {
+    noteClass += ' ready';
+    noteText = '&#10003; Ready — check Personal Video Sent to enable email';
+  } else {
+    noteText = 'Set accommodation and price type to enable offer email';
   }
+  var offerHtml = '<div class="divider"></div>'
+    + '<div><div class="slabel">Offer Email '+tooltip('Opens an editable email preview before sending. Cannot be undone \u2014 only send when ready.')+'</div>'
+    + '<div class="offer-email-box"><div class="'+noteClass+'">'+noteText+'</div></div>'
+    + sendBtnHtml + '</div>';
 
   // Room preference
   var roomPref = a.roomPlan || a.roomFull || a.roomEB || a.roomEBFull || '—';
@@ -1691,16 +1933,18 @@ function renderCard(a) {
     + '<button class="accordion-trigger open" onclick="toggleAccordion(this)">Overview '+arrowSvg+'</button>'
     + '<div class="accordion-body open">'
     + '<div style="padding-top:14px;display:flex;flex-direction:column;gap:12px;">'
-    + '<div class="field"><div class="field-label">Status</div><select id="sel-status-'+a.row+'" onchange="markCardChanged('+a.row+')">'+statusOpts+'</select></div>'
+    + '<div class="field"><div class="field-label">Status</div><select id="sel-status-'+a.row+'" onchange="markCardChanged('+a.row+');updateStatusExtras('+a.row+')">'+statusOpts+'</select></div>'
     + '<div class="field-row">'
     + '<div class="field"><div class="field-label">Accommodation</div><select id="sel-accom-'+a.row+'" onchange="markCardChanged('+a.row+')">'+accomOpts+'</select></div>'
     + '<div class="field"><div class="field-label">Price Type '+tooltip('EB = Early Bird (before March 20). Plan = 3 instalments. Full = pay in full with 10% discount.')+'</div><select id="sel-price-'+a.row+'" onchange="markCardChanged('+a.row+')">'+priceOpts+'</select></div>'
     + '</div>'
     + '<div class="field"><div class="field-label">Scholarship '+tooltip('Amount discounted from total. Deducted automatically from all invoice calculations.')+'</div><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;color:var(--text-muted);flex-shrink:0;">\u20AC</span><input type="number" id="sel-scholarship-'+a.row+'" min="0" step="50" value="'+(a.scholarship||'')+'" placeholder="0" oninput="markCardChanged('+a.row+')"></div></div>'
     + addonCheckboxes
-    + ((a.status === 'Hard Yes' || a.status === 'Needs Call') ? '<div class="checkbox-row"><input type="checkbox" id="wa-'+a.row+'"'+(a.whatsappSent==='Yes'?' checked':'')+' onchange="markCardChanged('+a.row+')"><label for="wa-'+a.row+'">Personal Video Sent '+tooltip('Tick this after Gabi sends her personal WhatsApp video. This triggers the offer email countdown.')+'</label></div>' : '')
-    + '<div class="field"><div class="field-label">Notes</div><textarea id="sel-notes-'+a.row+'" rows="3" oninput="markCardChanged('+a.row+')" placeholder="Internal notes...">'+esc(a.notes||'')+'</textarea></div>'
+    + '<div id="status-extras-'+a.row+'" style="'+(showStatusExtras?'':'display:none;')+'">'
+    + '<div class="checkbox-row"><input type="checkbox" id="wa-'+a.row+'"'+(a.whatsappSent==='Yes'?' checked':'')+' onchange="markCardChanged('+a.row+')"><label for="wa-'+a.row+'">Personal Video Sent '+tooltip('Tick this after Gabi sends her personal WhatsApp video. This triggers the offer email countdown.')+'</label></div>'
     + offerHtml
+    + '</div>'
+    + '<div class="field"><div class="field-label">Notes</div><textarea id="sel-notes-'+a.row+'" rows="3" oninput="markCardChanged('+a.row+')" placeholder="Internal notes...">'+esc(a.notes||'')+'</textarea></div>'
     + '</div></div></div>'
 
     // Application accordion with tabs (closed)
@@ -1755,12 +1999,6 @@ function renderCard(a) {
     + sysRow('Migration Import', a.migrationImport ? 'Yes' : 'No')
     + '</div></div></div>'
 
-    // Sticky save footer
-    + '<div class="save-footer" id="saveFooter-'+a.row+'">'
-    + '<span class="save-footer-note" id="saveNote-'+a.row+'">No unsaved changes</span>'
-    + '<button class="btn-save" id="saveBtn-'+a.row+'" onclick="saveCardChanges('+a.row+')">Saved</button>'
-    + '</div>'
-
     + '</div></article>';
 }
 
@@ -1788,6 +2026,30 @@ function toggleAccordion(trigger) {
   if (!isOpen && trigger.textContent.trim() === 'Payment') {
     var card = trigger.closest('[data-row]');
     if (card) refreshPaymentSection(parseInt(card.dataset.row));
+  }
+}
+
+function updateStatusExtras(row) {
+  var statusEl = document.getElementById('sel-status-' + row);
+  var extrasEl = document.getElementById('status-extras-' + row);
+  if (!statusEl || !extrasEl) return;
+  var show = statusEl.value === 'Hard Yes' || statusEl.value === 'Needs Call';
+  extrasEl.style.display = show ? '' : 'none';
+}
+
+function rerenderSingleCard(row) {
+  var a = state.applicants.find(function(x) { return x.row === row; });
+  if (!a) return;
+  var oldCard = document.querySelector('[data-row="' + row + '"]');
+  if (!oldCard) return;
+  var wasExpanded = state.expandedCards[row];
+  var tmp = document.createElement('div');
+  tmp.innerHTML = renderCard(a);
+  var newCard = tmp.firstElementChild;
+  oldCard.replaceWith(newCard);
+  if (wasExpanded) {
+    state.expandedCards[row] = true;
+    newCard.classList.add('expanded');
   }
 }
 
@@ -1822,10 +2084,212 @@ function refreshPaymentSection(row) {
 }
 
 function markCardChanged(row) {
-  var note = document.getElementById('saveNote-' + row);
-  var btn = document.getElementById('saveBtn-' + row);
-  if (note) { note.textContent = 'Unsaved changes'; note.className = 'save-footer-note has-changes'; }
-  if (btn) { btn.textContent = 'Save Changes'; btn.className = 'btn-save has-changes'; }
+  state.dirtyCards[row] = true;
+  state.activeRow = row;
+  var a = state.applicants.find(function(x){ return x.row === row; });
+  var bar = document.getElementById('floatingSave');
+  var nameEl = document.getElementById('floatingSaveName');
+  if (bar && nameEl && a) {
+    nameEl.textContent = (a.firstName || '') + ' ' + (a.lastName || '');
+    bar.classList.add('visible');
+    document.body.classList.add('save-bar-visible');
+  }
+}
+
+function saveActiveCard() {
+  if (state.activeRow) saveCardChanges(state.activeRow);
+}
+
+function hideFloatingSave() {
+  var bar = document.getElementById('floatingSave');
+  if (bar) bar.classList.remove('visible');
+  document.body.classList.remove('save-bar-visible');
+}
+
+function showFloatingSaveForNextDirty() {
+  var rows = Object.keys(state.dirtyCards);
+  if (rows.length === 0) {
+    hideFloatingSave();
+    return;
+  }
+  var nextRow = parseInt(rows[0]);
+  state.activeRow = nextRow;
+  var a = state.applicants.find(function(x){ return x.row === nextRow; });
+  var bar = document.getElementById('floatingSave');
+  var nameEl = document.getElementById('floatingSaveName');
+  if (bar && nameEl && a) {
+    nameEl.textContent = (a.firstName || '') + ' ' + (a.lastName || '');
+    bar.classList.add('visible');
+    document.body.classList.add('save-bar-visible');
+  }
+}
+
+// ── EMAIL COMPOSER MODAL ──
+var emailModalRow = null;
+
+function formatNumberPlain(num) {
+  if (!num) return '0';
+  var n = Number(num);
+  if (n % 1 === 0) return n.toLocaleString();
+  return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function resolveEmailTemplate(a) {
+  var templateKey = (a.status === 'Hard Yes') ? 'hard-yes' : 'needs-call';
+  var tpl = EMAIL_TEMPLATES_JS[templateKey];
+  if (!tpl) return { subject: '', body: '' };
+
+  var meta = RETREAT_META[activeRetreat] || {};
+  var config = meta.config || {};
+
+  var retreatName = config['Retreat Name'] || 'The Course of Transformation';
+  if (retreatName.indexOf('The ') !== 0 && retreatName.indexOf('the ') !== 0) retreatName = 'The ' + retreatName;
+  if (retreatName.indexOf(' \u00b7 ') !== -1) retreatName = retreatName.split(' \u00b7 ')[0];
+
+  var symbol = config['Currency Symbol'] || '\u20ac';
+  var deposit = config['Deposit Amount'] || DEPOSIT_AMOUNT;
+  var priceKey = PRICE_TYPE_MAP[a.priceType] || 'plan';
+  var prices = ACCOM_PRICES[a.accommodation];
+  var basePrice = prices ? (prices[priceKey] || 0) : 0;
+  var scholarship = Number(a.scholarship) || 0;
+  if (scholarship > 0) basePrice = basePrice - scholarship;
+
+  // Build payment summary
+  var paymentSummary = '';
+  if (!basePrice || !a.priceType) {
+    paymentSummary = '_Accommodation and payment details will be confirmed shortly._';
+  } else if (a.priceType === 'Pay Full' || a.priceType === 'EB Full') {
+    var remaining = basePrice - deposit;
+    paymentSummary = '**Your pricing:**\nTotal: ' + symbol + formatNumberPlain(basePrice)
+      + '\nDeposit: ' + symbol + formatNumberPlain(deposit)
+      + '\nRemaining balance: ' + symbol + formatNumberPlain(remaining) + ' (due within two weeks of your deposit)\n';
+  } else {
+    var remaining = basePrice - deposit;
+    var installment = Math.floor(remaining / 3 * 100) / 100;
+    var lastInstallment = Math.round((remaining - installment * 2) * 100) / 100;
+    paymentSummary = '**Your pricing (' + a.priceType + '):**\nTotal: ' + symbol + formatNumberPlain(basePrice)
+      + '\nDeposit: ' + symbol + formatNumberPlain(deposit) + ' (today)'
+      + '\nPayment 1: ' + symbol + formatNumberPlain(installment)
+      + '\nPayment 2: ' + symbol + formatNumberPlain(installment)
+      + '\nPayment 3: ' + symbol + formatNumberPlain(lastInstallment) + '\n_Exact dates will be sent once your deposit is confirmed._\n';
+  }
+
+  // Compute open spots
+  var openSpots = MAX_PARTICIPANTS;
+  var confirmed = state.applicants.filter(function(x) {
+    return CONFIRMED_STATUSES.indexOf(x.status) !== -1;
+  }).length;
+  openSpots = MAX_PARTICIPANTS - confirmed;
+  if (openSpots < 0) openSpots = 0;
+
+  var tags = {
+    'first_name': a.firstName || '',
+    'full_name': (a.firstName || '') + ' ' + (a.lastName || ''),
+    'email': a.email || '',
+    'phone': a.phone || '',
+    'accommodation': a.accommodation || '',
+    'deposit_amount': symbol + formatNumberPlain(deposit),
+    'deposit_link': '[deposit link \u2014 generated on send]',
+    'payment_summary': paymentSummary,
+    'retreat_name': retreatName,
+    'retreat_dates': config['Retreat Dates'] || '',
+    'venue_name': config['Venue Name'] || '',
+    'city': config['City'] || '',
+    'country': config['Country'] || '',
+    'open_spots': String(openSpots),
+    'retreat_month': config['Retreat Month'] || '',
+    'cal_link': config['Cal Link'] || ''
+  };
+
+  var subject = tpl.subject;
+  var body = tpl.body;
+  for (var key in tags) {
+    var ph = '{{' + key + '}}';
+    subject = subject.split(ph).join(tags[key] || '');
+    body = body.split(ph).join(tags[key] || '');
+  }
+  return { subject: subject, body: body };
+}
+
+function markdownToHtmlPreview(text) {
+  return text
+    .replace(/^---$/gm, '<hr>')
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/\*(.+?)\*/g, '<i>$1</i>')
+    .replace(/_(.+?)_/g, '<i>$1</i>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+    .replace(/\n/g, '<br>');
+}
+
+function openEmailModal(row) {
+  var a = state.applicants.find(function(x) { return x.row === row; });
+  if (!a) return;
+  emailModalRow = row;
+
+  var resolved = resolveEmailTemplate(a);
+  document.getElementById('emailModalTo').innerHTML = '<strong>To:</strong> ' + esc(a.email || '');
+  document.getElementById('emailModalSubject').value = resolved.subject;
+  document.getElementById('emailModalTextarea').value = resolved.body;
+  document.getElementById('emailModalPreview').innerHTML = markdownToHtmlPreview(resolved.body);
+
+  // Reset to preview mode
+  var toggleBtns = document.querySelectorAll('.email-modal-toggle button');
+  toggleBtns[0].classList.add('active');
+  toggleBtns[1].classList.remove('active');
+  document.getElementById('emailModalPreview').style.display = '';
+  document.getElementById('emailModalTextarea').style.display = 'none';
+
+  document.getElementById('emailModal').classList.remove('hidden');
+}
+
+function closeEmailModal() {
+  document.getElementById('emailModal').classList.add('hidden');
+  emailModalRow = null;
+}
+
+function toggleEmailView(mode) {
+  var toggleBtns = document.querySelectorAll('.email-modal-toggle button');
+  var preview = document.getElementById('emailModalPreview');
+  var textarea = document.getElementById('emailModalTextarea');
+  if (mode === 'preview') {
+    toggleBtns[0].classList.add('active');
+    toggleBtns[1].classList.remove('active');
+    preview.innerHTML = markdownToHtmlPreview(textarea.value);
+    preview.style.display = '';
+    textarea.style.display = 'none';
+  } else {
+    toggleBtns[1].classList.add('active');
+    toggleBtns[0].classList.remove('active');
+    preview.style.display = 'none';
+    textarea.style.display = '';
+    textarea.focus();
+  }
+}
+
+async function sendEmailFromModal() {
+  if (!emailModalRow) return;
+  var subject = document.getElementById('emailModalSubject').value;
+  var body = document.getElementById('emailModalTextarea').value;
+  var sendBtn = document.getElementById('emailModalSendBtn');
+  sendBtn.textContent = 'Sending...';
+  sendBtn.disabled = true;
+
+  var result = await apiUpdate('sendCustomEmail', { row: emailModalRow, subject: subject, body: body });
+  sendBtn.textContent = 'Send Email';
+  sendBtn.disabled = false;
+
+  if (result && result.ok) {
+    showToast('Email sent', 'success');
+    // Update local data
+    var a = state.applicants.find(function(x) { return x.row === emailModalRow; });
+    if (a) a.emailSent = new Date().toISOString();
+    closeEmailModal();
+    rerenderSingleCard(emailModalRow);
+  } else if (result && result.error) {
+    showToast('Error: ' + result.error, 'error');
+  } else if (!result) {
+    showToast('Failed to send — check connection', 'error');
+  }
 }
 
 /**
@@ -1842,8 +2306,7 @@ async function saveCardChanges(row) {
   var scholarshipEl = document.getElementById('sel-scholarship-' + row);
   var notesEl = document.getElementById('sel-notes-' + row);
   var waEl = document.getElementById('wa-' + row);
-  var note = document.getElementById('saveNote-' + row);
-  var btn = document.getElementById('saveBtn-' + row);
+  var saveBtn = document.getElementById('floatingSaveBtn');
 
   var fields = {};
   var newStatus = statusEl ? statusEl.value : a.status;
@@ -1875,7 +2338,7 @@ async function saveCardChanges(row) {
   }
 
   // Disable button while saving
-  if (btn) { btn.textContent = 'Saving...'; btn.className = 'btn-save has-changes'; btn.disabled = true; }
+  if (saveBtn) { saveBtn.textContent = 'Saving...'; saveBtn.disabled = true; }
 
   // Optimistic update
   for (var k in fields) a[k] = fields[k];
@@ -1894,22 +2357,21 @@ async function saveCardChanges(row) {
   }
 
   var result = await apiUpdate('updateApplicant', { row: row, fields: fields });
+  if (saveBtn) { saveBtn.textContent = 'Save Changes'; saveBtn.disabled = false; }
+
   if (result && result.ok) {
     showToast('Changes saved', 'success');
-    if (note) { note.textContent = 'All changes saved'; note.className = 'save-footer-note saved'; }
-    if (btn) { btn.textContent = 'Saved'; btn.className = 'btn-save saved'; btn.disabled = false; }
-    setTimeout(function(){
-      if (note) { note.textContent = 'No unsaved changes'; note.className = 'save-footer-note'; }
-      if (btn) { btn.textContent = 'Saved'; btn.className = 'btn-save'; }
-    }, 2000);
+    delete state.dirtyCards[row];
+    // Re-render card to update conditional sections (video checkbox, offer email, payment)
+    rerenderSingleCard(row);
+    showFloatingSaveForNextDirty();
   } else if (result && result.error) {
     showToast('Error: ' + result.error, 'error');
-    if (note) { note.textContent = 'Save failed'; note.className = 'save-footer-note has-changes'; }
-    if (btn) { btn.textContent = 'Retry'; btn.className = 'btn-save has-changes'; btn.disabled = false; }
   } else if (!result) {
     showToast('Saved offline — will sync when connected', 'warning');
-    if (note) { note.textContent = 'Saved offline'; note.className = 'save-footer-note'; }
-    if (btn) { btn.textContent = 'Saved'; btn.className = 'btn-save'; btn.disabled = false; }
+    delete state.dirtyCards[row];
+    rerenderSingleCard(row);
+    showFloatingSaveForNextDirty();
   }
 }
 
@@ -1931,9 +2393,19 @@ async function updateField(row, field, value) {
 }
 
 function applyFilter(filter) {
-  state.activeFilter = filter;
+  if (filter === 'all') {
+    state.activeFilters = [];
+  } else {
+    var idx = state.activeFilters.indexOf(filter);
+    if (idx !== -1) {
+      state.activeFilters.splice(idx, 1);
+    } else {
+      state.activeFilters.push(filter);
+    }
+  }
   renderFilterChips();
-  renderCards();
+  // Defer card re-render so mobile touch sequence completes before DOM swap
+  setTimeout(renderCards, 0);
 }
 
 function applySort(sortBy) {
@@ -1957,22 +2429,36 @@ function clearSearch() {
   renderCards();
 }
 
+function matchesSmartFilter(a, filterId) {
+  if (filterId === 'smart-paid') return a.status === 'Payment Plan' || a.status === 'Paid in Full';
+  if (filterId === 'smart-awaiting') return a.status === 'Offer Sent';
+  if (filterId === 'smart-video') return (a.status === 'Hard Yes' || a.status === 'Needs Call') && a.whatsappSent !== 'Yes';
+  if (filterId === 'smart-addons') return hasApplicantAddons(a);
+  if (filterId === 'smart-waitlist') return a.status === 'Waitlist';
+  return false;
+}
+
 function getFilteredSorted() {
   var list = state.applicants;
-  if (state.activeFilter !== 'all') {
-    if (state.activeFilter === 'smart-paid') {
-      list = list.filter(function(a){ return a.status === 'Payment Plan' || a.status === 'Paid in Full'; });
-    } else if (state.activeFilter === 'smart-awaiting') {
-      list = list.filter(function(a){ return a.status === 'Offer Sent'; });
-    } else if (state.activeFilter === 'smart-video') {
-      list = list.filter(function(a){ return (a.status === 'Hard Yes' || a.status === 'Needs Call') && a.whatsappSent !== 'Yes'; });
-    } else if (state.activeFilter === 'smart-addons') {
-      list = list.filter(function(a){ return hasApplicantAddons(a); });
-    } else if (state.activeFilter === 'smart-waitlist') {
-      list = list.filter(function(a){ return a.status === 'Waitlist'; });
-    } else {
-      list = list.filter(function(a){ return a.status === state.activeFilter; });
-    }
+  if (state.activeFilters.length > 0) {
+    // Separate into status filters and smart filters
+    var statusFilters = [];
+    var smartFilters = [];
+    state.activeFilters.forEach(function(f) {
+      if (f.indexOf('smart-') === 0) smartFilters.push(f);
+      else statusFilters.push(f);
+    });
+
+    list = list.filter(function(a) {
+      // Status filters: OR — match any selected status
+      var passesStatus = statusFilters.length === 0 || statusFilters.indexOf(a.status) !== -1;
+      // Smart filters: AND with status result — must match ALL active smart filters
+      var passesSmart = true;
+      for (var i = 0; i < smartFilters.length; i++) {
+        if (!matchesSmartFilter(a, smartFilters[i])) { passesSmart = false; break; }
+      }
+      return passesStatus && passesSmart;
+    });
   }
   if (state.searchQuery) {
     var q = state.searchQuery;
