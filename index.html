@@ -10,6 +10,7 @@
 <link rel="icon" type="image/png" href="drsti.png">
 <link rel="apple-touch-icon" href="drsti.png">
 <title>Dṛṣṭi Dashboard</title>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&display=swap');
 
@@ -448,10 +449,9 @@ body {
   flex-shrink: 0;
 }
 .action-icons {
-  display: none;
+  display: flex;
   gap: 5px;
 }
-.card.expanded .action-icons { display: flex; }
 
 .action-icon {
   width: 30px;
@@ -469,15 +469,11 @@ body {
 .action-icon:hover { background: var(--sage-light); border-color: rgba(122,158,126,0.3); }
 .action-icon:active { transform: scale(0.92); }
 
-.action-icon svg {
-  width: 13px;
-  height: 13px;
-  stroke: var(--sage-dark);
-  fill: none;
-  stroke-width: 2;
+.action-icon i {
+  font-size: 14px;
+  color: var(--sage-dark);
+  line-height: 1;
 }
-.action-icon.btn-wa svg { stroke: #25d366; }
-.action-icon.btn-ig svg { stroke: #e1306c; }
 
 .status-badge {
   font-size: 10px;
@@ -711,6 +707,193 @@ body {
 }
 .divider { height: 1px; background: rgba(45,42,38,0.08); margin: 12px 0; }
 
+/* ── TOOLTIPS ── */
+.tooltip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: rgba(45,42,38,0.08);
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 600;
+  cursor: help;
+  flex-shrink: 0;
+  position: relative;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+.tooltip-bubble {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: normal;
+  width: 220px;
+  z-index: 30;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  pointer-events: none;
+}
+.tooltip-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--text);
+}
+.tooltip-icon:hover .tooltip-bubble,
+.tooltip-icon:focus .tooltip-bubble {
+  display: block;
+}
+
+/* ── PAYMENT SECTION ── */
+.tab-row {
+  display: flex;
+  gap: 3px;
+  background: var(--bg-card);
+  border: 1px solid rgba(45,42,38,0.1);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  margin-bottom: 14px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 7px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  transition: all 0.15s;
+}
+.tab-btn.active { background: var(--sage-dark); color: white; }
+
+.summary-box {
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(45,42,38,0.1);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.summary-box-header {
+  padding: 9px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(45,42,38,0.08);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.summary-row {
+  padding: 9px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(45,42,38,0.06);
+  font-size: 13px;
+}
+.summary-row:last-child { border-bottom: none; }
+.summary-row-label { color: var(--text-muted); }
+.summary-row-value { font-weight: 500; }
+.summary-row-value.discount { color: var(--sage-dark); }
+.summary-row-value.strike { text-decoration: line-through; color: var(--text-muted); font-weight: 400; }
+.summary-row.total { background: var(--sage-mist); }
+.summary-row.total .summary-row-label { font-weight: 600; color: var(--text); }
+.summary-row.total .summary-row-value { font-size: 14px; color: var(--sage-dark); }
+
+.installment-box {
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(45,42,38,0.1);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.installment-header {
+  padding: 9px 14px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(45,42,38,0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.installment-row {
+  padding: 9px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(45,42,38,0.06);
+  font-size: 13px;
+}
+.installment-row:last-child { border-bottom: none; }
+.i-label { display: flex; align-items: center; gap: 8px; }
+.i-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(45,42,38,0.12); flex-shrink: 0; }
+.i-dot.paid { background: var(--sage); }
+.i-dot.pending { background: #f39c12; }
+.i-meta { display: flex; flex-direction: column; }
+.i-name { font-size: 13px; }
+.i-date { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+.invoice-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+.invoice-status.inv-sent { background: #fef9ec; border: 1px solid #f5dfa0; color: #856404; }
+.invoice-status.inv-paid { background: var(--sage-light); border: 1px solid rgba(122,158,126,0.3); color: var(--sage-dark); }
+.i-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.invoice-status.inv-sent .i-status-dot { background: #f39c12; }
+.invoice-status.inv-paid .i-status-dot { background: var(--sage); }
+.i-status-text { flex: 1; line-height: 1.4; }
+.i-status-text strong { display: block; font-weight: 500; margin-bottom: 1px; }
+
+.pay-btn-grid { display: flex; flex-direction: column; gap: 6px; }
+.pay-btn-row { display: flex; gap: 6px; }
+.pay-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  text-align: center;
+}
+.pay-btn-primary { background: var(--sage-dark); color: white; }
+.pay-btn-primary:hover { background: #3d5c40; }
+.pay-btn-secondary { background: var(--bg-card); color: var(--sage-dark); border: 1px solid rgba(122,158,126,0.3); }
+.pay-btn-secondary:hover { background: var(--sage-light); }
+.pay-btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid rgba(45,42,38,0.1); flex: 0; padding: 10px 13px; font-size: 11px; cursor: default; }
+.pay-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.pay-btn-note { font-size: 11px; color: var(--text-muted); text-align: center; line-height: 1.4; margin-top: 2px; }
+
 /* ── TOAST ── */
 .toast {
   position: fixed; bottom: 24px;
@@ -923,6 +1106,20 @@ var STATUS_COLORS = {
 
 var PRICE_TYPES = ['','Payment Plan','Pay Full','EB Plan','EB Full'];
 
+var ACCOM_PRICES = {
+  'Triple': { plan: 2850, full: 2555, eb_plan: 2565, eb_full: 2220 },
+  'Double': { plan: 3240, full: 2888, eb_plan: 2910, eb_full: 2555 },
+  'Glamping': { plan: 3690, full: 3690, eb_plan: 3330, eb_full: 2999 }
+};
+var DEPOSIT_AMOUNT = 350;
+var PRICE_TYPE_MAP = {
+  'Payment Plan': 'plan',
+  'Pay Full': 'full',
+  'EB Plan': 'eb_plan',
+  'EB Full': 'eb_full'
+};
+var CONFIRMED_STATUSES = ['Deposit Paid', 'Payment Plan', 'Paid in Full', 'Offer Sent'];
+
 // ── RETREATS (loaded from API) ──
 var RETREATS = {};
 var RETREAT_IDS = [];
@@ -931,14 +1128,10 @@ var activeRetreat = localStorage.getItem('drsti_active_retreat') || '';
 
 function getAccommodations() {
   var meta = RETREAT_META[activeRetreat];
-  if (meta && meta.accommodations) {
-    var names = [''];
-    for (var i = 0; i < meta.accommodations.length; i++) {
-      names.push(meta.accommodations[i].name);
-    }
-    return names;
+  if (meta && meta.accommodations && meta.accommodations.length > 0) {
+    return meta.accommodations.map(function(x) { return x.name; });
   }
-  return ['','Triple','Double','Glamping']; // fallback
+  return ['Triple','Double','Glamping'];
 }
 
 async function loadRetreats() {
@@ -1171,19 +1364,42 @@ function updateLastFetched() {
 }
 
 // ── RENDER: INVENTORY ──
+function computeClientInventory() {
+  var capacity = { 'Triple': 6, 'Double': 8, 'Glamping': 2 };
+  var confirmed = { 'Triple': 0, 'Double': 0, 'Glamping': 0 };
+  var totalConfirmed = 0;
+  state.applicants.forEach(function(a) {
+    if (CONFIRMED_STATUSES.indexOf(a.status) !== -1) {
+      totalConfirmed++;
+      var accom = String(a.accommodation || '').trim();
+      if (accom && confirmed.hasOwnProperty(accom)) {
+        confirmed[accom]++;
+      }
+    }
+  });
+  var inv = [];
+  var totalSpots = 0;
+  ['Triple', 'Double', 'Glamping'].forEach(function(name) {
+    totalSpots += capacity[name];
+    inv.push({ item: name, total: capacity[name], confirmed: confirmed[name] });
+  });
+  inv.push({ item: 'TOTAL PARTICIPANTS', total: totalSpots, confirmed: totalConfirmed });
+  return inv;
+}
+
 function renderInventory() {
   var strip = document.getElementById('invStrip');
   var html = '';
-  var inv = state.inventory;
+  var inv = computeClientInventory();
   for (var i = 0; i < inv.length; i++) {
     var item = inv[i];
     var isTotal = item.item === 'TOTAL PARTICIPANTS';
-    var isFull = item.remaining <= 0;
+    var isFull = item.confirmed >= item.total;
     var cls = 'inv-pill' + (isFull ? ' full' : '') + (isTotal ? ' total-pill' : '');
-    var label = isTotal ? 'Total' : item.item.replace(' Sessions','').replace(' Packages','').replace(' Rooms','');
+    var label = isTotal ? 'Total' : item.item;
     html += '<div class="'+cls+'">'
       + '<span class="inv-label">'+esc(label)+'</span>'
-      + '<span class="inv-nums">'+item.remaining+'/'+item.total+'</span>'
+      + '<span class="inv-nums">'+item.confirmed+'/'+item.total+'</span>'
       + '</div>';
   }
   strip.innerHTML = html;
@@ -1282,12 +1498,12 @@ function renderCard(a) {
   }
   var igHandle = a.instagram ? String(a.instagram).replace(/^@/,'') : '';
 
-  // Contact icons (stroke-based SVGs)
+  // Contact icons (Phosphor Icons — all same green)
   var contactIcons = '';
-  if (a.email) contactIcons += '<a href="mailto:'+esc(a.email)+'" class="action-icon" title="Email" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg></a>';
-  if (a.phone) contactIcons += '<a href="tel:'+esc(String(a.phone))+'" class="action-icon" title="Call" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.17 10.5 19.79 19.79 0 01.1 1.83 2 2 0 012.08 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></a>';
-  if (a.phone) contactIcons += '<a href="'+waLink+'" target="_blank" class="action-icon btn-wa" title="WhatsApp" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></a>';
-  if (igHandle) contactIcons += '<a href="https://instagram.com/'+esc(igHandle)+'" target="_blank" class="action-icon btn-ig" title="@'+esc(igHandle)+'" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>';
+  if (a.email) contactIcons += '<a href="mailto:'+esc(a.email)+'" class="action-icon" title="Email" onclick="event.stopPropagation()"><i class="ph ph-envelope"></i></a>';
+  if (a.phone) contactIcons += '<a href="tel:'+esc(String(a.phone))+'" class="action-icon" title="Call" onclick="event.stopPropagation()"><i class="ph ph-phone"></i></a>';
+  if (a.phone) contactIcons += '<a href="'+waLink+'" target="_blank" class="action-icon" title="WhatsApp" onclick="event.stopPropagation()"><i class="ph ph-whatsapp-logo"></i></a>';
+  if (igHandle) contactIcons += '<a href="https://instagram.com/'+esc(igHandle)+'" target="_blank" class="action-icon" title="@'+esc(igHandle)+'" onclick="event.stopPropagation()"><i class="ph ph-instagram-logo"></i></a>';
 
   // Status select options — grouped
   var STATUS_GROUPS = [
@@ -1307,10 +1523,15 @@ function renderCard(a) {
   });
 
   // Accommodation select
+  var ACCOM_OPTIONS = [
+    {value:'', label:'\u2014 Select \u2014'},
+    {value:'Triple', label:'Triple Room'},
+    {value:'Double', label:'Double Room'},
+    {value:'Glamping', label:'Glamping'}
+  ];
   var accomOpts = '';
-  getAccommodations().forEach(function(x) {
-    var label = x || '—';
-    accomOpts += '<option value="'+x+'"'+(x===a.accommodation?' selected':'')+'>'+label+'</option>';
+  ACCOM_OPTIONS.forEach(function(o) {
+    accomOpts += '<option value="'+o.value+'"'+(o.value===a.accommodation?' selected':'')+'>'+o.label+'</option>';
   });
 
   // Price type select
@@ -1338,7 +1559,7 @@ function renderCard(a) {
       noteText = 'Set accommodation and price type to enable offer email';
     }
     offerHtml = '<div class="divider"></div>'
-      + '<div><div class="slabel">Offer Email</div>'
+      + '<div><div class="slabel">Offer Email '+tooltip('Creates a Stripe deposit invoice and sends the hard-yes email with the deposit link included. Cannot be undone \u2014 only send when ready.')+'</div>'
       + '<div class="offer-email-box"><div class="'+noteClass+'">'+noteText+'</div></div></div>';
   }
 
@@ -1376,10 +1597,10 @@ function renderCard(a) {
     + '<div class="field"><div class="field-label">Status</div><select id="sel-status-'+a.row+'" onchange="markCardChanged('+a.row+')">'+statusOpts+'</select></div>'
     + '<div class="field-row">'
     + '<div class="field"><div class="field-label">Accommodation</div><select id="sel-accom-'+a.row+'" onchange="markCardChanged('+a.row+')">'+accomOpts+'</select></div>'
-    + '<div class="field"><div class="field-label">Price Type</div><select id="sel-price-'+a.row+'" onchange="markCardChanged('+a.row+')">'+priceOpts+'</select></div>'
+    + '<div class="field"><div class="field-label">Price Type '+tooltip('EB = Early Bird (before March 20). Plan = 3 instalments. Full = pay in full with 10% discount.')+'</div><select id="sel-price-'+a.row+'" onchange="markCardChanged('+a.row+')">'+priceOpts+'</select></div>'
     + '</div>'
-    + '<div class="field"><div class="field-label">Scholarship</div><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;color:var(--text-muted);flex-shrink:0;">€</span><input type="number" id="sel-scholarship-'+a.row+'" min="0" step="50" value="'+(a.scholarship||'')+'" placeholder="0" oninput="markCardChanged('+a.row+')"></div></div>'
-    + ((a.status === 'Hard Yes' || a.status === 'Needs Call') ? '<div class="checkbox-row"><input type="checkbox" id="wa-'+a.row+'"'+(a.whatsappSent==='Yes'?' checked':'')+' onchange="markCardChanged('+a.row+')"><label for="wa-'+a.row+'">Personal Video Sent</label></div>' : '')
+    + '<div class="field"><div class="field-label">Scholarship '+tooltip('Amount discounted from total. Deducted automatically from all invoice calculations.')+'</div><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;color:var(--text-muted);flex-shrink:0;">\u20AC</span><input type="number" id="sel-scholarship-'+a.row+'" min="0" step="50" value="'+(a.scholarship||'')+'" placeholder="0" oninput="markCardChanged('+a.row+')"></div></div>'
+    + ((a.status === 'Hard Yes' || a.status === 'Needs Call') ? '<div class="checkbox-row"><input type="checkbox" id="wa-'+a.row+'"'+(a.whatsappSent==='Yes'?' checked':'')+' onchange="markCardChanged('+a.row+')"><label for="wa-'+a.row+'">Personal Video Sent '+tooltip('Tick this after Gabi sends her personal WhatsApp video. This triggers the offer email countdown.')+'</label></div>' : '')
     + '<div class="field"><div class="field-label">Notes</div><textarea id="sel-notes-'+a.row+'" rows="3" oninput="markCardChanged('+a.row+')" placeholder="Internal notes...">'+esc(a.notes||'')+'</textarea></div>'
     + offerHtml
     + '</div></div></div>'
@@ -1412,6 +1633,13 @@ function renderCard(a) {
     + qaRow('How They Found Us', a.howHeard)
     + qaRow('Referral', a.referral)
     + '</div></div></div>'
+
+    // Payment accordion (closed)
+    + '<div class="accordion">'
+    + '<button class="accordion-trigger" onclick="toggleAccordion(this)">Payment '+arrowSvg+'</button>'
+    + '<div class="accordion-body">'
+    + buildPaymentSection(a)
+    + '</div></div>'
 
     // System Info accordion (closed)
     + '<div class="accordion">'
@@ -1653,6 +1881,174 @@ function capitalize(str) {
 var _countryNames = (function(){
   try { return new Intl.DisplayNames(['en'], {type:'region'}); } catch(e) { return null; }
 })();
+function tooltip(text) {
+  return '<span class="tooltip-icon" tabindex="0">\u24D8<span class="tooltip-bubble">'+esc(text)+'</span></span>';
+}
+
+function formatCurrency(amount) {
+  var n = Number(amount);
+  if (isNaN(n)) return '\u20AC0';
+  var s = n.toFixed(2).replace(/\.00$/, '');
+  // Add thousands separator
+  var parts = s.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return '\u20AC' + parts.join('.');
+}
+
+function buildPaymentSection(a) {
+  if (!a.accommodation || !a.priceType) {
+    return '<div style="padding-top:12px;padding-bottom:4px;"><p style="font-size:12px;color:var(--text-muted);line-height:1.5;">Set accommodation and price type in Overview to see payment details.</p></div>';
+  }
+
+  var prices = ACCOM_PRICES[a.accommodation];
+  if (!prices) return '<div style="padding-top:12px;"><p style="font-size:12px;color:var(--text-muted);">Unknown accommodation type.</p></div>';
+
+  var priceKey = PRICE_TYPE_MAP[a.priceType];
+  if (!priceKey) return '<div style="padding-top:12px;"><p style="font-size:12px;color:var(--text-muted);">Unknown price type.</p></div>';
+
+  var selectedPrice = prices[priceKey];
+  var scholarship = Number(a.scholarship) || 0;
+  var isFullPay = priceKey === 'full' || priceKey === 'eb_full';
+  var isPlan = !isFullPay;
+  var isEB = priceKey === 'eb_plan' || priceKey === 'eb_full';
+
+  var depositPaid = ['Deposit Paid','Payment Plan','Paid in Full'].indexOf(a.status) !== -1;
+  var offerSent = !!a.emailSent;
+  var allPaid = a.status === 'Paid in Full';
+
+  var afterScholarship = selectedPrice - scholarship;
+  if (afterScholarship < 0) afterScholarship = 0;
+  var remainingAfterDeposit = afterScholarship - (depositPaid ? DEPOSIT_AMOUNT : 0);
+  if (remainingAfterDeposit < 0) remainingAfterDeposit = 0;
+
+  var row = a.row;
+  var accomLabel = a.accommodation === 'Triple' ? 'Triple Room' : (a.accommodation === 'Double' ? 'Double Room' : a.accommodation);
+
+  // ── PLAN VIEW ──
+  var planHtml = '<div id="payview-plan-'+row+'" style="'+(isPlan ? '' : 'display:none;')+'">';
+
+  if (allPaid) {
+    planHtml += '<div class="invoice-status inv-paid"><div class="i-status-dot"></div><div class="i-status-text"><strong>Paid in full</strong>All payments received</div></div>';
+  } else if (depositPaid) {
+    planHtml += '<div class="invoice-status inv-paid"><div class="i-status-dot"></div><div class="i-status-text"><strong>Deposit paid</strong>'+formatCurrency(DEPOSIT_AMOUNT)+' received</div></div>';
+  } else if (offerSent) {
+    planHtml += '<div class="invoice-status inv-sent"><div class="i-status-dot"></div><div class="i-status-text"><strong>Deposit invoice sent</strong>'+formatCurrency(DEPOSIT_AMOUNT)+' due</div></div>';
+  }
+
+  // Summary
+  planHtml += '<div class="summary-box"><div class="summary-box-header">Summary</div>';
+  planHtml += '<div class="summary-row"><span class="summary-row-label">Accommodation</span><span class="summary-row-value">'+esc(accomLabel)+'</span></div>';
+  planHtml += '<div class="summary-row"><span class="summary-row-label">Base price</span><span class="summary-row-value">'+formatCurrency(prices.plan)+'</span></div>';
+  if (isEB) {
+    planHtml += '<div class="summary-row"><span class="summary-row-label">Early bird</span><span class="summary-row-value discount">'+formatCurrency(selectedPrice)+'</span></div>';
+  }
+  if (scholarship > 0) {
+    planHtml += '<div class="summary-row"><span class="summary-row-label">Scholarship</span><span class="summary-row-value discount">&minus; '+formatCurrency(scholarship)+'</span></div>';
+  }
+  if (depositPaid) {
+    planHtml += '<div class="summary-row"><span class="summary-row-label">Deposit paid</span><span class="summary-row-value discount">&minus; '+formatCurrency(DEPOSIT_AMOUNT)+'</span></div>';
+  }
+  planHtml += '<div class="summary-row total"><span class="summary-row-label">Remaining balance</span><span class="summary-row-value">'+formatCurrency(remainingAfterDeposit)+'</span></div>';
+  planHtml += '</div>';
+
+  // Instalment schedule
+  if (remainingAfterDeposit > 0) {
+    var instalmentAmt = Math.floor(remainingAfterDeposit / 3 * 100) / 100;
+    var lastAmt = Math.round((remainingAfterDeposit - instalmentAmt * 2) * 100) / 100;
+
+    planHtml += '<div class="installment-box">';
+    planHtml += '<div class="installment-header"><span>3 instalments</span><span style="font-weight:500;color:var(--text);">'+formatCurrency(instalmentAmt)+' each</span></div>';
+    planHtml += '<div class="installment-row"><div class="i-label"><div class="i-dot'+(depositPaid?' paid':'')+'"></div><div class="i-meta"><span class="i-name">Deposit</span></div></div>';
+    planHtml += '<span style="font-weight:500;'+(depositPaid?'color:var(--sage);':'')+'">'+formatCurrency(DEPOSIT_AMOUNT)+(depositPaid?' \u2713':'')+'</span></div>';
+    for (var ii = 1; ii <= 3; ii++) {
+      var iAmt = ii < 3 ? instalmentAmt : lastAmt;
+      var iLabel = ii < 3 ? 'Instalment ' + ii : 'Final Payment';
+      planHtml += '<div class="installment-row"><div class="i-label"><div class="i-dot"></div><div class="i-meta"><span class="i-name">'+iLabel+'</span></div></div>';
+      planHtml += '<span style="font-weight:500;">'+formatCurrency(iAmt)+'</span></div>';
+    }
+    planHtml += '</div>';
+  }
+
+  // Buttons
+  planHtml += '<div class="pay-btn-grid">';
+  planHtml += '<div class="pay-btn-row">';
+  planHtml += '<button class="pay-btn pay-btn-secondary"'+(offerSent||depositPaid?' disabled':'')+' onclick="event.stopPropagation();showToast(\'Deposit invoice \u2014 coming soon\',\'warning\')">Send Deposit Invoice</button>';
+  planHtml += '<button class="pay-btn pay-btn-primary" onclick="event.stopPropagation();showToast(\'Payment schedule \u2014 coming soon\',\'warning\')">Send Payment Schedule</button>';
+  planHtml += '</div>';
+  planHtml += '<div class="pay-btn-row">';
+  planHtml += '<button class="pay-btn pay-btn-secondary" onclick="event.stopPropagation();showToast(\'Remaining invoice \u2014 coming soon\',\'warning\')" title="Calculates total due minus any payments already recorded in the Finances tab.">Send Remaining Invoice '+tooltip('Calculates total due minus any payments already recorded in the Finances tab. Works even if no deposit has been paid yet.')+'</button>';
+  planHtml += '<button class="pay-btn pay-btn-ghost">'+formatCurrency(remainingAfterDeposit)+'</button>';
+  planHtml += '</div>';
+  planHtml += '<p class="pay-btn-note">'+(depositPaid?'Deposit paid':'Deposit not yet paid')+' \u00B7 Remaining = base \u2212 scholarship'+(depositPaid?' \u2212 deposit':'')+'</p>';
+  planHtml += '</div>';
+  planHtml += '</div>';
+
+  // ── FULL VIEW ──
+  var fullPrice = isEB ? prices.eb_full : prices.full;
+  var fullAfterScholarship = fullPrice - scholarship;
+  if (fullAfterScholarship < 0) fullAfterScholarship = 0;
+  var fullRemaining = fullAfterScholarship - (depositPaid ? DEPOSIT_AMOUNT : 0);
+  if (fullRemaining < 0) fullRemaining = 0;
+
+  var fullHtml = '<div id="payview-full-'+row+'" style="'+(isFullPay ? '' : 'display:none;')+'">';
+
+  if (allPaid) {
+    fullHtml += '<div class="invoice-status inv-paid"><div class="i-status-dot"></div><div class="i-status-text"><strong>Paid in full</strong>All payments received</div></div>';
+  }
+
+  fullHtml += '<div class="summary-box"><div class="summary-box-header">Summary</div>';
+  fullHtml += '<div class="summary-row"><span class="summary-row-label">Accommodation</span><span class="summary-row-value">'+esc(accomLabel)+'</span></div>';
+  fullHtml += '<div class="summary-row"><span class="summary-row-label">Base price</span><span class="summary-row-value strike">'+formatCurrency(prices.plan)+'</span></div>';
+  var discountLabel = isEB ? 'Early bird + full pay' : 'Pay in full (10% off)';
+  fullHtml += '<div class="summary-row"><span class="summary-row-label">'+discountLabel+'</span><span class="summary-row-value discount">'+formatCurrency(fullPrice)+'</span></div>';
+  if (scholarship > 0) {
+    fullHtml += '<div class="summary-row"><span class="summary-row-label">Scholarship</span><span class="summary-row-value discount">&minus; '+formatCurrency(scholarship)+'</span></div>';
+  }
+  fullHtml += '<div class="summary-row total"><span class="summary-row-label">Total due</span><span class="summary-row-value">'+formatCurrency(fullAfterScholarship)+'</span></div>';
+  fullHtml += '</div>';
+
+  // Buttons
+  fullHtml += '<div class="pay-btn-grid">';
+  fullHtml += '<div class="pay-btn-row">';
+  fullHtml += '<button class="pay-btn pay-btn-secondary"'+(offerSent||depositPaid?' disabled':'')+' onclick="event.stopPropagation();showToast(\'Deposit invoice \u2014 coming soon\',\'warning\')">Send Deposit Invoice</button>';
+  fullHtml += '<button class="pay-btn pay-btn-primary" onclick="event.stopPropagation();showToast(\'Full invoice \u2014 coming soon\',\'warning\')">Send Full Invoice</button>';
+  fullHtml += '</div>';
+  fullHtml += '<div class="pay-btn-row">';
+  fullHtml += '<button class="pay-btn pay-btn-secondary" onclick="event.stopPropagation();showToast(\'Remaining invoice \u2014 coming soon\',\'warning\')" title="Calculates total due minus any payments already recorded.">Send Remaining Invoice '+tooltip('Calculates total due minus any payments already recorded in the Finances tab. Works even if no deposit has been paid yet.')+'</button>';
+  fullHtml += '<button class="pay-btn pay-btn-ghost">'+formatCurrency(fullRemaining)+'</button>';
+  fullHtml += '</div>';
+  fullHtml += '<p class="pay-btn-note">Remaining = full amount \u2212 scholarship'+(depositPaid?' \u2212 deposit':'')+'</p>';
+  fullHtml += '</div>';
+  fullHtml += '</div>';
+
+  // Tab row + both views
+  var html = '<div style="padding-top:14px;">';
+  html += '<div class="tab-row">';
+  html += '<button class="tab-btn'+(isPlan?' active':'')+'" onclick="event.stopPropagation();switchPayTab('+row+',\'plan\')">Payment Plan</button>';
+  html += '<button class="tab-btn'+(isFullPay?' active':'')+'" onclick="event.stopPropagation();switchPayTab('+row+',\'full\')">Pay in Full</button>';
+  html += '</div>';
+  html += planHtml + fullHtml;
+  html += '</div>';
+  return html;
+}
+
+function switchPayTab(row, view) {
+  var planEl = document.getElementById('payview-plan-' + row);
+  var fullEl = document.getElementById('payview-full-' + row);
+  if (planEl) planEl.style.display = view === 'plan' ? 'block' : 'none';
+  if (fullEl) fullEl.style.display = view === 'full' ? 'block' : 'none';
+  var card = document.querySelector('[data-row="'+row+'"]');
+  if (card) {
+    var tabs = card.querySelectorAll('.tab-btn');
+    for (var i = 0; i < tabs.length; i++) {
+      tabs[i].classList.remove('active');
+      if ((view === 'plan' && tabs[i].textContent === 'Payment Plan') || (view === 'full' && tabs[i].textContent === 'Pay in Full')) {
+        tabs[i].classList.add('active');
+      }
+    }
+  }
+}
+
 function countryName(val) {
   if (!val) return '—';
   var s = String(val).trim();
