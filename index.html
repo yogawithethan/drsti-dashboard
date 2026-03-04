@@ -355,6 +355,40 @@ body {
 }
 .chip.active .chip-count { opacity: 0.85; }
 
+.chip-separator {
+  width: 1px;
+  height: 22px;
+  background: rgba(45,42,38,0.12);
+  flex-shrink: 0;
+  margin: 0 2px;
+  align-self: center;
+}
+.chip.smart-chip {
+  background: var(--sage-mist);
+  border-color: rgba(122,158,126,0.2);
+  color: var(--sage-dark);
+  font-weight: 500;
+}
+.chip.smart-chip.active {
+  background: var(--sage-dark);
+  color: #fff;
+  border-color: var(--sage-dark);
+}
+
+.addon-check-group { display: flex; flex-direction: column; gap: 0; }
+.addon-check-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(45,42,38,0.06);
+}
+.addon-check-row:last-child { border-bottom: none; }
+.addon-check-left { display: flex; align-items: center; gap: 8px; }
+.addon-check-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--sage-dark); cursor: pointer; }
+.addon-check-row label { font-size: 13px; cursor: pointer; }
+.addon-check-price { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
 .sort-select {
   flex-shrink: 0;
   padding: 6px 10px;
@@ -1129,6 +1163,20 @@ var PRICE_TYPE_MAP = {
   'EB Full': 'eb_full'
 };
 var CONFIRMED_STATUSES = ['Deposit Paid', 'Payment Plan', 'Paid in Full', 'Offer Sent'];
+var MAX_PARTICIPANTS = 14;
+var ADDON_DEFS = [
+  { key: 'Bodywork', label: 'Bodywork', price: 135 },
+  { key: 'Healing', label: 'Healing Session', price: 108 },
+  { key: 'Photoshoot', label: 'Photoshoot', price: 444 },
+  { key: 'Coaching', label: 'Coaching Package', price: 2222 }
+];
+var SMART_FILTERS = [
+  { id: 'smart-paid', label: 'Paid' },
+  { id: 'smart-awaiting', label: 'Awaiting Payment' },
+  { id: 'smart-video', label: 'Video Pending' },
+  { id: 'smart-addons', label: 'Has Add-ons' },
+  { id: 'smart-waitlist', label: 'Waitlist' }
+];
 
 // ── RETREATS (loaded from API) ──
 var RETREATS = {};
@@ -1391,12 +1439,10 @@ function computeClientInventory() {
     }
   });
   var inv = [];
-  var totalSpots = 0;
   ['Triple', 'Double', 'Glamping'].forEach(function(name) {
-    totalSpots += capacity[name];
     inv.push({ item: name, total: capacity[name], confirmed: confirmed[name] });
   });
-  inv.push({ item: 'TOTAL PARTICIPANTS', total: totalSpots, confirmed: totalConfirmed });
+  inv.push({ item: 'TOTAL PARTICIPANTS', total: MAX_PARTICIPANTS, confirmed: totalConfirmed });
   return inv;
 }
 
@@ -1446,13 +1492,41 @@ async function switchRetreat(retreatId) {
 }
 
 // ── RENDER: FILTER CHIPS ──
+function hasApplicantAddons(a) {
+  if (a.addonBodywork === 'Yes' || a.addonHealing === 'Yes' || a.addonPhotoshoot === 'Yes' || a.addonCoaching === 'Yes') return true;
+  if (a.addonsJson) {
+    try { var aj = JSON.parse(a.addonsJson); for (var k in aj) { if (aj[k]) return true; } } catch(e) {}
+  }
+  return false;
+}
+
 function renderFilterChips() {
   var container = document.getElementById('filterChips');
   var counts = {};
   STATUSES.forEach(function(s) { counts[s] = 0; });
   state.applicants.forEach(function(a) { if (counts[a.status] !== undefined) counts[a.status]++; });
 
+  // Smart filter counts
+  var smartCounts = {};
+  smartCounts['smart-paid'] = state.applicants.filter(function(a) { return a.status === 'Payment Plan' || a.status === 'Paid in Full'; }).length;
+  smartCounts['smart-awaiting'] = state.applicants.filter(function(a) { return a.status === 'Offer Sent'; }).length;
+  smartCounts['smart-video'] = state.applicants.filter(function(a) { return (a.status === 'Hard Yes' || a.status === 'Needs Call') && a.whatsappSent !== 'Yes'; }).length;
+  smartCounts['smart-addons'] = state.applicants.filter(function(a) { return hasApplicantAddons(a); }).length;
+  smartCounts['smart-waitlist'] = counts['Waitlist'] || 0;
+
   var html = '<button class="chip'+(state.activeFilter==='all'?' active':'')+'" onclick="applyFilter(\'all\')">All <span class="chip-count">'+state.applicants.length+'</span></button>';
+
+  // Smart filters
+  SMART_FILTERS.forEach(function(sf) {
+    if (smartCounts[sf.id] === 0) return;
+    var active = state.activeFilter === sf.id ? ' active' : '';
+    html += '<button class="chip smart-chip'+active+'" onclick="applyFilter(\''+sf.id+'\')">'+esc(sf.label)+' <span class="chip-count">'+smartCounts[sf.id]+'</span></button>';
+  });
+
+  // Separator
+  html += '<span class="chip-separator"></span>';
+
+  // Status filters
   STATUSES.forEach(function(s) {
     if (counts[s] === 0) return;
     var active = state.activeFilter === s ? ' active' : '';
@@ -1503,6 +1577,17 @@ function renderCard(a) {
     addonHtml = '<div class="addon-badges">' + addons.map(function(x){return '<span class="addon-badge">'+esc(x)+'</span>';}).join('') + '</div>';
   }
 
+  // Build add-on checkboxes for Overview
+  var addonCheckboxes = '<div class="field"><div class="field-label">Add-ons</div><div class="addon-check-group">';
+  ADDON_DEFS.forEach(function(ad) {
+    var checked = addons.indexOf(ad.key) !== -1 ? ' checked' : '';
+    addonCheckboxes += '<div class="addon-check-row"><div class="addon-check-left">'
+      + '<input type="checkbox" id="addon-'+ad.key+'-'+a.row+'"'+checked+' onchange="markCardChanged('+a.row+')">'
+      + '<label for="addon-'+ad.key+'-'+a.row+'">'+esc(ad.label)+'</label></div>'
+      + '<span class="addon-check-price">'+formatCurrency(ad.price)+'</span></div>';
+  });
+  addonCheckboxes += '</div></div>';
+
   // WhatsApp link
   var waLink = '#';
   if (a.phone) {
@@ -1514,7 +1599,6 @@ function renderCard(a) {
   // Contact icons (Phosphor Icons — all same green)
   var contactIcons = '';
   if (a.email) contactIcons += '<a href="mailto:'+esc(a.email)+'" class="action-icon" title="Email" onclick="event.stopPropagation()"><i class="ph ph-envelope"></i></a>';
-  if (a.phone) contactIcons += '<a href="tel:'+esc(String(a.phone))+'" class="action-icon" title="Call" onclick="event.stopPropagation()"><i class="ph ph-phone"></i></a>';
   if (a.phone) contactIcons += '<a href="'+waLink+'" target="_blank" class="action-icon" title="WhatsApp" onclick="event.stopPropagation()"><i class="ph ph-whatsapp-logo"></i></a>';
   if (igHandle) contactIcons += '<a href="https://instagram.com/'+esc(igHandle)+'" target="_blank" class="action-icon" title="@'+esc(igHandle)+'" onclick="event.stopPropagation()"><i class="ph ph-instagram-logo"></i></a>';
 
@@ -1613,16 +1697,22 @@ function renderCard(a) {
     + '<div class="field"><div class="field-label">Price Type '+tooltip('EB = Early Bird (before March 20). Plan = 3 instalments. Full = pay in full with 10% discount.')+'</div><select id="sel-price-'+a.row+'" onchange="markCardChanged('+a.row+')">'+priceOpts+'</select></div>'
     + '</div>'
     + '<div class="field"><div class="field-label">Scholarship '+tooltip('Amount discounted from total. Deducted automatically from all invoice calculations.')+'</div><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;color:var(--text-muted);flex-shrink:0;">\u20AC</span><input type="number" id="sel-scholarship-'+a.row+'" min="0" step="50" value="'+(a.scholarship||'')+'" placeholder="0" oninput="markCardChanged('+a.row+')"></div></div>'
+    + addonCheckboxes
     + ((a.status === 'Hard Yes' || a.status === 'Needs Call') ? '<div class="checkbox-row"><input type="checkbox" id="wa-'+a.row+'"'+(a.whatsappSent==='Yes'?' checked':'')+' onchange="markCardChanged('+a.row+')"><label for="wa-'+a.row+'">Personal Video Sent '+tooltip('Tick this after Gabi sends her personal WhatsApp video. This triggers the offer email countdown.')+'</label></div>' : '')
     + '<div class="field"><div class="field-label">Notes</div><textarea id="sel-notes-'+a.row+'" rows="3" oninput="markCardChanged('+a.row+')" placeholder="Internal notes...">'+esc(a.notes||'')+'</textarea></div>'
     + offerHtml
     + '</div></div></div>'
 
-    // Application Answers accordion (closed)
+    // Application accordion with tabs (closed)
     + '<div class="accordion">'
-    + '<button class="accordion-trigger" onclick="toggleAccordion(this)">Application Answers '+arrowSvg+'</button>'
+    + '<button class="accordion-trigger" onclick="toggleAccordion(this)">Application '+arrowSvg+'</button>'
     + '<div class="accordion-body">'
-    + '<div style="padding-top:8px;">'
+    + '<div style="padding-top:10px;">'
+    + '<div class="tab-row">'
+    + '<button class="tab-btn active" onclick="event.stopPropagation();switchAppTab('+a.row+',\'answers\')">Answers</button>'
+    + '<button class="tab-btn" onclick="event.stopPropagation();switchAppTab('+a.row+',\'prefs\')">Preferences</button>'
+    + '</div>'
+    + '<div id="appview-answers-'+a.row+'">'
     + qaRow('What inspired you to apply?', a.inspired)
     + qaRow('Yoga / Spiritual Experience', a.yogaExperience)
     + qaRow('Health Goals', a.healthGoals)
@@ -1631,20 +1721,18 @@ function renderCard(a) {
     + qaRow('Substances', a.substances)
     + qaRow('Comfortable with digital detox / silence?', a.comfortableWith)
     + qaRow('Questions or Concerns', a.questionsConcerns)
+    + qaRow('How They Found Us', a.howHeard)
+    + qaRow('Referral', a.referral)
     + qaRow('Additional Info', a.additionalInfo)
-    + '</div></div></div>'
-
-    // Room & Payment accordion (closed)
-    + '<div class="accordion">'
-    + '<button class="accordion-trigger" onclick="toggleAccordion(this)">Room &amp; Payment '+arrowSvg+'</button>'
-    + '<div class="accordion-body">'
-    + '<div style="padding-top:8px;">'
+    + '</div>'
+    + '<div id="appview-prefs-'+a.row+'" style="display:none;">'
+    + '<p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;font-style:italic;">Read-only form responses from the applicant</p>'
     + qaRow('Payment Preference', a.paymentPreference)
     + qaRow('Room Selection', roomPref)
     + qaRow('Add-ons Interested', a.addonsInterested || addons.join(', '))
     + qaRow('Travel Assistance', a.travelAssist)
-    + qaRow('How They Found Us', a.howHeard)
-    + qaRow('Referral', a.referral)
+    + qaRow('Flight Contest', a.flightContest)
+    + '</div>'
     + '</div></div></div>'
 
     // Payment accordion (closed)
@@ -1722,6 +1810,14 @@ function refreshPaymentSection(row) {
   if (priceEl) liveA.priceType = priceEl.value;
   if (scholarshipEl) liveA.scholarship = scholarshipEl.value;
 
+  // Read live add-on checkboxes
+  var liveAddons = {};
+  ADDON_DEFS.forEach(function(ad) {
+    var el = document.getElementById('addon-' + ad.key + '-' + row);
+    if (el && el.checked) liveAddons[ad.key] = true;
+  });
+  liveA.addonsJson = JSON.stringify(liveAddons);
+
   container.innerHTML = buildPaymentSection(liveA);
 }
 
@@ -1757,12 +1853,21 @@ async function saveCardChanges(row) {
   var newNotes = notesEl ? notesEl.value : (a.notes || '');
   var newWa = waEl ? (waEl.checked ? 'Yes' : '') : (a.whatsappSent || '');
 
+  // Read add-on checkboxes
+  var liveAddons = {};
+  ADDON_DEFS.forEach(function(ad) {
+    var el = document.getElementById('addon-' + ad.key + '-' + row);
+    if (el && el.checked) liveAddons[ad.key] = true;
+  });
+  var newAddonsJson = Object.keys(liveAddons).length > 0 ? JSON.stringify(liveAddons) : '';
+
   if (newStatus !== a.status) fields.status = newStatus;
   if (newAccom !== a.accommodation) fields.accommodation = newAccom;
   if (newPrice !== a.priceType) fields.priceType = newPrice;
   if (newScholarship !== String(a.scholarship || '')) fields.scholarship = newScholarship;
   if (newNotes !== (a.notes || '')) fields.notes = newNotes;
   if (newWa !== (a.whatsappSent || '')) fields.whatsappSent = newWa;
+  if (newAddonsJson !== (a.addonsJson || '')) fields.addonsJson = newAddonsJson;
 
   if (Object.keys(fields).length === 0) {
     showToast('No changes to save', 'warning');
@@ -1855,7 +1960,19 @@ function clearSearch() {
 function getFilteredSorted() {
   var list = state.applicants;
   if (state.activeFilter !== 'all') {
-    list = list.filter(function(a){ return a.status === state.activeFilter; });
+    if (state.activeFilter === 'smart-paid') {
+      list = list.filter(function(a){ return a.status === 'Payment Plan' || a.status === 'Paid in Full'; });
+    } else if (state.activeFilter === 'smart-awaiting') {
+      list = list.filter(function(a){ return a.status === 'Offer Sent'; });
+    } else if (state.activeFilter === 'smart-video') {
+      list = list.filter(function(a){ return (a.status === 'Hard Yes' || a.status === 'Needs Call') && a.whatsappSent !== 'Yes'; });
+    } else if (state.activeFilter === 'smart-addons') {
+      list = list.filter(function(a){ return hasApplicantAddons(a); });
+    } else if (state.activeFilter === 'smart-waitlist') {
+      list = list.filter(function(a){ return a.status === 'Waitlist'; });
+    } else {
+      list = list.filter(function(a){ return a.status === state.activeFilter; });
+    }
   }
   if (state.searchQuery) {
     var q = state.searchQuery;
@@ -2021,13 +2138,31 @@ function buildPaymentSection(a) {
   var isPlan = !isFullPay;
   var isEB = priceKey === 'eb_plan' || priceKey === 'eb_full';
 
+  // Compute add-on total
+  var addonTotal = 0;
+  var selectedAddons = [];
+  ADDON_DEFS.forEach(function(ad) {
+    var hasIt = false;
+    if (a.addonsJson) {
+      try { var aj = JSON.parse(a.addonsJson); if (aj[ad.key]) hasIt = true; } catch(e) {}
+    }
+    if (!hasIt) {
+      if (ad.key === 'Bodywork' && a.addonBodywork === 'Yes') hasIt = true;
+      if (ad.key === 'Healing' && a.addonHealing === 'Yes') hasIt = true;
+      if (ad.key === 'Photoshoot' && a.addonPhotoshoot === 'Yes') hasIt = true;
+      if (ad.key === 'Coaching' && a.addonCoaching === 'Yes') hasIt = true;
+    }
+    if (hasIt) { addonTotal += ad.price; selectedAddons.push(ad); }
+  });
+
   var depositPaid = ['Deposit Paid','Payment Plan','Paid in Full'].indexOf(a.status) !== -1;
   var offerSent = !!a.emailSent;
   var allPaid = a.status === 'Paid in Full';
 
   var afterScholarship = selectedPrice - scholarship;
   if (afterScholarship < 0) afterScholarship = 0;
-  var remainingAfterDeposit = afterScholarship - (depositPaid ? DEPOSIT_AMOUNT : 0);
+  var totalWithAddons = afterScholarship + addonTotal;
+  var remainingAfterDeposit = totalWithAddons - (depositPaid ? DEPOSIT_AMOUNT : 0);
   if (remainingAfterDeposit < 0) remainingAfterDeposit = 0;
 
   var row = a.row;
@@ -2053,6 +2188,9 @@ function buildPaymentSection(a) {
   }
   if (scholarship > 0) {
     planHtml += '<div class="summary-row"><span class="summary-row-label">Scholarship</span><span class="summary-row-value discount">&minus; '+formatCurrency(scholarship)+'</span></div>';
+  }
+  if (addonTotal > 0) {
+    planHtml += '<div class="summary-row"><span class="summary-row-label">Add-ons ('+selectedAddons.length+')</span><span class="summary-row-value">+ '+formatCurrency(addonTotal)+'</span></div>';
   }
   if (depositPaid) {
     planHtml += '<div class="summary-row"><span class="summary-row-label">Deposit paid</span><span class="summary-row-value discount">&minus; '+formatCurrency(DEPOSIT_AMOUNT)+'</span></div>';
@@ -2096,7 +2234,8 @@ function buildPaymentSection(a) {
   var fullPrice = isEB ? prices.eb_full : prices.full;
   var fullAfterScholarship = fullPrice - scholarship;
   if (fullAfterScholarship < 0) fullAfterScholarship = 0;
-  var fullRemaining = fullAfterScholarship - (depositPaid ? DEPOSIT_AMOUNT : 0);
+  var fullWithAddons = fullAfterScholarship + addonTotal;
+  var fullRemaining = fullWithAddons - (depositPaid ? DEPOSIT_AMOUNT : 0);
   if (fullRemaining < 0) fullRemaining = 0;
 
   var fullHtml = '<div id="payview-full-'+row+'" style="'+(isFullPay ? '' : 'display:none;')+'">';
@@ -2113,7 +2252,10 @@ function buildPaymentSection(a) {
   if (scholarship > 0) {
     fullHtml += '<div class="summary-row"><span class="summary-row-label">Scholarship</span><span class="summary-row-value discount">&minus; '+formatCurrency(scholarship)+'</span></div>';
   }
-  fullHtml += '<div class="summary-row total"><span class="summary-row-label">Total due</span><span class="summary-row-value">'+formatCurrency(fullAfterScholarship)+'</span></div>';
+  if (addonTotal > 0) {
+    fullHtml += '<div class="summary-row"><span class="summary-row-label">Add-ons ('+selectedAddons.length+')</span><span class="summary-row-value">+ '+formatCurrency(addonTotal)+'</span></div>';
+  }
+  fullHtml += '<div class="summary-row total"><span class="summary-row-label">Total due</span><span class="summary-row-value">'+formatCurrency(fullWithAddons)+'</span></div>';
   fullHtml += '</div>';
 
   // Buttons
@@ -2139,6 +2281,24 @@ function buildPaymentSection(a) {
   html += planHtml + fullHtml;
   html += '</div>';
   return html;
+}
+
+function switchAppTab(row, tab) {
+  var answersEl = document.getElementById('appview-answers-' + row);
+  var prefsEl = document.getElementById('appview-prefs-' + row);
+  if (answersEl) answersEl.style.display = tab === 'answers' ? 'block' : 'none';
+  if (prefsEl) prefsEl.style.display = tab === 'prefs' ? 'block' : 'none';
+  // Update tab buttons — find the Application accordion (second one in the card)
+  var card = document.querySelector('[data-row="'+row+'"]');
+  if (card) {
+    var accordions = card.querySelectorAll('.accordion');
+    if (accordions[1]) {
+      var tabs = accordions[1].querySelectorAll('.tab-btn');
+      for (var i = 0; i < tabs.length; i++) {
+        tabs[i].classList.toggle('active', (tab === 'answers' && i === 0) || (tab === 'prefs' && i === 1));
+      }
+    }
+  }
 }
 
 function switchPayTab(row, view) {
