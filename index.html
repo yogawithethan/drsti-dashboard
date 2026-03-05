@@ -12,7 +12,7 @@
 <title>Dṛṣṭi Dashboard</title>
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap');
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -190,20 +190,19 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .tcot-fab .ext-arrow svg {
   width: 9px; height: 9px; fill: var(--text-secondary);
 }
-/* ── SYNC DOT (next to retreat pill) ── */
+/* ── SYNC DOT (fixed top-right corner of viewport) ── */
 .sync-dot-btn {
-  width: 10px; height: 10px; border-radius: 50%;
+  position: fixed; top: 6px; right: 6px; z-index: 300;
+  width: 6px; height: 6px; border-radius: 50%;
   border: none; cursor: pointer; padding: 0;
   background: var(--sage);
-  position: relative;
-  flex-shrink: 0;
 }
 .sync-dot-btn.synced { background: var(--sage); animation: pulse-green 2s infinite; }
 .sync-dot-btn.syncing { background: #d4a017; animation: none; }
 .sync-dot-btn.error { background: #ef4444; animation: none; }
 @keyframes pulse-green {
   0%, 100% { box-shadow: 0 0 0 0 rgba(122,158,126,0.4); }
-  50% { box-shadow: 0 0 0 4px rgba(122,158,126,0); }
+  50% { box-shadow: 0 0 0 3px rgba(122,158,126,0); }
 }
 
 /* ── NAV BUTTONS ── */
@@ -300,48 +299,162 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   font-style: italic;
 }
 
-/* ── PIPELINE GUIDE PANEL ── */
+/* ── PIPELINE GUIDE PANEL (dark theme, matches status-flow.html) ── */
 .pipeline-panel {
-  max-width: 600px; margin: 0 auto; padding: 16px 16px 100px;
+  background: #0f0f0f;
+  color: #e8e2d9;
+  font-family: 'DM Sans', var(--font-body);
+  padding: 48px 24px 100px;
+  min-height: calc(100vh - 56px);
 }
-.pipe-group {
-  border-left: 4px solid; padding: 12px 16px;
-  margin-bottom: 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  background: var(--bg-card);
-  box-shadow: var(--shadow-xs);
+.pipeline-panel h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px; font-weight: 400;
+  letter-spacing: -0.5px; margin-bottom: 6px;
+  color: #f5f0e8;
 }
-.pipe-group-title {
-  font-family: var(--font-display);
-  font-size: 16px; font-weight: 500;
-  text-transform: uppercase; letter-spacing: 0.06em;
-  margin-bottom: 8px;
+.pipeline-panel .pipe-subtitle {
+  font-size: 13px; color: #666;
+  margin-bottom: 48px; letter-spacing: 0.02em;
 }
-.pipe-status {
-  padding: 4px 0; font-size: 13px; font-weight: 500;
-  color: var(--text);
+.pipe-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px; margin-bottom: 48px;
 }
-.pipe-desc {
-  font-size: 11px; color: var(--text-muted);
-  margin-left: 4px; font-weight: 400;
+@media (max-width: 900px) {
+  .pipe-grid { grid-template-columns: repeat(2, 1fr); }
 }
-.pipe-auto {
-  display: inline-block;
+@media (max-width: 500px) {
+  .pipe-grid { grid-template-columns: 1fr; }
+  .pipeline-panel { padding: 32px 16px 100px; }
+}
+.pipe-stage { display: flex; flex-direction: column; gap: 8px; }
+.pipe-stage-header {
   font-size: 10px; font-weight: 600;
-  background: #e8e0f8; color: #5b21b6;
-  padding: 1px 7px; border-radius: 10px;
-  margin-left: 8px; margin-top: 2px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 0 0 10px 0;
+  border-bottom: 1px solid #222;
+  display: flex; align-items: center; gap: 8px;
+  color: #e8e2d9;
 }
-.pipe-sub { padding-left: 16px; margin-top: 2px; }
-.pipe-notes {
-  background: var(--bg-section);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
-  margin-top: 16px;
-  font-size: 12px; color: var(--text-secondary);
-  line-height: 1.6;
+.pipe-stage-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
 }
-.pipe-notes p { margin-bottom: 8px; }
-.pipe-notes p:last-child { margin-bottom: 0; }
+.pipe-card {
+  background: #161616;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: default;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.pipe-card:hover { transform: translateY(-1px); }
+.pipe-card-name {
+  font-size: 13px; font-weight: 500;
+  color: #e8e2d9; margin-bottom: 4px;
+}
+.pipe-card-desc {
+  font-size: 11px; color: #555; line-height: 1.4;
+}
+.pipe-card-note {
+  margin-top: 8px; font-size: 10px; color: #f59e0b;
+  display: flex; align-items: flex-start; gap: 5px; line-height: 1.4;
+}
+.pipe-auto-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 8px; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 3px 7px; border-radius: 4px;
+}
+.pipe-auto-tag.indigo {
+  background: rgba(99,102,241,0.12); color: #818cf8;
+  border: 1px solid rgba(99,102,241,0.2);
+}
+.pipe-auto-tag.success {
+  background: rgba(34,197,94,0.1); color: #4ade80;
+  border: 1px solid rgba(34,197,94,0.2);
+}
+.pipe-auto-tag.warning {
+  background: rgba(245,158,11,0.1); color: #fbbf24;
+  border: 1px solid rgba(245,158,11,0.2);
+}
+/* Stage colors */
+.pipe-stage.incoming .pipe-stage-dot { background: #6366f1; }
+.pipe-stage.incoming .pipe-card:hover { border-color: #6366f1; }
+.pipe-stage.decision .pipe-stage-dot { background: #f59e0b; }
+.pipe-stage.decision .pipe-card:hover { border-color: #f59e0b; }
+.pipe-stage.waiting .pipe-stage-dot { background: #ec4899; }
+.pipe-stage.waiting .pipe-card:hover { border-color: #ec4899; }
+.pipe-stage.confirmed .pipe-stage-dot { background: #22c55e; }
+.pipe-stage.confirmed .pipe-card:hover { border-color: #22c55e; }
+.pipe-stage.out .pipe-stage-dot { background: #ef4444; }
+.pipe-stage.out .pipe-card:hover { border-color: #ef4444; }
+/* Flow section */
+.pipe-flow-section { margin-top: 48px; }
+.pipe-flow-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px; font-weight: 400;
+  color: #f5f0e8; margin-bottom: 6px;
+}
+.pipe-flow-subtitle { font-size: 12px; color: #555; margin-bottom: 32px; }
+.pipe-flow-row {
+  display: flex; align-items: center; gap: 0; min-height: 56px;
+}
+.pipe-flow-node {
+  display: flex; align-items: center; justify-content: center;
+  padding: 8px 16px; border-radius: 6px;
+  font-size: 12px; font-weight: 500;
+  white-space: nowrap; min-width: 120px; text-align: center;
+}
+.pipe-flow-arrow { display: flex; align-items: center; color: #333; font-size: 18px; padding: 0 8px; flex-shrink: 0; }
+.pipe-flow-label { font-size: 10px; color: #444; padding: 0 8px; font-style: italic; }
+.pipe-flow-connector { width: 1px; background: #222; height: 24px; margin-left: 60px; }
+.pfn-incoming { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+.pfn-decision { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+.pfn-waiting  { background: rgba(236,72,153,0.15); color: #f472b6; border: 1px solid rgba(236,72,153,0.3); }
+.pfn-confirmed{ background: rgba(34,197,94,0.15);  color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+.pfn-out      { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+.pfn-auto     { background: rgba(99,102,241,0.08); color: #6366f1; border: 1px dashed rgba(99,102,241,0.3); font-size: 10px; min-width: 160px; }
+/* Divider */
+.pipe-divider { border: none; border-top: 1px solid #1a1a1a; margin: 40px 0; }
+/* Key note cards */
+.pipe-key-note {
+  background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(236,72,153,0.08));
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 24px; margin-top: 48px;
+}
+.pipe-key-note h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 17px; color: #f5f0e8; margin-bottom: 12px;
+}
+.pipe-key-note p {
+  font-size: 13px; color: #888; line-height: 1.7; margin-bottom: 12px;
+}
+.pipe-key-note p:last-child { margin-bottom: 0; }
+.pipe-key-note strong { color: #e8e2d9; font-weight: 500; }
+/* Recs grid */
+.pipe-recs { margin-top: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 600px) { .pipe-recs { grid-template-columns: 1fr; } }
+.pipe-rec-card {
+  background: #161616; border: 1px solid #222;
+  border-radius: 8px; padding: 20px;
+}
+.pipe-rec-card h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 15px; font-weight: 400;
+  color: #f5f0e8; margin-bottom: 12px;
+}
+.pipe-rec-item {
+  display: flex; gap: 10px; margin-bottom: 10px;
+  font-size: 12px; color: #999; line-height: 1.5;
+}
+.pipe-rec-item strong { color: #e8e2d9; }
+.pipe-footer {
+  margin-top: 32px; font-size: 11px; color: #333;
+  text-align: center; letter-spacing: 0.05em;
+}
 
 @media (min-width: 640px) {
   .templates-panel { padding: 16px 24px 100px; }
@@ -1516,6 +1629,9 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
   <div class="loading-text">Loading applicants...</div>
 </div>
 
+<!-- SYNC DOT (fixed top-right corner) -->
+<button class="sync-dot-btn synced" id="syncDot" onclick="loadAll()" title="Synced"></button>
+
 <!-- HEADER -->
 <header class="app-header" id="appHeader">
   <div class="header-top">
@@ -1528,8 +1644,6 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
       <button class="nav-btn" id="navPipeline" onclick="switchView('pipeline')" title="Pipeline Guide"><i class="ph ph-git-branch"></i></button>
     </div>
   </div>
-  <div class="retreat-bar" id="retreatBar"><button class="sync-dot-btn synced" id="syncDot" onclick="loadAll()" title="Synced"></button></div>
-  <div class="inv-strip" id="invStrip"></div>
 </header>
 
 <!-- TCOT FLOATING BUTTON -->
@@ -1540,6 +1654,9 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
 
 <!-- VIEW: CRM DASHBOARD -->
 <div class="panel-view active" id="viewCrm">
+
+<div class="retreat-bar" id="retreatBar"></div>
+<div class="inv-strip" id="invStrip"></div>
 
 <!-- FILTER BAR -->
 <nav class="filter-bar" id="filterBar">
@@ -2124,7 +2241,6 @@ function renderInventory() {
 var RETREAT_ICON = '<svg viewBox="0 0 256 256"><path d="M128,16a88.1,88.1,0,0,0-88,88c0,75.3,80,132.17,83.41,134.55a8,8,0,0,0,9.18,0C136,236.17,216,179.3,216,104A88.1,88.1,0,0,0,128,16Zm0,56a32,32,0,1,1-32,32A32,32,0,0,1,128,72Z"/></svg>';
 function renderRetreatBar() {
   var bar = document.getElementById('retreatBar');
-  var syncDot = '<button class="sync-dot-btn synced" id="syncDot" onclick="loadAll()" title="Synced — click to refresh"></button>';
   var html = '';
   for (var i = 0; i < RETREAT_IDS.length; i++) {
     var id = RETREAT_IDS[i];
@@ -2132,7 +2248,6 @@ function renderRetreatBar() {
     var active = id === activeRetreat ? ' active' : '';
     html += '<button class="retreat-tab'+active+'" onclick="switchRetreat(\''+id+'\')">'+RETREAT_ICON+esc(r.label)+'</button>';
   }
-  html += syncDot;
   bar.innerHTML = html;
 }
 
@@ -3669,49 +3784,223 @@ function copyTemplate(key) {
   });
 }
 
-// ── PIPELINE GUIDE PANEL ──
+// ── PIPELINE GUIDE PANEL (dark theme, matches status-flow.html) ──
 function renderPipelinePanel() {
   var panel = document.getElementById('pipelinePanel');
   panel.innerHTML = ''
-    + '<div class="pipe-group" style="border-color:#6366f1">'
-    + '<div class="pipe-group-title" style="color:#6366f1">Incoming</div>'
-    + '<div class="pipe-status">Applied<span class="pipe-desc"> — application received, awaiting review</span></div>'
+    + '<h1>Applicant Status Flow</h1>'
+    + '<p class="pipe-subtitle">The Course of Transformation &middot; Pipeline architecture</p>'
+
+    // ── STATUS GRID ──
+    + '<div class="pipe-grid">'
+
+    // INCOMING
+    + '<div class="pipe-stage incoming">'
+    + '<div class="pipe-stage-header"><div class="pipe-stage-dot"></div>Incoming</div>'
+    + '<div class="pipe-card">'
+    + '<div class="pipe-card-name">Applied</div>'
+    + '<div class="pipe-card-desc">Application received. Awaiting review by Ethan &amp; Gabi.</div>'
+    + '</div>'
     + '</div>'
 
-    + '<div class="pipe-group" style="border-color:#f59e0b">'
-    + '<div class="pipe-group-title" style="color:#f59e0b">Decision</div>'
-    + '<div class="pipe-status">Hard Yes<span class="pipe-desc"> — approved, offer email not yet sent</span></div>'
-    + '<div class="pipe-sub"><span class="offer-sent-badge">Offer Sent &#10003;</span> appears once emailSent exists</div>'
-    + '<div class="pipe-status">Needs Call<span class="pipe-desc"> — promising, needs conversation first</span></div>'
-    + '<div class="pipe-status">Call Scheduled<span class="pipe-desc"> — call booked, awaiting outcome</span></div>'
-    + '<div class="pipe-status">Waitlist<span class="pipe-desc"> — good fit, retreat full</span><span class="pipe-auto">&#9889; auto-notified if spot opens</span></div>'
+    // DECISION
+    + '<div class="pipe-stage decision">'
+    + '<div class="pipe-stage-header"><div class="pipe-stage-dot"></div>Decision</div>'
+    + '<div class="pipe-card">'
+    + '<div class="pipe-card-name">Hard Yes</div>'
+    + '<div class="pipe-card-desc">Approved. Offer email not yet sent.</div>'
+    + '<div class="pipe-card-note">&darr; Badge shows &ldquo;offer sent&rdquo; once email fires</div>'
+    + '</div>'
+    + '<div class="pipe-card">'
+    + '<div class="pipe-card-name">Needs Call</div>'
+    + '<div class="pipe-card-desc">Promising but needs a conversation first.</div>'
+    + '</div>'
+    + '<div class="pipe-card">'
+    + '<div class="pipe-card-name">Call Scheduled</div>'
+    + '<div class="pipe-card-desc">Call booked. Awaiting outcome.</div>'
+    + '</div>'
+    + '<div class="pipe-card">'
+    + '<div class="pipe-card-name">Waitlist</div>'
+    + '<div class="pipe-card-desc">Good fit but retreat is full. Auto-notified if spot opens.</div>'
+    + '<div class="pipe-auto-tag success">&#9889; waitlist notification</div>'
+    + '</div>'
     + '</div>'
 
-    + '<div class="pipe-group" style="border-color:#ec4899">'
-    + '<div class="pipe-group-title" style="color:#ec4899">Waiting</div>'
-    + '<div class="pipe-status">Ghosted<span class="pipe-desc"> — gone silent after outreach</span></div>'
-    + '<div class="pipe-sub"><span class="pipe-auto">&#9889; 3-day buffer &rarr; ghost protocol Day 3, 7, 11, 15</span></div>'
+    // WAITING
+    + '<div class="pipe-stage waiting">'
+    + '<div class="pipe-stage-header"><div class="pipe-stage-dot"></div>Waiting</div>'
+    + '<div class="pipe-card">'
+    + '<div class="pipe-card-name">Ghosted</div>'
+    + '<div class="pipe-card-desc">Gone silent after outreach. 3-day buffer then auto-sequence begins.</div>'
+    + '<div class="pipe-auto-tag warning">&#9889; ghost protocol Day 3, 7, 11, 15</div>'
+    + '</div>'
     + '</div>'
 
-    + '<div class="pipe-group" style="border-color:#4ade80">'
-    + '<div class="pipe-group-title" style="color:#4ade80">Confirmed</div>'
-    + '<div class="pipe-status">Deposit Paid<span class="pipe-desc"> — spot secured, instalments pending</span><span class="pipe-auto">&#9889; payment reminders</span></div>'
-    + '<div class="pipe-status">Payment Plan<span class="pipe-desc"> — actively paying instalments</span><span class="pipe-auto">&#9889; instalment reminders</span></div>'
-    + '<div class="pipe-status">Paid in Full<span class="pipe-desc"> — complete, no further actions</span></div>'
+    // CONFIRMED
+    + '<div class="pipe-stage confirmed">'
+    + '<div class="pipe-stage-header"><div class="pipe-stage-dot"></div>Confirmed</div>'
+    + '<div class="pipe-card">'
+    + '<div class="pipe-card-name">Deposit Paid</div>'
+    + '<div class="pipe-card-desc">Spot secured. On payment plan &mdash; instalments pending.</div>'
+    + '<div class="pipe-auto-tag success">&#9889; payment reminders</div>'
+    + '</div>'
+    + '<div class="pipe-card">'
+    + '<div class="pipe-card-name">Payment Plan</div>'
+    + '<div class="pipe-card-desc">Actively paying instalments. At least one payment made.</div>'
+    + '<div class="pipe-auto-tag success">&#9889; instalment reminders</div>'
+    + '</div>'
+    + '<div class="pipe-card">'
+    + '<div class="pipe-card-name">Paid in Full</div>'
+    + '<div class="pipe-card-desc">Complete. No further payment actions needed.</div>'
+    + '</div>'
     + '</div>'
 
-    + '<div class="pipe-group" style="border-color:#ef4444">'
-    + '<div class="pipe-group-title" style="color:#ef4444">Out</div>'
-    + '<div class="pipe-status">Not Aligned<span class="pipe-desc"> — not a good fit</span></div>'
-    + '<div class="pipe-status">Maybe Next Year<span class="pipe-desc"> — keep warm for 2027</span></div>'
-    + '<div class="pipe-status">No Longer Interested<span class="pipe-desc"> — opted out</span></div>'
-    + '<div class="pipe-status">Cancelled<span class="pipe-desc"> — was confirmed, withdrew</span><span class="pipe-auto">&#9889; waitlist notification fires</span></div>'
+    // OUT
+    + '<div class="pipe-stage out">'
+    + '<div class="pipe-stage-header"><div class="pipe-stage-dot"></div>Out</div>'
+    + '<div class="pipe-card">'
+    + '<div class="pipe-card-name">Not Aligned</div>'
+    + '<div class="pipe-card-desc">Not a good fit. Closed gracefully.</div>'
+    + '</div>'
+    + '<div class="pipe-card">'
+    + '<div class="pipe-card-name">Maybe Next Year</div>'
+    + '<div class="pipe-card-desc">Interested but timing is wrong. Keep warm for 2027.</div>'
+    + '</div>'
+    + '<div class="pipe-card">'
+    + '<div class="pipe-card-name">No Longer Interested</div>'
+    + '<div class="pipe-card-desc">Opted out. No further contact.</div>'
+    + '</div>'
+    + '<div class="pipe-card">'
+    + '<div class="pipe-card-name">Cancelled</div>'
+    + '<div class="pipe-card-desc">Was confirmed but withdrew. Triggers waitlist notification.</div>'
+    + '<div class="pipe-auto-tag success">&#9889; waitlist notification</div>'
+    + '</div>'
     + '</div>'
 
-    + '<div class="pipe-notes">'
-    + '<p><strong>Ghosted lives in Waiting, not Out</strong> — ghost protocol is recovery, not goodbye.</p>'
-    + '<p><strong>Deposit reminders (Day 3, Day 5) always run before Ghosted is set.</strong> The two sequences never run in parallel.</p>'
-    + '</div>';
+    + '</div>' // /pipe-grid
+
+    + '<hr class="pipe-divider">'
+
+    // ── FLOW DIAGRAM ──
+    + '<div class="pipe-flow-section">'
+    + '<div class="pipe-flow-title">The Journey</div>'
+    + '<p class="pipe-flow-subtitle">How an applicant moves through the pipeline</p>'
+
+    + '<div style="overflow-x:auto;"><div style="min-width:900px;padding-bottom:16px;">'
+
+    // Row 1
+    + '<div class="pipe-flow-row">'
+    + '<div class="pipe-flow-node pfn-incoming">Applied</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div class="pipe-flow-label">Ethan &amp; Gabi review</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div style="display:flex;gap:8px;">'
+    + '<div class="pipe-flow-node pfn-decision">Hard Yes</div>'
+    + '<div class="pipe-flow-node pfn-decision">Needs Call</div>'
+    + '<div class="pipe-flow-node pfn-decision">Waitlist</div>'
+    + '<div class="pipe-flow-node pfn-out" style="opacity:0.6">Not Aligned</div>'
+    + '</div></div>'
+
+    + '<div class="pipe-flow-connector"></div>'
+
+    // Row 2: Hard Yes path
+    + '<div class="pipe-flow-row">'
+    + '<div class="pipe-flow-node pfn-decision">Hard Yes</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div class="pipe-flow-label">send offer email<br><span style="color:#818cf8;font-size:10px">badge: offer sent &#10003;</span></div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div class="pipe-flow-label" style="color:#ec4899">waiting for deposit...</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div style="display:flex;gap:8px;">'
+    + '<div class="pipe-flow-node pfn-confirmed">Deposit Paid</div>'
+    + '<div class="pipe-flow-node pfn-out" style="opacity:0.7">Ghosted</div>'
+    + '</div></div>'
+
+    + '<div class="pipe-flow-connector" style="margin-left:0;height:16px;"></div>'
+
+    // Row 2b: auto sequences
+    + '<div class="pipe-flow-row" style="padding-left:32px;gap:8px;">'
+    + '<div class="pipe-flow-node pfn-auto">&#9889; deposit reminder Day 3 + Day 5</div>'
+    + '<div style="color:#333;padding:0 4px;">|</div>'
+    + '<div class="pipe-flow-node pfn-auto">&#9889; ghost protocol Day 3, 7, 11, 15</div>'
+    + '</div>'
+
+    + '<div class="pipe-flow-connector"></div>'
+
+    // Row 3: Needs Call path
+    + '<div class="pipe-flow-row">'
+    + '<div class="pipe-flow-node pfn-decision">Needs Call</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div class="pipe-flow-label">Gabi reaches out<br>bulk email sent</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div class="pipe-flow-node pfn-decision">Call Scheduled</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div style="display:flex;gap:8px;">'
+    + '<div class="pipe-flow-node pfn-decision">Hard Yes</div>'
+    + '<div class="pipe-flow-node pfn-out" style="opacity:0.7">Not Aligned</div>'
+    + '</div></div>'
+
+    + '<div class="pipe-flow-connector" style="margin-left:0;height:16px;"></div>'
+
+    + '<div class="pipe-flow-row" style="padding-left:32px;">'
+    + '<div class="pipe-flow-label" style="color:#f59e0b;">&darr; no response after 3&ndash;4 days &rarr;</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div class="pipe-flow-node pfn-out">Ghosted</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div class="pipe-flow-node pfn-auto">&#9889; 3-day buffer &rarr; ghost protocol</div>'
+    + '</div>'
+
+    + '<div class="pipe-flow-connector"></div>'
+
+    // Row 4: Confirmed path
+    + '<div class="pipe-flow-row">'
+    + '<div class="pipe-flow-node pfn-confirmed">Deposit Paid</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div style="display:flex;gap:8px;">'
+    + '<div class="pipe-flow-node pfn-confirmed">Payment Plan</div>'
+    + '<div class="pipe-flow-node pfn-confirmed">Paid in Full</div>'
+    + '</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div class="pipe-flow-label">&#127881; confirmed participant</div>'
+    + '</div>'
+
+    + '<div class="pipe-flow-connector" style="margin-left:0;height:16px;"></div>'
+
+    + '<div class="pipe-flow-row" style="padding-left:32px;">'
+    + '<div class="pipe-flow-label" style="color:#ef4444;">&darr; cancels &rarr;</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div class="pipe-flow-node pfn-out">Cancelled</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div class="pipe-flow-node pfn-auto">&#9889; waitlist notification fires</div>'
+    + '</div>'
+
+    + '<div class="pipe-flow-connector"></div>'
+
+    // Row 5: Waitlist
+    + '<div class="pipe-flow-row">'
+    + '<div class="pipe-flow-node pfn-decision">Waitlist</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div class="pipe-flow-label">spot opens anywhere above</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div class="pipe-flow-node pfn-auto">&#9889; &ldquo;A spot just opened&rdquo; email</div>'
+    + '<div class="pipe-flow-arrow">&rarr;</div>'
+    + '<div class="pipe-flow-node pfn-confirmed">Deposit Paid</div>'
+    + '</div>'
+
+    + '</div></div>' // /scroll wrapper
+    + '</div>' // /pipe-flow-section
+
+    + '<hr class="pipe-divider">'
+
+    // ── KEY NOTES ──
+    + '<div class="pipe-key-note">'
+    + '<h3>Key Architecture Notes</h3>'
+    + '<p><strong>Ghosted lives in Waiting, not Out</strong> &mdash; ghost protocol is recovery, not goodbye. They can still come back.</p>'
+    + '<p><strong>Deposit reminders (Day 3, Day 5) always run before Ghosted is set.</strong> The two sequences never run in parallel. Deposit reminders fire off the emailSent timestamp; Ghosted fires off manual status change.</p>'
+    + '<p><strong>Cancelled triggers waitlist notification</strong> &mdash; when a confirmed participant withdraws, waitlisted applicants are automatically notified.</p>'
+    + '</div>'
+
+    + '<div class="pipe-footer">THE COURSE OF TRANSFORMATION &middot; PIPELINE ARCHITECTURE &middot; 2026</div>';
 }
 </script>
 </body>
