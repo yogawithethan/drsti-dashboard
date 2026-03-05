@@ -2556,10 +2556,10 @@ function renderCard(a) {
   } else {
     noteText = 'Set accommodation and price type to enable offer email';
   }
-  var offerHtml = '<div class="divider"></div>'
+  var offerHtml = '<div id="offer-section-'+a.row+'"><div class="divider"></div>'
     + '<div><div class="slabel">Offer Email '+tooltip('Opens an editable email preview before sending. Cannot be undone \u2014 only send when ready.')+'</div>'
     + '<div class="offer-email-box"><div class="'+noteClass+'">'+noteText+'</div></div>'
-    + sendBtnHtml + '</div>';
+    + sendBtnHtml + '</div></div>';
 
   // Status-based email (Waitlist, Not Aligned) — compose available without accommodation/price
   var statusEmailStatuses = { 'Waitlist': 'waitlist', 'Not Aligned': 'not-aligned' };
@@ -2611,8 +2611,8 @@ function renderCard(a) {
     + '<div style="padding-top:14px;display:flex;flex-direction:column;gap:12px;">'
     + '<div class="field"><div class="field-label">Status</div><select id="sel-status-'+a.row+'" onchange="markCardChanged('+a.row+');updateStatusExtras('+a.row+')">'+statusOpts+'</select></div>'
     + '<div class="field-row">'
-    + '<div class="field"><div class="field-label">Accommodation</div><select id="sel-accom-'+a.row+'" onchange="markCardChanged('+a.row+')">'+accomOpts+'</select></div>'
-    + '<div class="field"><div class="field-label">Price Type '+tooltip('EB = Early Bird (before March 20). Plan = 3 instalments. Full = pay in full with 10% discount.')+'</div><select id="sel-price-'+a.row+'" onchange="markCardChanged('+a.row+')">'+priceOpts+'</select></div>'
+    + '<div class="field"><div class="field-label">Accommodation</div><select id="sel-accom-'+a.row+'" onchange="markCardChanged('+a.row+');updateOfferReady('+a.row+')">'+accomOpts+'</select></div>'
+    + '<div class="field"><div class="field-label">Price Type '+tooltip('EB = Early Bird (before March 20). Plan = 3 instalments. Full = pay in full with 10% discount.')+'</div><select id="sel-price-'+a.row+'" onchange="markCardChanged('+a.row+');updateOfferReady('+a.row+')">'+priceOpts+'</select></div>'
     + '</div>'
     + '<div class="field"><div class="field-label">Scholarship '+tooltip('Amount discounted from total. Deducted automatically from all invoice calculations.')+'</div><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;color:var(--text-muted);flex-shrink:0;">\u20AC</span><input type="number" id="sel-scholarship-'+a.row+'" min="0" step="50" value="'+(a.scholarship||'')+'" placeholder="0" oninput="markCardChanged('+a.row+')"></div></div>'
     + addonCheckboxes
@@ -2719,6 +2719,26 @@ function updateStatusExtras(row) {
   if (!statusEl || !extrasEl) return;
   var show = statusEl.value === 'Hard Yes' || statusEl.value === 'Needs Call';
   extrasEl.style.display = show ? '' : 'none';
+}
+
+function updateOfferReady(row) {
+  var accomEl = document.getElementById('sel-accom-' + row);
+  var priceEl = document.getElementById('sel-price-' + row);
+  var offerEl = document.getElementById('offer-section-' + row);
+  if (!offerEl || !accomEl || !priceEl) return;
+  var a = state.applicants.find(function(x) { return x.row === row; });
+  if (!a || a.emailSent) return;
+  var ready = accomEl.value && priceEl.value;
+  if (ready) {
+    offerEl.innerHTML = '<div class="divider"></div>'
+      + '<div><div class="slabel">Offer Email</div>'
+      + '<div class="offer-email-box"><div class="offer-email-note ready">&#10003; Ready to send</div></div>'
+      + '<button class="btn-send-email" onclick="openEmailModal('+row+')">&#9993; Compose &amp; Send Email</button></div>';
+  } else {
+    offerEl.innerHTML = '<div class="divider"></div>'
+      + '<div><div class="slabel">Offer Email</div>'
+      + '<div class="offer-email-box"><div class="offer-email-note">Set accommodation and price type to enable offer email</div></div></div>';
+  }
 }
 
 function rerenderSingleCard(row) {
@@ -2867,6 +2887,9 @@ function resolveEmailTemplate(a) {
   openSpots = MAX_PARTICIPANTS - confirmed;
   if (openSpots < 0) openSpots = 0;
 
+  var pricePlan = prices ? (prices['plan'] || 0) : 0;
+  var priceFull = prices ? (prices['full'] || 0) : 0;
+
   var tags = {
     'first_name': a.firstName || '',
     'full_name': (a.firstName || '') + ' ' + (a.lastName || ''),
@@ -2874,8 +2897,10 @@ function resolveEmailTemplate(a) {
     'phone': a.phone || '',
     'accommodation': a.accommodation || '',
     'deposit_amount': symbol + formatNumberPlain(deposit),
-    'deposit_link': '[deposit link \u2014 generated on send]',
+    'deposit_link': '{{deposit_link}}',
     'payment_summary': paymentSummary,
+    'price_plan': pricePlan ? symbol + formatNumberPlain(pricePlan) : '',
+    'price_full': priceFull ? symbol + formatNumberPlain(priceFull) : '',
     'retreat_name': retreatName,
     'retreat_dates': config['Retreat Dates'] || '',
     'venue_name': config['Venue Name'] || '',
@@ -2971,7 +2996,7 @@ async function sendEmailFromModal() {
   sendBtn.textContent = 'Sending...';
   sendBtn.disabled = true;
 
-  var result = await apiUpdate('sendCustomEmail', { row: emailModalRow, subject: subject, body: body });
+  var result = await apiUpdate('sendCustomEmail', { row: emailModalRow, subject: subject, body: body, resolveTags: true });
   sendBtn.textContent = 'Send Email';
   sendBtn.disabled = false;
 
