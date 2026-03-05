@@ -190,26 +190,163 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .tcot-fab .ext-arrow svg {
   width: 9px; height: 9px; fill: var(--text-secondary);
 }
-.sync-status {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 10px; font-weight: 500; letter-spacing: 0.02em;
-  padding: 2px 0;
+/* ── SYNC DOT (next to retreat pill) ── */
+.sync-dot-btn {
+  width: 10px; height: 10px; border-radius: 50%;
+  border: none; cursor: pointer; padding: 0;
+  background: var(--sage);
+  position: relative;
+  flex-shrink: 0;
 }
-.sync-dot {
-  width: 6px; height: 6px; border-radius: 50%;
+.sync-dot-btn.synced { background: var(--sage); animation: pulse-green 2s infinite; }
+.sync-dot-btn.syncing { background: #d4a017; animation: none; }
+.sync-dot-btn.error { background: #ef4444; animation: none; }
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(122,158,126,0.4); }
+  50% { box-shadow: 0 0 0 4px rgba(122,158,126,0); }
+}
+
+/* ── NAV BUTTONS ── */
+.nav-buttons {
+  display: flex; align-items: center; gap: 6px;
+}
+.nav-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1.5px solid var(--sand);
+  background: transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+}
+.nav-btn:hover { border-color: var(--sage); color: var(--sage-dark); }
+.nav-btn.active {
+  background: var(--sage-dark); border-color: var(--sage-dark); color: #fff;
+}
+.nav-btn i { font-size: 16px; }
+
+/* ── PANEL VIEWS ── */
+.panel-view { display: none; }
+.panel-view.active { display: block; }
+
+/* ── EMAIL TEMPLATES PANEL ── */
+.templates-panel {
+  max-width: 600px; margin: 0 auto; padding: 16px 16px 100px;
+}
+.tpl-group { margin-bottom: 24px; }
+.tpl-group-title {
+  font-family: var(--font-display);
+  font-size: 18px; font-weight: 400;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(45,42,38,0.08);
+}
+.tpl-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-xs);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.tpl-card-header {
+  padding: 10px 14px;
+  cursor: pointer;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 8px;
+}
+.tpl-card-header:hover { background: var(--bg-section); }
+.tpl-card-name {
+  font-weight: 600; font-size: 13px; color: var(--text);
+  line-height: 1.3;
+}
+.tpl-card-trigger {
+  font-size: 11px; color: var(--text-muted); margin-top: 2px;
+}
+.tpl-card-subject {
+  font-size: 12px; color: var(--text-secondary); font-style: italic;
+  margin-top: 3px;
+}
+.tpl-card-actions {
+  display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+}
+.tpl-copy-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); padding: 4px;
+  border-radius: 4px; transition: all 0.15s;
+}
+.tpl-copy-btn:hover { background: var(--sage-light); color: var(--sage-dark); }
+.tpl-expand-arrow {
+  width: 14px; height: 14px; stroke: var(--text-muted);
+  fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  transition: transform 0.2s;
+}
+.tpl-card.open .tpl-expand-arrow { transform: rotate(180deg); }
+.tpl-card-body {
+  display: none; padding: 0 14px 14px;
+  font-size: 12px; line-height: 1.6;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  border-top: 1px solid rgba(45,42,38,0.06);
+}
+.tpl-card.open .tpl-card-body { display: block; }
+.tpl-merge-tag {
+  background: #fff3cd; color: #856404;
+  padding: 1px 4px; border-radius: 3px;
+  font-family: monospace; font-size: 11px;
+}
+.tpl-placeholder {
+  padding: 10px 14px;
+  font-size: 12px; color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ── PIPELINE GUIDE PANEL ── */
+.pipeline-panel {
+  max-width: 600px; margin: 0 auto; padding: 16px 16px 100px;
+}
+.pipe-group {
+  border-left: 4px solid; padding: 12px 16px;
+  margin-bottom: 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-xs);
+}
+.pipe-group-title {
+  font-family: var(--font-display);
+  font-size: 16px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+.pipe-status {
+  padding: 4px 0; font-size: 13px; font-weight: 500;
+  color: var(--text);
+}
+.pipe-desc {
+  font-size: 11px; color: var(--text-muted);
+  margin-left: 4px; font-weight: 400;
+}
+.pipe-auto {
   display: inline-block;
+  font-size: 10px; font-weight: 600;
+  background: #e8e0f8; color: #5b21b6;
+  padding: 1px 7px; border-radius: 10px;
+  margin-left: 8px; margin-top: 2px;
 }
-.sync-status.synced .sync-dot { background: var(--sage); }
-.sync-status.synced { color: var(--sage); }
-.sync-status.offline .sync-dot { background: #d4a017; }
-.sync-status.offline { color: #b8860b; }
-.header-meta .refresh-btn {
-  background: none; border: none;
-  color: var(--sage); cursor: pointer;
-  font-size: 11px; font-family: var(--font-body);
-  font-weight: 500; padding: 2px 0;
+.pipe-sub { padding-left: 16px; margin-top: 2px; }
+.pipe-notes {
+  background: var(--bg-section);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-top: 16px;
+  font-size: 12px; color: var(--text-secondary);
+  line-height: 1.6;
 }
-.header-meta .refresh-btn:hover { color: var(--sage-dark); }
+.pipe-notes p { margin-bottom: 8px; }
+.pipe-notes p:last-child { margin-bottom: 0; }
+
+@media (min-width: 640px) {
+  .templates-panel { padding: 16px 24px 100px; }
+  .pipeline-panel { padding: 16px 24px 100px; }
+}
 
 /* ── RETREAT BAR ── */
 .retreat-bar {
@@ -1385,15 +1522,13 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
     <div class="brand">
       <img src="drsti.png" alt="" class="brand-logo">Dṛṣṭi Dashboard
     </div>
-    <div class="header-meta">
-      <div style="display:flex;align-items:center;gap:4px;">
-        <div class="sync-status synced" id="syncStatus"><span class="sync-dot"></span> Synced</div>
-        <button class="refresh-btn" onclick="loadAll()">Refresh</button>
-      </div>
-      <div id="lastUpdated"></div>
+    <div class="nav-buttons">
+      <button class="nav-btn active" id="navCrm" onclick="switchView('crm')" title="CRM Dashboard"><i class="ph ph-list"></i></button>
+      <button class="nav-btn" id="navTemplates" onclick="switchView('templates')" title="Email Templates"><i class="ph ph-envelope-simple"></i></button>
+      <button class="nav-btn" id="navPipeline" onclick="switchView('pipeline')" title="Pipeline Guide"><i class="ph ph-git-branch"></i></button>
     </div>
   </div>
-  <div class="retreat-bar" id="retreatBar"></div>
+  <div class="retreat-bar" id="retreatBar"><button class="sync-dot-btn synced" id="syncDot" onclick="loadAll()" title="Synced"></button></div>
   <div class="inv-strip" id="invStrip"></div>
 </header>
 
@@ -1402,6 +1537,9 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
   <img src="tcot-logo-gold.jpg" alt="TCOT">
   <span class="ext-arrow"><svg viewBox="0 0 24 24"><path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h5V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-5h-2v5H5V5z"/></svg></span>
 </a>
+
+<!-- VIEW: CRM DASHBOARD -->
+<div class="panel-view active" id="viewCrm">
 
 <!-- FILTER BAR -->
 <nav class="filter-bar" id="filterBar">
@@ -1438,6 +1576,18 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
     </table>
   </div>
 </section>
+
+</div><!-- /viewCrm -->
+
+<!-- VIEW: EMAIL TEMPLATES -->
+<div class="panel-view" id="viewTemplates">
+  <div class="templates-panel" id="templatesPanel"></div>
+</div>
+
+<!-- VIEW: PIPELINE GUIDE -->
+<div class="panel-view" id="viewPipeline">
+  <div class="pipeline-panel" id="pipelinePanel"></div>
+</div>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
@@ -1606,6 +1756,42 @@ var EMAIL_TEMPLATES_JS = {
   'not-aligned': {
     subject: 'Your Course application \ud83d\ude4f\ud83c\udffb',
     body: '{{first_name}},\n\nThank you for the time and honesty you put into your application.\n\nAfter careful reflection, we don\'t feel that *The Course* is the right fit right now. This isn\'t a judgement of your path or your readiness \u2014 it\'s simply our honest sense that the timing or the container may not be what serves you most in this moment.\n\nThe fact that you\'re asking deep questions, that you\'re seeking something real \u2014 that matters. That impulse will take you far.\n\nWe wish you every grace on the journey ahead. \ud83c\udf3f\n\nWith love,\nEthan & Gabi \u0950\n\n*{{retreat_name}} \u00b7 {{retreat_dates}} \u00b7 {{venue_name}}, {{city}}, {{country}}*'
+  },
+  'ghost-1': {
+    subject: 'Just checking in \ud83d\ude4f\ud83c\udffb',
+    body: 'Hey {{first_name}},\n\nWe reached out recently about your spot in {{country}} and just wanted to make sure our message landed.\n\nIf you\'re still thinking it over \u2014 no rush at all. We know this kind of decision deserves space.\n\nIf you\'re ready, a {{deposit_amount}} deposit is all it takes to hold your place:\n\n\ud83d\udc49 [Reserve my spot \u2192]({{deposit_link}})\n\nEither way, we\'d love to hear from you. Just hit reply. \ud83c\udf3f\n\nWith love,\nEthan & Gabi \u0950'
+  },
+  'ghost-2': {
+    subject: 'Still thinking it over?',
+    body: 'Hey {{first_name}},\n\nWe know big decisions take time, and *{{retreat_name}}* is not a small thing \u2014 it\'s 10 days that can genuinely shift the direction of your life.\n\nIf you have questions or hesitations, we get it. Here are the most common ones we hear:\n\n- *"Can I really take 10 days off?"* \u2014 Most people say this was the best thing they\'ve done for themselves in years.\n- *"I\'m not experienced enough"* \u2014 We welcome complete beginners. You\'ll be supported every step.\n- *"It\'s a big investment"* \u2014 We offer flexible payment plans to make it accessible.\n\nIf a quick call would help, Gabi and Ethan would love to connect:\n\n\ud83d\udcde [Book a free call \u2192]({{cal_link}})\n\nNo pressure \u2014 just clarity. \ud83c\udf3f\n\nWith love,\nEthan & Gabi \u0950'
+  },
+  'ghost-3': {
+    subject: 'Your spot is almost gone',
+    body: 'Hey {{first_name}},\n\nJust a quick update \u2014 we\'re down to **{{open_spots}} spots** for *{{retreat_name}}* in {{country}}, and your place is still being held.\n\nWe don\'t want you to miss this if it\'s meant for you.\n\nA {{deposit_amount}} deposit secures your spot. It counts toward your total, and we offer flexible payment plans:\n\n\ud83d\udc49 [Reserve my spot \u2192]({{deposit_link}})\n\nIf now isn\'t the right time, no worries at all \u2014 we\'d just love to hear from you either way so we can plan accordingly.\n\nWith love,\nEthan & Gabi \u0950'
+  },
+  'ghost-4': {
+    subject: 'Last call \ud83c\udf3f',
+    body: 'Hey {{first_name}},\n\nThis is the last time we\'ll reach out about your spot for *{{retreat_name}}* in {{country}}.\n\nWe\'ve been holding space for you, but we\'ll need to release it to someone on the waitlist soon.\n\nIf you\'re in \u2014 a {{deposit_amount}} deposit is all it takes:\n\n\ud83d\udc49 [Reserve my spot \u2192]({{deposit_link}})\n\nIf the timing isn\'t right, we completely understand. No pressure, no hard feelings. We\'re grateful you applied, and the door is always open for a future retreat.\n\nWishing you all the best on your path. \ud83d\ude4f\ud83c\udffb\n\nWith love,\nEthan & Gabi \u0950'
+  },
+  'deposit-reminder-1': {
+    subject: 'Your spot is held for a few more days \ud83d\ude4f\ud83c\udffb',
+    body: 'Hey {{first_name}},\n\nJust a friendly reminder \u2014 your spot for *{{retreat_name}}* in {{country}} is still being held for you.\n\nA {{deposit_amount}} deposit is all it takes to make it official:\n\n\ud83d\udc49 [Secure my spot \u2192]({{deposit_link}})\n\nIf you have any questions or need to chat, just reply here or book a call:\n\n\ud83d\udcde [Schedule a call \u2192]({{cal_link}})\n\nWe\'d love to have you with us. \ud83c\udf3f\n\nWith love,\nEthan & Gabi \u0950'
+  },
+  'deposit-reminder-2': {
+    subject: 'Final reminder \u2014 we need to release your spot',
+    body: 'Hey {{first_name}},\n\nWe\'ve been holding a spot for you for *{{retreat_name}}* in {{country}}, but we\'ll need to release it soon to accommodate folks on the waitlist.\n\nIf you\'d like to join us, now is the time:\n\n\ud83d\udc49 [Secure my spot \u2192]({{deposit_link}})\n\nIf the timing isn\'t right, we totally understand \u2014 just let us know and we\'ll release your spot with love.\n\nEither way, we\'re grateful you applied. \ud83d\ude4f\ud83c\udffb\n\nWith love,\nEthan & Gabi \u0950'
+  },
+  'payment-reminder': {
+    subject: 'Upcoming payment reminder \ud83d\ude4f\ud83c\udffb',
+    body: 'Hey {{first_name}},\n\nJust a quick heads-up \u2014 your next instalment for *{{retreat_name}}* is coming up in a few days.\n\nIf you\'ve already taken care of it, please disregard this message. \ud83d\ude4f\ud83c\udffb\n\nIf you have any questions about your payment or need to make arrangements, just reply to this email and we\'ll work it out together.\n\nWe\'re so excited to have you join us in {{country}}! \ud83c\udf3f\n\nWith love,\nEthan & Gabi \u0950'
+  },
+  'waitlist-spot-open': {
+    subject: 'A spot just opened, {{first_name}} \ud83c\udf3f',
+    body: 'Hey {{first_name}},\n\nGreat news \u2014 a spot just opened up for *{{retreat_name}}* in {{country}}.\n\nYou were next on the waitlist, so we wanted to reach out right away.\n\nThe first person to secure their deposit gets the spot. If this is your moment, we\'d love to help you make it happen.\n\n\ud83d\udcde [Book a call with Ethan & Gabi \u2192]({{cal_link}})\n\nIf you\'d like to go ahead right away, we can send you a deposit link \u2014 just reply to this email.\n\nWe hope to see you in {{country}}. \ud83d\ude4f\ud83c\udffb\n\nWith love,\nEthan & Gabi \u0950'
+  },
+  'waitlist-spot-filled': {
+    subject: 'Update on the open spot \ud83d\ude4f\ud83c\udffb',
+    body: 'Hey {{first_name}},\n\nWe wanted to let you know \u2014 the spot that opened up for *{{retreat_name}}* in {{country}} has been filled.\n\nBut you\'re still first in line if another one opens up. We\'ll reach out the moment it does.\n\nIn the meantime, if you\'d like to chat about future retreats or have any questions, just reply here.\n\nWith love,\nEthan & Gabi \u0950'
   }
 };
 
@@ -1725,14 +1911,14 @@ var pendingQueue = JSON.parse(localStorage.getItem('drsti_pending_queue') || '[]
 
 function setSyncStatus(online) {
   syncOnline = online;
-  var el = document.getElementById('syncStatus');
+  var el = document.getElementById('syncDot');
   if (!el) return;
   if (online && pendingQueue.length === 0) {
-    el.className = 'sync-status synced';
-    el.innerHTML = '<span class="sync-dot"></span> Synced';
+    el.className = 'sync-dot-btn synced';
+    el.title = 'Synced — click to refresh';
   } else {
-    el.className = 'sync-status offline';
-    el.innerHTML = '<span class="sync-dot"></span> Offline — ' + pendingQueue.length + ' pending';
+    el.className = 'sync-dot-btn error';
+    el.title = 'Offline — ' + pendingQueue.length + ' pending';
   }
 }
 
@@ -1887,9 +2073,9 @@ function startPolling() {
 function stopPolling() { if (pollTimer) clearInterval(pollTimer); }
 
 function updateLastFetched() {
-  var el = document.getElementById('lastUpdated');
-  if (state.lastFetch) {
-    el.textContent = 'Updated ' + timeAgo(state.lastFetch);
+  var dot = document.getElementById('syncDot');
+  if (dot && state.lastFetch) {
+    dot.title = 'Synced — updated ' + timeAgo(state.lastFetch) + ' — click to refresh';
   }
 }
 
@@ -1938,6 +2124,7 @@ function renderInventory() {
 var RETREAT_ICON = '<svg viewBox="0 0 256 256"><path d="M128,16a88.1,88.1,0,0,0-88,88c0,75.3,80,132.17,83.41,134.55a8,8,0,0,0,9.18,0C136,236.17,216,179.3,216,104A88.1,88.1,0,0,0,128,16Zm0,56a32,32,0,1,1-32,32A32,32,0,0,1,128,72Z"/></svg>';
 function renderRetreatBar() {
   var bar = document.getElementById('retreatBar');
+  var syncDot = '<button class="sync-dot-btn synced" id="syncDot" onclick="loadAll()" title="Synced — click to refresh"></button>';
   var html = '';
   for (var i = 0; i < RETREAT_IDS.length; i++) {
     var id = RETREAT_IDS[i];
@@ -1945,6 +2132,7 @@ function renderRetreatBar() {
     var active = id === activeRetreat ? ' active' : '';
     html += '<button class="retreat-tab'+active+'" onclick="switchRetreat(\''+id+'\')">'+RETREAT_ICON+esc(r.label)+'</button>';
   }
+  html += syncDot;
   bar.innerHTML = html;
 }
 
@@ -3367,6 +3555,164 @@ closeEmailModal = function() {
   sendBtn.onclick = sendEmailFromModal;
   sendBtn.textContent = 'Send Email';
 };
+
+// ── VIEW SWITCHING ──
+var currentView = 'crm';
+
+function switchView(view) {
+  currentView = view;
+  ['crm', 'templates', 'pipeline'].forEach(function(v) {
+    var panel = document.getElementById('view' + v.charAt(0).toUpperCase() + v.slice(1));
+    var btn = document.getElementById('nav' + v.charAt(0).toUpperCase() + v.slice(1));
+    if (panel) panel.classList.toggle('active', v === view);
+    if (btn) btn.classList.toggle('active', v === view);
+  });
+  if (view === 'templates') renderTemplatesPanel();
+  if (view === 'pipeline') renderPipelinePanel();
+}
+
+// ── EMAIL TEMPLATES PANEL ──
+var TEMPLATE_GROUPS = [
+  {
+    title: 'Manual Send',
+    templates: [
+      { key: 'hard-yes', name: 'Hard Yes Offer Email', trigger: 'Sent manually when status = Hard Yes + accommodation + price type set' },
+      { key: 'needs-call', name: 'Follow-up / Schedule Call', trigger: 'Sent manually when status = Needs Call' }
+    ]
+  },
+  {
+    title: 'Ghost Protocol (auto)',
+    templates: [
+      { key: 'ghost-1', name: 'Email 1 — Just checking in', trigger: 'Day 3 after status set to Ghosted' },
+      { key: 'ghost-2', name: 'Email 2 — Still thinking it over?', trigger: 'Day 7 after Ghosted' },
+      { key: 'ghost-3', name: 'Email 3 — Your spot is almost gone', trigger: 'Day 11 after Ghosted' },
+      { key: 'ghost-4', name: 'Email 4 — Last call', trigger: 'Day 15 after Ghosted (final)' }
+    ]
+  },
+  {
+    title: 'Deposit Reminders (auto)',
+    templates: [
+      { key: 'deposit-reminder-1', name: 'Reminder 1 — Spot held', trigger: 'Day 3 after offer sent, deposit unpaid' },
+      { key: 'deposit-reminder-2', name: 'Reminder 2 — Final reminder', trigger: 'Day 5 after offer sent, deposit unpaid' }
+    ]
+  },
+  {
+    title: 'Payment Reminders (auto)',
+    templates: [
+      { key: 'payment-reminder', name: 'Payment Plan Reminder', trigger: '5 days before instalment due date' }
+    ]
+  },
+  {
+    title: 'Waitlist (auto)',
+    templates: [
+      { key: 'waitlist-spot-open', name: 'Spot Opened Notification', trigger: 'When a confirmed applicant cancels/withdraws' },
+      { key: 'waitlist-spot-filled', name: 'Spot Filled Follow-up', trigger: '48 hours after spot-open notification' }
+    ]
+  },
+  {
+    title: 'Status Emails',
+    templates: [
+      { key: 'waitlist', name: 'Waitlist Placement', trigger: 'Sent when status set to Waitlist' },
+      { key: 'not-aligned', name: 'Not Aligned', trigger: 'Sent when status set to Not Aligned' }
+    ]
+  }
+];
+
+function renderTemplatesPanel() {
+  var panel = document.getElementById('templatesPanel');
+  var html = '';
+  TEMPLATE_GROUPS.forEach(function(group) {
+    html += '<div class="tpl-group"><div class="tpl-group-title">' + esc(group.title) + '</div>';
+    group.templates.forEach(function(t) {
+      var tpl = EMAIL_TEMPLATES_JS[t.key];
+      var subject = '';
+      var body = '';
+      if (tpl) {
+        subject = tpl.subject || '';
+        body = tpl.body || '';
+      }
+      var bodyHighlighted = esc(body).replace(/\{\{(\w+)\}\}/g, '<span class="tpl-merge-tag">{{$1}}</span>');
+      html += '<div class="tpl-card" id="tpl-' + t.key + '">'
+        + '<div class="tpl-card-header" onclick="toggleTplCard(\'' + t.key + '\')">'
+        + '<div>'
+        + '<div class="tpl-card-name">' + esc(t.name) + '</div>'
+        + '<div class="tpl-card-trigger">' + esc(t.trigger) + '</div>'
+        + (subject ? '<div class="tpl-card-subject">' + esc(subject) + '</div>' : '')
+        + '</div>'
+        + '<div class="tpl-card-actions">'
+        + '<button class="tpl-copy-btn" onclick="event.stopPropagation();copyTemplate(\'' + t.key + '\')" title="Copy template"><i class="ph ph-copy"></i></button>'
+        + '<svg class="tpl-expand-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>'
+        + '</div></div>';
+      if (tpl) {
+        html += '<div class="tpl-card-body">' + bodyHighlighted + '</div>';
+      } else {
+        html += '<div class="tpl-card-body tpl-placeholder">Template not yet written</div>';
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+  panel.innerHTML = html;
+}
+
+function toggleTplCard(key) {
+  var card = document.getElementById('tpl-' + key);
+  if (card) card.classList.toggle('open');
+}
+
+function copyTemplate(key) {
+  var tpl = EMAIL_TEMPLATES_JS[key];
+  if (!tpl) return;
+  var text = 'Subject: ' + (tpl.subject || '') + '\n\n' + (tpl.body || '');
+  navigator.clipboard.writeText(text).then(function() {
+    showToast('Copied!', 'success');
+  });
+}
+
+// ── PIPELINE GUIDE PANEL ──
+function renderPipelinePanel() {
+  var panel = document.getElementById('pipelinePanel');
+  panel.innerHTML = ''
+    + '<div class="pipe-group" style="border-color:#6366f1">'
+    + '<div class="pipe-group-title" style="color:#6366f1">Incoming</div>'
+    + '<div class="pipe-status">Applied<span class="pipe-desc"> — application received, awaiting review</span></div>'
+    + '</div>'
+
+    + '<div class="pipe-group" style="border-color:#f59e0b">'
+    + '<div class="pipe-group-title" style="color:#f59e0b">Decision</div>'
+    + '<div class="pipe-status">Hard Yes<span class="pipe-desc"> — approved, offer email not yet sent</span></div>'
+    + '<div class="pipe-sub"><span class="offer-sent-badge">Offer Sent &#10003;</span> appears once emailSent exists</div>'
+    + '<div class="pipe-status">Needs Call<span class="pipe-desc"> — promising, needs conversation first</span></div>'
+    + '<div class="pipe-status">Call Scheduled<span class="pipe-desc"> — call booked, awaiting outcome</span></div>'
+    + '<div class="pipe-status">Waitlist<span class="pipe-desc"> — good fit, retreat full</span><span class="pipe-auto">&#9889; auto-notified if spot opens</span></div>'
+    + '</div>'
+
+    + '<div class="pipe-group" style="border-color:#ec4899">'
+    + '<div class="pipe-group-title" style="color:#ec4899">Waiting</div>'
+    + '<div class="pipe-status">Ghosted<span class="pipe-desc"> — gone silent after outreach</span></div>'
+    + '<div class="pipe-sub"><span class="pipe-auto">&#9889; 3-day buffer &rarr; ghost protocol Day 3, 7, 11, 15</span></div>'
+    + '</div>'
+
+    + '<div class="pipe-group" style="border-color:#4ade80">'
+    + '<div class="pipe-group-title" style="color:#4ade80">Confirmed</div>'
+    + '<div class="pipe-status">Deposit Paid<span class="pipe-desc"> — spot secured, instalments pending</span><span class="pipe-auto">&#9889; payment reminders</span></div>'
+    + '<div class="pipe-status">Payment Plan<span class="pipe-desc"> — actively paying instalments</span><span class="pipe-auto">&#9889; instalment reminders</span></div>'
+    + '<div class="pipe-status">Paid in Full<span class="pipe-desc"> — complete, no further actions</span></div>'
+    + '</div>'
+
+    + '<div class="pipe-group" style="border-color:#ef4444">'
+    + '<div class="pipe-group-title" style="color:#ef4444">Out</div>'
+    + '<div class="pipe-status">Not Aligned<span class="pipe-desc"> — not a good fit</span></div>'
+    + '<div class="pipe-status">Maybe Next Year<span class="pipe-desc"> — keep warm for 2027</span></div>'
+    + '<div class="pipe-status">No Longer Interested<span class="pipe-desc"> — opted out</span></div>'
+    + '<div class="pipe-status">Cancelled<span class="pipe-desc"> — was confirmed, withdrew</span><span class="pipe-auto">&#9889; waitlist notification fires</span></div>'
+    + '</div>'
+
+    + '<div class="pipe-notes">'
+    + '<p><strong>Ghosted lives in Waiting, not Out</strong> — ghost protocol is recovery, not goodbye.</p>'
+    + '<p><strong>Deposit reminders (Day 3, Day 5) always run before Ghosted is set.</strong> The two sequences never run in parallel.</p>'
+    + '</div>';
+}
 </script>
 </body>
 </html>
