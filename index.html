@@ -1869,7 +1869,7 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
 
 <script>
 // ── CONFIG ──
-var API_URL = 'https://script.google.com/macros/s/AKfycbxGRB02m_LonrCaCKE2Vv14xXjyWIc2bEszhGaHxdsKY5DB9kNKE1_yhfaa_3QYYvDL/exec';
+var API_URL = 'https://script.google.com/macros/s/AKfycbysVhqNQja2bPNI_vsDDLfMRR9uwYzzu-RNSin0Me0nbNylHFSRpPW_j57c2uvBHxFg/exec';
 var DASHBOARD_PASSWORD = 'joyjoyjoy';
 var isAuthenticated = localStorage.getItem('drsti_auth') === 'true';
 var POLL_INTERVAL = 45000;
@@ -2866,20 +2866,42 @@ function resolveEmailTemplate(a) {
   if (scholarship > 0) basePrice = basePrice - scholarship;
 
   // Build payment summary
+  var PRICE_LABELS = {'Payment Plan':'Payment Plan','Pay Full':'Pay in Full','EB Plan':'Early Bird Plan','EB Full':'Early Bird Full'};
+  var priceLabel = PRICE_LABELS[a.priceType] || a.priceType;
+
+  // Calculate add-on total
+  var selectedAddons = {};
+  try { if (a.addonsJson) selectedAddons = JSON.parse(a.addonsJson); } catch(e) {}
+  var addonTotal = 0;
+  var addonLines = '';
+  ADDON_DEFS.forEach(function(ad) {
+    if (selectedAddons[ad.key]) {
+      addonTotal += ad.price;
+      addonLines += ad.label + ': ' + symbol + formatNumberPlain(ad.price) + '\n';
+    }
+  });
+  var grandTotal = basePrice + addonTotal;
+
   var paymentSummary = '';
   if (!basePrice || !a.priceType) {
     paymentSummary = '_Accommodation and payment details will be confirmed shortly._';
   } else if (a.priceType === 'Pay Full' || a.priceType === 'EB Full') {
-    var remaining = basePrice - deposit;
-    paymentSummary = '**Your pricing:**\nTotal: ' + symbol + formatNumberPlain(basePrice)
-      + '\nDeposit: ' + symbol + formatNumberPlain(deposit)
+    paymentSummary = '**Your pricing (' + priceLabel + '):**\n';
+    paymentSummary += a.accommodation ? (a.accommodation + ' \u2014 ' + symbol + formatNumberPlain(basePrice) + '\n') : ('Base: ' + symbol + formatNumberPlain(basePrice) + '\n');
+    paymentSummary += addonLines;
+    paymentSummary += '**Total: ' + symbol + formatNumberPlain(grandTotal) + '**\n\n';
+    var remaining = grandTotal - deposit;
+    paymentSummary += 'Deposit: ' + symbol + formatNumberPlain(deposit)
       + '\nRemaining balance: ' + symbol + formatNumberPlain(remaining) + ' (due within two weeks of your deposit)\n';
   } else {
-    var remaining = basePrice - deposit;
+    paymentSummary = '**Your pricing (' + priceLabel + '):**\n';
+    paymentSummary += a.accommodation ? (a.accommodation + ' \u2014 ' + symbol + formatNumberPlain(basePrice) + '\n') : ('Base: ' + symbol + formatNumberPlain(basePrice) + '\n');
+    paymentSummary += addonLines;
+    paymentSummary += '**Total: ' + symbol + formatNumberPlain(grandTotal) + '**\n\n';
+    var remaining = grandTotal - deposit;
     var installment = Math.floor(remaining / 3 * 100) / 100;
     var lastInstallment = Math.round((remaining - installment * 2) * 100) / 100;
-    paymentSummary = '**Your pricing (' + a.priceType + '):**\nTotal: ' + symbol + formatNumberPlain(basePrice)
-      + '\nDeposit: ' + symbol + formatNumberPlain(deposit) + ' (today)'
+    paymentSummary += 'Deposit: ' + symbol + formatNumberPlain(deposit) + ' (today)'
       + '\nPayment 1: ' + symbol + formatNumberPlain(installment)
       + '\nPayment 2: ' + symbol + formatNumberPlain(installment)
       + '\nPayment 3: ' + symbol + formatNumberPlain(lastInstallment) + '\n_Exact dates will be sent once your deposit is confirmed._\n';
