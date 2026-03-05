@@ -1869,7 +1869,7 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
 
 <script>
 // ── CONFIG ──
-var API_URL = 'https://script.google.com/macros/s/AKfycbzTjnjIKrkKOmpJXQNO1tlCafY9z_1glaCTIqOQdlUsh03jRumoHNsZLkMjAhJ3z-8H/exec';
+var API_URL = 'https://script.google.com/macros/s/AKfycbxGRB02m_LonrCaCKE2Vv14xXjyWIc2bEszhGaHxdsKY5DB9kNKE1_yhfaa_3QYYvDL/exec';
 var DASHBOARD_PASSWORD = 'joyjoyjoy';
 var isAuthenticated = localStorage.getItem('drsti_auth') === 'true';
 var POLL_INTERVAL = 45000;
@@ -2618,6 +2618,11 @@ function renderCard(a) {
     + '<div class="field"><div class="field-label">Scholarship '+tooltip('Amount discounted from total. Deducted automatically from all invoice calculations.')+'</div><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;color:var(--text-muted);flex-shrink:0;">\u20AC</span><input type="number" id="sel-scholarship-'+a.row+'" min="0" step="50" value="'+(a.scholarship||'')+'" placeholder="0" oninput="markCardChanged('+a.row+')"></div></div>'
     + addonCheckboxes
     + '<div id="status-extras-'+a.row+'" style="'+(showStatusExtras?'':'display:none;')+'">'
+    + '<div class="divider"></div>'
+    + '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-secondary);">'
+    + '<input type="checkbox" id="sel-video-'+a.row+'"'+(a.personalVideoSent?' checked':'')+' onchange="markCardChanged('+a.row+')">'
+    + 'Personal video sent'
+    + '</label>'
     + offerHtml
     + '</div>'
     + statusEmailHtml
@@ -3038,6 +3043,8 @@ async function saveCardChanges(row) {
   var newPrice = priceEl ? priceEl.value : a.priceType;
   var newScholarship = scholarshipEl ? scholarshipEl.value : (a.scholarship || '');
   var newNotes = notesEl ? notesEl.value : (a.notes || '');
+  var videoEl = document.getElementById('sel-video-' + row);
+  var newVideo = videoEl ? videoEl.checked : !!a.personalVideoSent;
 
   // Read add-on checkboxes
   var liveAddons = {};
@@ -3053,6 +3060,7 @@ async function saveCardChanges(row) {
   if (newScholarship !== String(a.scholarship || '')) fields.scholarship = newScholarship;
   if (newNotes !== (a.notes || '')) fields.notes = newNotes;
   if (newAddonsJson !== (a.addonsJson || '')) fields.addonsJson = newAddonsJson;
+  if (newVideo !== !!a.personalVideoSent) fields.personalVideoSent = newVideo ? "TRUE" : "";
 
   if (Object.keys(fields).length === 0) {
     showToast('No changes to save', 'warning');
