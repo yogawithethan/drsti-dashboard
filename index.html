@@ -535,6 +535,16 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   white-space: nowrap;
   flex-shrink: 0;
 }
+.offer-sent-badge {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+  background: #d4edda;
+  color: #155724;
+}
 
 .card-collapse-arrow {
   width: 14px;
@@ -1526,29 +1536,27 @@ var state = {
 
 // ── CONSTANTS ──
 var STATUSES = [
-  'Applied','First Outreach','Hard Yes','Needs Call','Call Scheduled',
-  'Waitlist','Not Aligned','Offer Sent','Deposit Paid','Payment Plan',
-  'Paid in Full','No Longer Interested','Maybe Next Year','Ghosted',
-  'Cancelled','Other'
+  'Applied',
+  'Hard Yes','Needs Call','Call Scheduled','Waitlist',
+  'Ghosted',
+  'Deposit Paid','Payment Plan','Paid in Full',
+  'Not Aligned','Maybe Next Year','No Longer Interested','Cancelled'
 ];
 
 var STATUS_COLORS = {
   'Applied':              {bg:'#cfe2f3',fg:'#1155cc'},
-  'First Outreach':       {bg:'#a4c2f4',fg:'#1a44a0'},
   'Hard Yes':             {bg:'#b6d7a8',fg:'#274e13'},
   'Needs Call':           {bg:'#d9ead3',fg:'#38761d'},
   'Call Scheduled':       {bg:'#93c47d',fg:'#274e13'},
   'Waitlist':             {bg:'#fff2cc',fg:'#7f6003'},
-  'Not Aligned':          {bg:'#f4cccc',fg:'#990000'},
-  'Offer Sent':           {bg:'#d0e0e3',fg:'#0c343d'},
+  'Ghosted':              {bg:'#d9d9d9',fg:'#666666'},
   'Deposit Paid':         {bg:'#a2d9ce',fg:'#0e6251'},
   'Payment Plan':         {bg:'#76d7c4',fg:'#0e6251'},
   'Paid in Full':         {bg:'#45b39d',fg:'#ffffff'},
-  'No Longer Interested': {bg:'#e6b8af',fg:'#85200c'},
+  'Not Aligned':          {bg:'#f4cccc',fg:'#990000'},
   'Maybe Next Year':      {bg:'#fce5cd',fg:'#783f04'},
-  'Ghosted':              {bg:'#d9d9d9',fg:'#666666'},
-  'Cancelled':            {bg:'#ea9999',fg:'#990000'},
-  'Other':                {bg:'#1a1a1a',fg:'#ffffff'}
+  'No Longer Interested': {bg:'#e6b8af',fg:'#85200c'},
+  'Cancelled':            {bg:'#ea9999',fg:'#990000'}
 };
 
 var PRICE_TYPES = ['','Payment Plan','Pay Full','EB Plan','EB Full'];
@@ -1575,8 +1583,8 @@ var ADDON_DEFS = [
 ];
 var SMART_FILTERS = [
   { id: 'smart-paid', label: 'Paid' },
-  { id: 'smart-awaiting', label: 'Awaiting Payment' },
-  { id: 'smart-video', label: 'Needs Email' },
+  { id: 'smart-offer-sent', label: 'Offer Sent' },
+  { id: 'smart-needs-email', label: 'Needs Email' },
   { id: 'smart-addons', label: 'Has Add-ons' },
   { id: 'smart-waitlist', label: 'Waitlist' }
 ];
@@ -1977,9 +1985,9 @@ function renderFilterChips() {
 
   // Smart filter counts
   var smartCounts = {};
-  smartCounts['smart-paid'] = state.applicants.filter(function(a) { return a.status === 'Payment Plan' || a.status === 'Paid in Full'; }).length;
-  smartCounts['smart-awaiting'] = state.applicants.filter(function(a) { return a.status === 'Offer Sent'; }).length;
-  smartCounts['smart-video'] = state.applicants.filter(function(a) { return (a.status === 'Hard Yes' || a.status === 'Needs Call') && !a.emailSent; }).length;
+  smartCounts['smart-paid'] = state.applicants.filter(function(a) { return a.status === 'Deposit Paid' || a.status === 'Payment Plan' || a.status === 'Paid in Full'; }).length;
+  smartCounts['smart-offer-sent'] = state.applicants.filter(function(a) { return a.status === 'Hard Yes' && a.emailSent; }).length;
+  smartCounts['smart-needs-email'] = state.applicants.filter(function(a) { return (a.status === 'Hard Yes' || a.status === 'Needs Call') && !a.emailSent; }).length;
   smartCounts['smart-addons'] = state.applicants.filter(function(a) { return hasApplicantAddons(a); }).length;
   smartCounts['smart-waitlist'] = counts['Waitlist'] || 0;
 
@@ -2196,7 +2204,8 @@ function renderCard(a) {
     + '</div></div>'
     + '<div class="card-header-right">'
     + '<div class="action-icons">'+contactIcons+'</div>'
-    + '<div style="display:flex;align-items:center;gap:8px;">'
+    + '<div style="display:flex;align-items:center;gap:6px;">'
+    + (a.status === 'Hard Yes' && a.emailSent ? '<span class="offer-sent-badge">Offer Sent &#10003;</span>' : '')
     + '<div class="status-badge" style="background:'+sc.bg+';color:'+sc.fg+'">'+esc(a.status)+'</div>'
     + collapseArrow
     + '</div></div></div>'
@@ -2716,15 +2725,15 @@ function clearSearch() {
 }
 
 function matchesSmartFilter(a, filterId) {
-  if (filterId === 'smart-paid') return a.status === 'Payment Plan' || a.status === 'Paid in Full';
-  if (filterId === 'smart-awaiting') return a.status === 'Offer Sent';
-  if (filterId === 'smart-video') return (a.status === 'Hard Yes' || a.status === 'Needs Call') && !a.emailSent;
+  if (filterId === 'smart-paid') return a.status === 'Deposit Paid' || a.status === 'Payment Plan' || a.status === 'Paid in Full';
+  if (filterId === 'smart-offer-sent') return a.status === 'Hard Yes' && a.emailSent;
+  if (filterId === 'smart-needs-email') return (a.status === 'Hard Yes' || a.status === 'Needs Call') && !a.emailSent;
   if (filterId === 'smart-addons') return hasApplicantAddons(a);
   if (filterId === 'smart-waitlist') return a.status === 'Waitlist';
   return false;
 }
 
-var ARCHIVED_STATUSES = ['Not Aligned', 'No Longer Interested', 'Maybe Next Year', 'Cancelled'];
+var ARCHIVED_STATUSES = ['Not Aligned', 'Maybe Next Year', 'No Longer Interested', 'Cancelled'];
 
 function getFilteredSorted() {
   var list = state.applicants;
