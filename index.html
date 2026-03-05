@@ -3165,7 +3165,7 @@ async function bulkChangeStatus() {
 
   for (var i = 0; i < rows.length; i++) {
     progress.textContent = 'Updating ' + (i + 1) + '/' + rows.length + '...';
-    var result = await apiUpdate('updateApplicant', { row: rows[i], status: newStatus });
+    var result = await apiUpdate('updateApplicant', { row: rows[i], fields: { status: newStatus } });
     if (result && result.ok) {
       updated++;
       var a = state.applicants.find(function(x) { return x.row === rows[i]; });
