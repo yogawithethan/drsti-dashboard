@@ -1869,7 +1869,7 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
 
 <script>
 // ── CONFIG ──
-var API_URL = 'https://script.google.com/macros/s/AKfycbyjMT5CeUM9JIVide9HEo9N9FmRT5LOPlJAK283PVAkhu10uD_u38_WMsSb-z6J_f4D/exec';
+var API_URL = 'https://script.google.com/macros/s/AKfycbzTjnjIKrkKOmpJXQNO1tlCafY9z_1glaCTIqOQdlUsh03jRumoHNsZLkMjAhJ3z-8H/exec';
 var DASHBOARD_PASSWORD = 'joyjoyjoy';
 var isAuthenticated = localStorage.getItem('drsti_auth') === 'true';
 var POLL_INTERVAL = 45000;
@@ -2094,6 +2094,7 @@ async function initDashboard() {
   await loadRetreats();
   renderRetreatBar();
   await loadRetreatMeta(activeRetreat);
+  loadServerTemplates(); // Load saved templates so email composer uses latest edits
   await loadAll();
   startPolling();
 }
