@@ -811,6 +811,20 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   min-width: 0;
   flex: 1;
 }
+.card-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  background-size: cover;
+  background-position: center;
+}
 .card-header-name { min-width: 0; }
 .card-header-name h2 {
   font-family: var(--font-body);
@@ -2590,6 +2604,7 @@ function renderCard(a) {
     + '<div class="card-header" onclick="toggleCard('+a.row+')">'
     + '<div class="bulk-check-wrap"><input type="checkbox" class="bulk-check" data-row="'+a.row+'" onclick="event.stopPropagation();updateBulkCount()" data-email="'+(a.email||'')+'"></div>'
     + '<div class="card-header-left">'
+    + buildAvatar(a)
     + '<div class="card-header-name">'
     + '<h2>'+name+'</h2>'
     + '<p>'+meta+addonHtml+'</p>'
@@ -2697,6 +2712,39 @@ function qaRow(label, text) {
 }
 function sysRow(label, value) {
   return '<div class="sysrow"><span class="sysrow-label">'+esc(label)+'</span><span class="sysrow-value">'+esc(String(value))+'</span></div>';
+}
+
+// ── AVATAR ──
+var AVATAR_COLORS = ['#6B8E6B','#8B7355','#7B6B8A','#5F7A8A','#8A6B6B','#6B8A7A','#7A6B5A','#5A7A6B','#8A7A6B','#6B6B8A'];
+
+function avatarInitials(a) {
+  var f = (a.firstName || '').trim();
+  var l = (a.lastName || '').trim();
+  return ((f[0] || '') + (l[0] || '')).toUpperCase() || '?';
+}
+
+function avatarColor(name) {
+  var hash = 0;
+  for (var i = 0; i < name.length; i++) hash = ((hash << 5) - hash) + name.charCodeAt(i);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function md5(s){/* Minimal MD5 for Gravatar */var L=function(k,d){return(k<<d)|(k>>>(32-d))},K=function(G,k){var I,d,F,H,x;F=(G&2147483648);H=(k&2147483648);I=(G&1073741824);d=(k&1073741824);x=(G&1073741823)+(k&1073741823);if(I&d)return(x^2147483648^F^H);if(I|d){if(x&1073741824)return(x^3221225472^F^H);else return(x^1073741824^F^H)}else return(x^F^H)},m=function(F,k,d){return(F&k)|((~F)&d)},o=function(F,k,d){return(F&d)|(k&(~d))},n=function(F,k,d){return(F^k^d)},j=function(F,k,d){return(k^(F|(~d)))},ii=function(a,b,c,d,x,s,t){a=K(a,K(K(m(b,c,d),x),t));return K(L(a,s),b)},hh=function(a,b,c,d,x,s,t){a=K(a,K(K(o(b,c,d),x),t));return K(L(a,s),b)},gg=function(a,b,c,d,x,s,t){a=K(a,K(K(n(b,c,d),x),t));return K(L(a,s),b)},ff=function(a,b,c,d,x,s,t){a=K(a,K(K(j(b,c,d),x),t));return K(L(a,s),b)};function C(x){var a,b=[],c=x.length;for(a=0;a<c;a++){var d=x.charCodeAt(a);if(d<128)b.push(d);else if(d<2048){b.push((d>>6)|192);b.push((d&63)|128)}else{b.push((d>>12)|224);b.push(((d>>6)&63)|128);b.push((d&63)|128)}}return b}function D(x){var a=C(x),e=a.length,b=e+8,f=((b-(b%64))/64+1)*16,g=Array(f*16);var h=0,i=0;while(i<e){g[(i-(i%4))/4]|=a[i]<<((i%4)*8);i++}g[(i-(i%4))/4]|=128<<((i%4)*8);g[f-2]=e*8;return g}function W(d){var a="",b="",c,f;for(f=0;f<=3;f++){c=(d>>>(f*8))&255;b="0"+c.toString(16);a+=b.substr(b.length-2,2)}return a}var x=D(s),a=1732584193,b=4023233417,c=2562383102,d=271733878;for(var p=0;p<x.length;p+=16){var A=a,B=b,C2=c,D2=d;a=ii(a,b,c,d,x[p],7,3614090360);d=ii(d,a,b,c,x[p+1],12,3905402710);c=ii(c,d,a,b,x[p+2],17,606105819);b=ii(b,c,d,a,x[p+3],22,3250441966);a=ii(a,b,c,d,x[p+4],7,4118548399);d=ii(d,a,b,c,x[p+5],12,1200080426);c=ii(c,d,a,b,x[p+6],17,2821735955);b=ii(b,c,d,a,x[p+7],22,4249261313);a=ii(a,b,c,d,x[p+8],7,1770035416);d=ii(d,a,b,c,x[p+9],12,2336552879);c=ii(c,d,a,b,x[p+10],17,4294925233);b=ii(b,c,d,a,x[p+11],22,2304563134);a=ii(a,b,c,d,x[p+12],7,1804603682);d=ii(d,a,b,c,x[p+13],12,4254626195);c=ii(c,d,a,b,x[p+14],17,2792965006);b=ii(b,c,d,a,x[p+15],22,1236535329);a=hh(a,b,c,d,x[p+1],5,4129170786);d=hh(d,a,b,c,x[p+6],9,3225465664);c=hh(c,d,a,b,x[p+11],14,643717713);b=hh(b,c,d,a,x[p],20,3921069994);a=hh(a,b,c,d,x[p+5],5,3593408605);d=hh(d,a,b,c,x[p+10],9,38016083);c=hh(c,d,a,b,x[p+15],14,3634488961);b=hh(b,c,d,a,x[p+4],20,3889429448);a=hh(a,b,c,d,x[p+9],5,568446438);d=hh(d,a,b,c,x[p+14],9,3275163606);c=hh(c,d,a,b,x[p+3],14,4107603335);b=hh(b,c,d,a,x[p+8],20,1163531501);a=hh(a,b,c,d,x[p+13],5,2850285829);d=hh(d,a,b,c,x[p+2],9,4243563512);c=hh(c,d,a,b,x[p+7],14,1735328473);b=hh(b,c,d,a,x[p+12],20,2368359562);a=gg(a,b,c,d,x[p+5],4,4294588738);d=gg(d,a,b,c,x[p+8],11,2272392833);c=gg(c,d,a,b,x[p+11],16,1839030562);b=gg(b,c,d,a,x[p],23,4259657740);a=gg(a,b,c,d,x[p+3],4,2763975236);d=gg(d,a,b,c,x[p+6],11,1272893353);c=gg(c,d,a,b,x[p+9],16,4139469664);b=gg(b,c,d,a,x[p+12],23,3200236656);a=gg(a,b,c,d,x[p+15],4,681279174);d=gg(d,a,b,c,x[p+2],11,3936430074);c=gg(c,d,a,b,x[p+5],16,3572445317);b=gg(b,c,d,a,x[p+8],23,76029189);a=gg(a,b,c,d,x[p+11],4,3654602809);d=gg(d,a,b,c,x[p+14],11,3873151461);c=gg(c,d,a,b,x[p+1],16,530742520);b=gg(b,c,d,a,x[p+4],23,3299628645);a=ff(a,b,c,d,x[p],6,4096336452);d=ff(d,a,b,c,x[p+7],10,1126891415);c=ff(c,d,a,b,x[p+14],15,2878612391);b=ff(b,c,d,a,x[p+5],21,4237533241);a=ff(a,b,c,d,x[p+12],6,1700485571);d=ff(d,a,b,c,x[p+3],10,2399980690);c=ff(c,d,a,b,x[p+10],15,4293915773);b=ff(b,c,d,a,x[p+1],21,2240044497);a=ff(a,b,c,d,x[p+8],6,1873313359);d=ff(d,a,b,c,x[p+15],10,4264355552);c=ff(c,d,a,b,x[p+6],15,2734768916);b=ff(b,c,d,a,x[p+13],21,1309151649);a=ff(a,b,c,d,x[p+4],6,4149444226);d=ff(d,a,b,c,x[p+11],10,3174756917);c=ff(c,d,a,b,x[p+2],15,718787259);b=ff(b,c,d,a,x[p+9],21,3951481745);a=K(a,A);b=K(b,B);c=K(c,C2);d=K(d,D2)}return(W(a)+W(b)+W(c)+W(d)).toLowerCase()}
+
+function buildAvatar(a) {
+  var initials = avatarInitials(a);
+  var bg = avatarColor((a.firstName || '') + (a.lastName || ''));
+  var email = (a.email || '').trim().toLowerCase();
+  var hash = email ? md5(email) : '';
+  // Gravatar with fallback to blank (404) — we detect via onerror
+  var gravatarUrl = hash ? 'https://www.gravatar.com/avatar/' + hash + '?s=72&d=404' : '';
+  if (gravatarUrl) {
+    return '<div class="card-avatar" style="background:' + bg + ';" data-initials="' + esc(initials) + '">'
+      + '<img src="' + gravatarUrl + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" '
+      + 'onerror="this.style.display=\'none\';this.parentElement.textContent=this.parentElement.dataset.initials;">'
+      + '</div>';
+  }
+  return '<div class="card-avatar" style="background:' + bg + ';">' + esc(initials) + '</div>';
 }
 
 // ── INTERACTIONS ──
