@@ -2495,7 +2495,7 @@ function renderCard(a) {
     var digits = String(a.phone).replace(/\D/g,'');
     waLink = 'https://wa.me/' + digits;
   }
-  var igHandle = a.instagram ? String(a.instagram).replace(/^@/,'') : '';
+  var igHandle = a.instagram ? String(a.instagram).replace(/^@/,'').replace(/^https?:\/\/(www\.)?instagram\.com\//i,'').replace(/[?#].*$/,'').replace(/\/+$/,'') : '';
 
   // Contact icons (Phosphor Icons — all same green)
   var contactIcons = '';
@@ -2631,6 +2631,7 @@ function renderCard(a) {
     + '<div class="tab-row">'
     + '<button class="tab-btn active" onclick="event.stopPropagation();switchAppTab('+a.row+',\'answers\')">Answers</button>'
     + '<button class="tab-btn" onclick="event.stopPropagation();switchAppTab('+a.row+',\'prefs\')">Preferences</button>'
+    + '<button class="tab-btn" onclick="event.stopPropagation();switchAppTab('+a.row+',\'contact\')">Contact Info</button>'
     + '</div>'
     + '<div id="appview-answers-'+a.row+'">'
     + qaRow('What inspired you to apply?', a.inspired)
@@ -2652,6 +2653,12 @@ function renderCard(a) {
     + qaRow('Add-ons Interested', a.addonsInterested || addons.join(', '))
     + qaRow('Travel Assistance', a.travelAssist)
     + qaRow('Flight Contest', a.flightContest)
+    + '</div>'
+    + '<div id="appview-contact-'+a.row+'" style="display:none;">'
+    + qaRow('Email', a.email)
+    + qaRow('Phone', a.phone)
+    + qaRow('Instagram', a.instagram)
+    + qaRow('Country', a.country)
     + '</div>'
     + '</div></div></div>'
 
@@ -3465,8 +3472,10 @@ function buildPaymentSection(a) {
 function switchAppTab(row, tab) {
   var answersEl = document.getElementById('appview-answers-' + row);
   var prefsEl = document.getElementById('appview-prefs-' + row);
+  var contactEl = document.getElementById('appview-contact-' + row);
   if (answersEl) answersEl.style.display = tab === 'answers' ? 'block' : 'none';
   if (prefsEl) prefsEl.style.display = tab === 'prefs' ? 'block' : 'none';
+  if (contactEl) contactEl.style.display = tab === 'contact' ? 'block' : 'none';
   // Update tab buttons — find the Application accordion (second one in the card)
   var card = document.querySelector('[data-row="'+row+'"]');
   if (card) {
@@ -3474,7 +3483,7 @@ function switchAppTab(row, tab) {
     if (accordions[1]) {
       var tabs = accordions[1].querySelectorAll('.tab-btn');
       for (var i = 0; i < tabs.length; i++) {
-        tabs[i].classList.toggle('active', (tab === 'answers' && i === 0) || (tab === 'prefs' && i === 1));
+        tabs[i].classList.toggle('active', (tab === 'answers' && i === 0) || (tab === 'prefs' && i === 1) || (tab === 'contact' && i === 2));
       }
     }
   }
