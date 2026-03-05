@@ -1287,6 +1287,63 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
   .search-wrap { width: 150px; }
   .search-wrap:focus-within { width: 200px; }
 }
+
+/* ── ACTIVITY LOG ── */
+.activity-log {
+  max-width: 600px; margin: 0 auto;
+  padding: 0 16px 100px;
+}
+.activity-log-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0 8px; cursor: pointer; user-select: none;
+}
+.activity-log-header h2 {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 400;
+  color: var(--text-secondary);
+}
+.activity-log-header .toggle-arrow {
+  font-size: 14px; color: var(--text-muted);
+  transition: transform 0.2s;
+}
+.activity-log-header.open .toggle-arrow { transform: rotate(180deg); }
+.activity-log-body { display: none; }
+.activity-log-body.open { display: block; }
+.activity-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.activity-log-table th {
+  text-align: left; padding: 6px 8px;
+  font-weight: 500; color: var(--text-muted);
+  border-bottom: 1px solid var(--sand);
+  font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.activity-log-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid rgba(212,197,176,0.3);
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+.activity-log-table tr:hover td { background: var(--bg-section); }
+.log-type {
+  display: inline-block; padding: 1px 6px;
+  border-radius: 4px; font-size: 10px;
+  font-weight: 500; text-transform: uppercase;
+}
+.log-type-email { background: #e8f0e8; color: #274e13; }
+.log-type-sequence { background: #cfe2f3; color: #1155cc; }
+.log-type-status { background: #fff2cc; color: #7f6003; }
+.log-type-system { background: #f4cccc; color: #990000; }
+.activity-log-empty {
+  text-align: center; padding: 24px;
+  color: var(--text-muted); font-size: 13px;
+}
+@media (min-width: 640px) {
+  .activity-log { padding: 0 24px 100px; }
+}
 </style>
 </head>
 <body>
@@ -1354,6 +1411,20 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
 
 <!-- CARDS -->
 <main class="cards" id="cardsContainer"></main>
+
+<!-- ACTIVITY LOG -->
+<section class="activity-log" id="activityLogSection">
+  <div class="activity-log-header" id="activityLogToggle" onclick="toggleActivityLog()">
+    <h2>Activity Log</h2>
+    <span class="toggle-arrow">&#9660;</span>
+  </div>
+  <div class="activity-log-body" id="activityLogBody">
+    <table class="activity-log-table">
+      <thead><tr><th>Time</th><th>Type</th><th>Description</th><th>Who</th></tr></thead>
+      <tbody id="activityLogTbody"></tbody>
+    </table>
+  </div>
+</section>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
@@ -1758,6 +1829,43 @@ async function loadAll() {
   }
   updateLastFetched();
   if (showLoader) document.getElementById('loadingOverlay').classList.add('hidden');
+
+  // Load activity log in background (non-blocking)
+  loadActivityLog();
+}
+
+function toggleActivityLog() {
+  var header = document.getElementById('activityLogToggle');
+  var body = document.getElementById('activityLogBody');
+  header.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+async function loadActivityLog() {
+  var data = await apiGet('getActivityLog');
+  if (data && data.ok) renderActivityLog(data.entries);
+}
+
+function renderActivityLog(entries) {
+  var tbody = document.getElementById('activityLogTbody');
+  if (!entries || entries.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="activity-log-empty">No activity yet</td></tr>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < entries.length; i++) {
+    var e = entries[i];
+    var ts = e.timestamp ? new Date(e.timestamp) : null;
+    var timeStr = ts ? ts.toLocaleDateString('en-US', {month:'short',day:'numeric'}) + ' ' + ts.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'}) : '';
+    var typeCls = 'log-type-' + (e.type || 'system');
+    html += '<tr>'
+      + '<td style="white-space:nowrap">' + timeStr + '</td>'
+      + '<td><span class="log-type ' + typeCls + '">' + esc(e.type) + '</span></td>'
+      + '<td>' + esc(e.description) + '</td>'
+      + '<td>' + esc(e.applicant) + '</td>'
+      + '</tr>';
+  }
+  tbody.innerHTML = html;
 }
 
 function startPolling() {
