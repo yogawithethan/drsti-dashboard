@@ -921,6 +921,9 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .bulk-bar-action:disabled { opacity: 0.4; cursor: not-allowed; }
 .bulk-bar-email { background: var(--sage-dark); color: #fff; border-color: var(--sage-dark); }
 .bulk-bar-email:hover { background: #3d5c40; }
+.bulk-bar-delete { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+.bulk-bar-delete:hover { background: #fecaca; border-color: #f87171; }
+.bulk-bar-delete:disabled { opacity: 0.4; }
 .bulk-status-select {
   padding: 7px 10px; border-radius: var(--radius-sm);
   border: 1px solid rgba(45,42,38,0.12); background: var(--bg-card);
@@ -1448,6 +1451,7 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
     </select>
     <button class="bulk-bar-action" id="bulkStatusBtn" onclick="bulkChangeStatus()" disabled>Apply Status</button>
     <button class="bulk-bar-action bulk-bar-email" id="bulkSendBtn" onclick="openBulkEmailModal()" disabled>Compose Email</button>
+    <button class="bulk-bar-action bulk-bar-delete" id="bulkDeleteBtn" onclick="bulkDelete()" disabled>Delete</button>
     <button class="bulk-bar-cancel" onclick="toggleBulkMode()">Cancel</button>
   </div>
 </div>
@@ -1561,7 +1565,7 @@ var PRICE_TYPE_MAP = {
   'EB Plan': 'eb_plan',
   'EB Full': 'eb_full'
 };
-var CONFIRMED_STATUSES = ['Deposit Paid', 'Payment Plan', 'Paid in Full', 'Offer Sent'];
+var CONFIRMED_STATUSES = ['Deposit Paid', 'Payment Plan', 'Paid in Full'];
 var MAX_PARTICIPANTS = 14;
 var ADDON_DEFS = [
   { key: 'Bodywork', label: 'Bodywork', price: 135 },
@@ -3115,7 +3119,7 @@ function toggleBulkMode() {
   var btn = document.getElementById('bulkToggle');
   if (bulkModeActive) {
     bar.style.display = 'flex';
-    btn.textContent = 'Done';
+    btn.textContent = 'Cancel';
     btn.style.background = 'var(--danger, #ef4444)';
     btn.style.color = '#fff';
     // Populate status dropdown
@@ -3143,6 +3147,7 @@ function updateBulkCount() {
   document.getElementById('bulkCount').textContent = n + ' selected';
   var hasSelection = n > 0;
   document.getElementById('bulkSendBtn').disabled = !hasSelection;
+  document.getElementById('bulkDeleteBtn').disabled = !hasSelection;
   document.getElementById('bulkStatusBtn').disabled = !hasSelection || !document.getElementById('bulkStatusSelect').value;
 }
 
@@ -3185,6 +3190,48 @@ async function bulkChangeStatus() {
     loadAll();
   } else {
     showToast(updated + ' updated, ' + errors.length + ' failed', 'error');
+    loadAll();
+  }
+}
+
+async function bulkDelete() {
+  var checked = document.querySelectorAll('.bulk-check:checked');
+  if (checked.length === 0) return;
+  if (!confirm('Delete ' + checked.length + ' applicant(s)? This cannot be undone.')) return;
+
+  var rows = [];
+  checked.forEach(function(cb) { rows.push(Number(cb.dataset.row)); });
+  // Sort descending so row numbers stay valid as we delete from bottom up
+  rows.sort(function(a, b) { return b - a; });
+
+  var deleteBtn = document.getElementById('bulkDeleteBtn');
+  var progress = document.getElementById('bulkProgress');
+  deleteBtn.textContent = 'Deleting...';
+  deleteBtn.disabled = true;
+
+  var deleted = 0;
+  var errors = [];
+
+  for (var i = 0; i < rows.length; i++) {
+    progress.textContent = 'Deleting ' + (i + 1) + '/' + rows.length + '...';
+    var result = await apiUpdate('deleteApplicant', { row: rows[i] });
+    if (result && result.ok) {
+      deleted++;
+    } else {
+      errors.push('Row ' + rows[i] + ': ' + ((result && result.error) || 'failed'));
+    }
+  }
+
+  deleteBtn.textContent = 'Delete';
+  deleteBtn.disabled = false;
+  progress.textContent = '';
+
+  if (errors.length === 0) {
+    showToast('Deleted ' + deleted + ' applicant(s)', 'success');
+    toggleBulkMode();
+    loadAll();
+  } else {
+    showToast(deleted + ' deleted, ' + errors.length + ' failed', 'error');
     loadAll();
   }
 }
