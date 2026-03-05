@@ -2656,8 +2656,8 @@ function renderCard(a) {
     + '</div>'
     + '<div id="appview-contact-'+a.row+'" style="display:none;">'
     + qaRow('Email', a.email)
-    + qaRow('Phone', a.phone)
-    + qaRow('Instagram', a.instagram)
+    + qaRow('Phone', a.phone ? (String(a.phone).replace(/\D/g,'').length > 0 ? '+' + String(a.phone).replace(/[^\d+]/g,'').replace(/^\+?/, '') : a.phone) : '')
+    + qaRow('Instagram', igHandle ? '@' + igHandle : '')
     + qaRow('Country', a.country)
     + '</div>'
     + '</div></div></div>'
