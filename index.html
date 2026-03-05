@@ -229,7 +229,33 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 
 /* ── EMAIL TEMPLATES PANEL ── */
 .templates-panel {
-  max-width: 600px; margin: 0 auto; padding: 16px 16px 100px;
+  max-width: 640px; margin: 0 auto; padding: 16px 16px 100px;
+}
+/* Tab bar */
+.tpl-tabs {
+  display: flex; gap: 0; overflow-x: auto;
+  border-bottom: 1px solid rgba(45,42,38,0.1);
+  margin-bottom: 20px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tpl-tabs::-webkit-scrollbar { display: none; }
+.tpl-tab {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  font-family: var(--font-body);
+  font-size: 12px; font-weight: 500;
+  color: var(--text-muted);
+  background: none; border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.tpl-tab:hover { color: var(--text-secondary); }
+.tpl-tab.active {
+  color: var(--sage-dark);
+  border-bottom-color: var(--sage-dark);
 }
 .tpl-group { margin-bottom: 24px; }
 .tpl-group-title {
@@ -268,12 +294,12 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .tpl-card-actions {
   display: flex; align-items: center; gap: 4px; flex-shrink: 0;
 }
-.tpl-copy-btn {
+.tpl-action-btn {
   background: none; border: none; cursor: pointer;
   color: var(--text-muted); padding: 4px;
   border-radius: 4px; transition: all 0.15s;
 }
-.tpl-copy-btn:hover { background: var(--sage-light); color: var(--sage-dark); }
+.tpl-action-btn:hover { background: var(--sage-light); color: var(--sage-dark); }
 .tpl-expand-arrow {
   width: 14px; height: 14px; stroke: var(--text-muted);
   fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
@@ -297,6 +323,66 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   padding: 10px 14px;
   font-size: 12px; color: var(--text-muted);
   font-style: italic;
+}
+/* Edit mode */
+.tpl-edit-area {
+  display: none; padding: 12px 14px;
+  border-top: 1px solid rgba(45,42,38,0.06);
+}
+.tpl-card.editing .tpl-card-body { display: none; }
+.tpl-card.editing .tpl-edit-area { display: block; }
+.tpl-edit-label {
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.6px; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 4px;
+}
+.tpl-edit-input {
+  width: 100%; padding: 8px 10px;
+  border: 1px solid rgba(45,42,38,0.12);
+  border-radius: 6px; font-family: var(--font-body);
+  font-size: 13px; background: var(--bg);
+  color: var(--text); outline: none;
+  transition: border-color 0.15s;
+  margin-bottom: 10px;
+}
+.tpl-edit-input:focus { border-color: var(--sage); box-shadow: var(--shadow-glow); }
+.tpl-edit-textarea {
+  width: 100%; min-height: 200px; padding: 10px;
+  border: 1px solid rgba(45,42,38,0.12);
+  border-radius: 6px; font-family: var(--font-body);
+  font-size: 12px; line-height: 1.6;
+  background: var(--bg); color: var(--text);
+  outline: none; resize: vertical;
+  transition: border-color 0.15s;
+  margin-bottom: 10px;
+}
+.tpl-edit-textarea:focus { border-color: var(--sage); box-shadow: var(--shadow-glow); }
+.tpl-edit-btns {
+  display: flex; gap: 8px; justify-content: flex-end;
+}
+.tpl-edit-btns button {
+  padding: 7px 16px; border-radius: 6px;
+  font-family: var(--font-body); font-size: 12px; font-weight: 500;
+  cursor: pointer; border: none; transition: all 0.15s;
+}
+.tpl-btn-cancel {
+  background: var(--bg); color: var(--text-secondary);
+  border: 1px solid rgba(45,42,38,0.12) !important;
+}
+.tpl-btn-cancel:hover { background: #eee; }
+.tpl-btn-save {
+  background: var(--sage-dark); color: #fff;
+}
+.tpl-btn-save:hover { background: #3d5c40; }
+.tpl-btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+.tpl-merge-hint {
+  font-size: 11px; color: var(--text-muted);
+  margin-bottom: 12px; line-height: 1.5;
+}
+.tpl-merge-hint code {
+  background: #fff3cd; color: #856404;
+  padding: 1px 4px; border-radius: 3px;
+  font-size: 10px;
 }
 
 /* ── PIPELINE GUIDE PANEL (light theme) ── */
@@ -3688,17 +3774,17 @@ function switchView(view) {
   if (view === 'pipeline') renderPipelinePanel();
 }
 
-// ── EMAIL TEMPLATES PANEL ──
+// ── EMAIL TEMPLATES PANEL (tabbed + editable) ──
 var TEMPLATE_GROUPS = [
   {
-    title: 'Manual Send',
+    id: 'manual', title: 'Manual',
     templates: [
       { key: 'hard-yes', name: 'Hard Yes Offer Email', trigger: 'Sent manually when status = Hard Yes + accommodation + price type set' },
       { key: 'needs-call', name: 'Follow-up / Schedule Call', trigger: 'Sent manually when status = Needs Call' }
     ]
   },
   {
-    title: 'Ghost Protocol (auto)',
+    id: 'ghost', title: 'Ghost Protocol',
     templates: [
       { key: 'ghost-1', name: 'Email 1 — Just checking in', trigger: 'Day 3 after status set to Ghosted' },
       { key: 'ghost-2', name: 'Email 2 — Still thinking it over?', trigger: 'Day 7 after Ghosted' },
@@ -3707,27 +3793,27 @@ var TEMPLATE_GROUPS = [
     ]
   },
   {
-    title: 'Deposit Reminders (auto)',
+    id: 'deposit', title: 'Deposit Reminders',
     templates: [
       { key: 'deposit-reminder-1', name: 'Reminder 1 — Spot held', trigger: 'Day 3 after offer sent, deposit unpaid' },
       { key: 'deposit-reminder-2', name: 'Reminder 2 — Final reminder', trigger: 'Day 5 after offer sent, deposit unpaid' }
     ]
   },
   {
-    title: 'Payment Reminders (auto)',
+    id: 'payment', title: 'Payment',
     templates: [
       { key: 'payment-reminder', name: 'Payment Plan Reminder', trigger: '5 days before instalment due date' }
     ]
   },
   {
-    title: 'Waitlist (auto)',
+    id: 'waitlist', title: 'Waitlist',
     templates: [
       { key: 'waitlist-spot-open', name: 'Spot Opened Notification', trigger: 'When a confirmed applicant cancels/withdraws' },
       { key: 'waitlist-spot-filled', name: 'Spot Filled Follow-up', trigger: '48 hours after spot-open notification' }
     ]
   },
   {
-    title: 'Status Emails',
+    id: 'status', title: 'Status Emails',
     templates: [
       { key: 'waitlist', name: 'Waitlist Placement', trigger: 'Sent when status set to Waitlist' },
       { key: 'not-aligned', name: 'Not Aligned', trigger: 'Sent when status set to Not Aligned' }
@@ -3735,46 +3821,148 @@ var TEMPLATE_GROUPS = [
   }
 ];
 
+var activeTplTab = 'manual';
+var serverTemplates = null; // loaded from API
+
+async function loadServerTemplates() {
+  var data = await apiGet('getEmailTemplates');
+  if (data && data.ok && data.templates) {
+    serverTemplates = data.templates;
+    // Merge server overrides into local JS copy
+    for (var key in serverTemplates) {
+      EMAIL_TEMPLATES_JS[key] = serverTemplates[key];
+    }
+  }
+}
+
 function renderTemplatesPanel() {
   var panel = document.getElementById('templatesPanel');
-  var html = '';
-  TEMPLATE_GROUPS.forEach(function(group) {
-    html += '<div class="tpl-group"><div class="tpl-group-title">' + esc(group.title) + '</div>';
-    group.templates.forEach(function(t) {
-      var tpl = EMAIL_TEMPLATES_JS[t.key];
-      var subject = '';
-      var body = '';
-      if (tpl) {
-        subject = tpl.subject || '';
-        body = tpl.body || '';
-      }
-      var bodyHighlighted = esc(body).replace(/\{\{(\w+)\}\}/g, '<span class="tpl-merge-tag">{{$1}}</span>');
-      html += '<div class="tpl-card" id="tpl-' + t.key + '">'
-        + '<div class="tpl-card-header" onclick="toggleTplCard(\'' + t.key + '\')">'
-        + '<div>'
-        + '<div class="tpl-card-name">' + esc(t.name) + '</div>'
-        + '<div class="tpl-card-trigger">' + esc(t.trigger) + '</div>'
-        + (subject ? '<div class="tpl-card-subject">' + esc(subject) + '</div>' : '')
-        + '</div>'
-        + '<div class="tpl-card-actions">'
-        + '<button class="tpl-copy-btn" onclick="event.stopPropagation();copyTemplate(\'' + t.key + '\')" title="Copy template"><i class="ph ph-copy"></i></button>'
-        + '<svg class="tpl-expand-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>'
-        + '</div></div>';
-      if (tpl) {
-        html += '<div class="tpl-card-body">' + bodyHighlighted + '</div>';
-      } else {
-        html += '<div class="tpl-card-body tpl-placeholder">Template not yet written</div>';
-      }
-      html += '</div>';
-    });
+
+  // Tab bar
+  var tabsHtml = '<div class="tpl-tabs">';
+  TEMPLATE_GROUPS.forEach(function(g) {
+    tabsHtml += '<button class="tpl-tab' + (g.id === activeTplTab ? ' active' : '') + '" onclick="switchTplTab(\'' + g.id + '\')">' + esc(g.title) + '</button>';
+  });
+  tabsHtml += '</div>';
+
+  // Find active group
+  var group = TEMPLATE_GROUPS.find(function(g) { return g.id === activeTplTab; }) || TEMPLATE_GROUPS[0];
+
+  var html = tabsHtml;
+  html += '<div class="tpl-group">';
+  group.templates.forEach(function(t) {
+    var tpl = EMAIL_TEMPLATES_JS[t.key];
+    var subject = '';
+    var body = '';
+    if (tpl) {
+      subject = tpl.subject || '';
+      body = tpl.body || '';
+    }
+    var bodyHighlighted = esc(body).replace(/\{\{(\w+)\}\}/g, '<span class="tpl-merge-tag">{{$1}}</span>');
+    html += '<div class="tpl-card" id="tpl-' + t.key + '">'
+      + '<div class="tpl-card-header" onclick="toggleTplCard(\'' + t.key + '\')">'
+      + '<div>'
+      + '<div class="tpl-card-name">' + esc(t.name) + '</div>'
+      + '<div class="tpl-card-trigger">' + esc(t.trigger) + '</div>'
+      + (subject ? '<div class="tpl-card-subject">' + esc(subject) + '</div>' : '')
+      + '</div>'
+      + '<div class="tpl-card-actions">'
+      + '<button class="tpl-action-btn" onclick="event.stopPropagation();editTemplate(\'' + t.key + '\')" title="Edit template"><i class="ph ph-pencil-simple"></i></button>'
+      + '<button class="tpl-action-btn" onclick="event.stopPropagation();copyTemplate(\'' + t.key + '\')" title="Copy template"><i class="ph ph-copy"></i></button>'
+      + '<svg class="tpl-expand-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>'
+      + '</div></div>';
+    // Read-only body
+    if (tpl) {
+      html += '<div class="tpl-card-body">' + bodyHighlighted + '</div>';
+    } else {
+      html += '<div class="tpl-card-body tpl-placeholder">Template not yet written</div>';
+    }
+    // Edit area (hidden until edit mode)
+    html += '<div class="tpl-edit-area" id="tpl-edit-' + t.key + '">'
+      + '<div class="tpl-edit-label">Subject</div>'
+      + '<input class="tpl-edit-input" id="tpl-subj-' + t.key + '" value="' + esc(subject).replace(/"/g, '&quot;') + '" placeholder="Email subject line">'
+      + '<div class="tpl-edit-label">Body <span style="text-transform:none;font-weight:400;letter-spacing:0">(Markdown)</span></div>'
+      + '<textarea class="tpl-edit-textarea" id="tpl-body-' + t.key + '" placeholder="Write your email body...">' + esc(body) + '</textarea>'
+      + '<div class="tpl-merge-hint">Merge tags: <code>{{first_name}}</code> <code>{{retreat_name}}</code> <code>{{country}}</code> <code>{{deposit_amount}}</code> <code>{{deposit_link}}</code> <code>{{cal_link}}</code> <code>{{open_spots}}</code> <code>{{payment_summary}}</code></div>'
+      + '<div class="tpl-edit-btns">'
+      + '<button class="tpl-btn-cancel" onclick="cancelEditTemplate(\'' + t.key + '\')">Cancel</button>'
+      + '<button class="tpl-btn-save" id="tpl-save-' + t.key + '" onclick="saveTemplate(\'' + t.key + '\')">Save</button>'
+      + '</div></div>';
     html += '</div>';
   });
+  html += '</div>';
   panel.innerHTML = html;
+
+  // Load from server on first render
+  if (!serverTemplates) {
+    loadServerTemplates().then(function() {
+      // Re-render if templates changed
+      if (currentView === 'templates') renderTemplatesPanel();
+    });
+  }
+}
+
+function switchTplTab(tabId) {
+  activeTplTab = tabId;
+  renderTemplatesPanel();
 }
 
 function toggleTplCard(key) {
   var card = document.getElementById('tpl-' + key);
-  if (card) card.classList.toggle('open');
+  if (!card) return;
+  // Don't toggle if in edit mode
+  if (card.classList.contains('editing')) return;
+  card.classList.toggle('open');
+}
+
+function editTemplate(key) {
+  var card = document.getElementById('tpl-' + key);
+  if (!card) return;
+  card.classList.remove('open');
+  card.classList.add('editing');
+}
+
+function cancelEditTemplate(key) {
+  var card = document.getElementById('tpl-' + key);
+  if (!card) return;
+  card.classList.remove('editing');
+  // Reset fields to current values
+  var tpl = EMAIL_TEMPLATES_JS[key] || {};
+  var subjInput = document.getElementById('tpl-subj-' + key);
+  var bodyInput = document.getElementById('tpl-body-' + key);
+  if (subjInput) subjInput.value = tpl.subject || '';
+  if (bodyInput) bodyInput.value = tpl.body || '';
+}
+
+async function saveTemplate(key) {
+  var subjInput = document.getElementById('tpl-subj-' + key);
+  var bodyInput = document.getElementById('tpl-body-' + key);
+  var saveBtn = document.getElementById('tpl-save-' + key);
+  if (!subjInput || !bodyInput) return;
+
+  var subject = subjInput.value.trim();
+  var body = bodyInput.value;
+  if (!subject) { showToast('Subject is required', 'error'); return; }
+
+  saveBtn.textContent = 'Saving...';
+  saveBtn.disabled = true;
+
+  var result = await apiUpdate('saveEmailTemplate', { key: key, subject: subject, body: body });
+
+  saveBtn.textContent = 'Save';
+  saveBtn.disabled = false;
+
+  if (result && result.ok) {
+    // Update local copy
+    EMAIL_TEMPLATES_JS[key] = { subject: subject, body: body };
+    showToast('Template saved', 'success');
+    // Close edit mode and re-render to show updated content
+    var card = document.getElementById('tpl-' + key);
+    if (card) card.classList.remove('editing');
+    renderTemplatesPanel();
+  } else {
+    showToast('Save failed: ' + ((result && result.error) || 'Unknown error'), 'error');
+  }
 }
 
 function copyTemplate(key) {
