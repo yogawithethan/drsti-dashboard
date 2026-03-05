@@ -2734,14 +2734,23 @@ function md5(s){/* Minimal MD5 for Gravatar */var L=function(k,d){return(k<<d)|(
 function buildAvatar(a) {
   var initials = avatarInitials(a);
   var bg = avatarColor((a.firstName || '') + (a.lastName || ''));
+  var igHandle = a.instagram ? String(a.instagram).replace(/^@/,'').replace(/^https?:\/\/(www\.)?instagram\.com\//i,'').replace(/[?#].*$/,'').replace(/\/+$/,'') : '';
   var email = (a.email || '').trim().toLowerCase();
   var hash = email ? md5(email) : '';
-  // Gravatar with fallback to blank (404) — we detect via onerror
+
+  // Try: 1) unavatar via Instagram, 2) Gravatar via email, 3) initials
+  // Chain onerror: Instagram img fails → try Gravatar → fail to initials
   var gravatarUrl = hash ? 'https://www.gravatar.com/avatar/' + hash + '?s=72&d=404' : '';
-  if (gravatarUrl) {
+  var unavatarUrl = igHandle ? 'https://unavatar.io/instagram/' + encodeURIComponent(igHandle) + '?fallback=false' : '';
+
+  var imgSrc = unavatarUrl || gravatarUrl;
+  if (imgSrc) {
+    var fallbackChain = gravatarUrl && unavatarUrl
+      ? 'this.onerror=function(){this.style.display=\'none\';this.parentElement.textContent=this.parentElement.dataset.initials;};this.src=\'' + gravatarUrl + '\';'
+      : 'this.style.display=\'none\';this.parentElement.textContent=this.parentElement.dataset.initials;';
     return '<div class="card-avatar" style="background:' + bg + ';" data-initials="' + esc(initials) + '">'
-      + '<img src="' + gravatarUrl + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" '
-      + 'onerror="this.style.display=\'none\';this.parentElement.textContent=this.parentElement.dataset.initials;">'
+      + '<img src="' + imgSrc + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" '
+      + 'onerror="' + fallbackChain + '">'
       + '</div>';
   }
   return '<div class="card-avatar" style="background:' + bg + ';">' + esc(initials) + '</div>';
