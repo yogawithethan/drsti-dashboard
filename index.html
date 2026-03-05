@@ -1869,7 +1869,7 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
 
 <script>
 // ── CONFIG ──
-var API_URL = 'https://script.google.com/macros/s/AKfycbzxtCn0ZIP_H5THV63naGJbmOhuKTyEcVvk4l4k0Hmz71luTiENikFPLQ69tJmgdq1c/exec';
+var API_URL = 'https://script.google.com/macros/s/AKfycbwS0ttIgvs6eb828w5j8iUvpm91keTznzpNwq1iiv5VD0gvN77WfT6jQRNHtdJYK-Zf/exec';
 var DASHBOARD_PASSWORD = 'joyjoyjoy';
 var isAuthenticated = localStorage.getItem('drsti_auth') === 'true';
 var POLL_INTERVAL = 45000;
@@ -2915,8 +2915,11 @@ function resolveEmailTemplate(a) {
   var body = tpl.body;
   for (var key in tags) {
     var ph = '{{' + key + '}}';
-    subject = subject.split(ph).join(tags[key] || '');
-    body = body.split(ph).join(tags[key] || '');
+    // Only resolve tags that have actual values; leave empty ones as {{tag}} for server to resolve
+    if (tags[key] && tags[key] !== '{{' + key + '}}') {
+      subject = subject.split(ph).join(tags[key]);
+      body = body.split(ph).join(tags[key]);
+    }
   }
   return { subject: subject, body: body };
 }
