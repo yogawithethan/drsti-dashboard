@@ -3085,10 +3085,27 @@ function closeEmailModal() {
 }
 
 function switchEmailTemplate() {
-  if (!emailModalRow) return;
+  var tplKey = document.getElementById('emailModalTemplate').value;
+
+  // Bulk mode — no single applicant, use raw template with unresolved tags
+  if (!emailModalRow) {
+    if (!tplKey) {
+      document.getElementById('emailModalSubject').value = '';
+      document.getElementById('emailModalTextarea').value = '';
+      document.getElementById('emailModalPreview').innerHTML = '<p style="color:#888;">Select a template or write your email using merge tags.</p>';
+      return;
+    }
+    var tpl = EMAIL_TEMPLATES_JS[tplKey];
+    if (!tpl) return;
+    document.getElementById('emailModalSubject').value = tpl.subject || '';
+    document.getElementById('emailModalTextarea').value = tpl.body || '';
+    document.getElementById('emailModalPreview').innerHTML = markdownToHtmlPreview(tpl.body || '');
+    return;
+  }
+
+  // Single applicant mode — resolve merge tags
   var a = state.applicants.find(function(x) { return x.row === emailModalRow; });
   if (!a) return;
-  var tplKey = document.getElementById('emailModalTemplate').value;
   var resolved = resolveEmailTemplate(a, tplKey);
   document.getElementById('emailModalSubject').value = resolved.subject;
   document.getElementById('emailModalTextarea').value = resolved.body;
@@ -3840,12 +3857,41 @@ function openBulkEmailModal() {
   emailModalRow = null;
   window._bulkRows = rows;
 
+  // Detect common status among selected applicants for default template
+  var statusCounts = {};
+  rows.forEach(function(r) {
+    var a = state.applicants.find(function(x) { return x.row === r; });
+    if (a) statusCounts[a.status] = (statusCounts[a.status] || 0) + 1;
+  });
+  var commonStatus = '';
+  var maxCount = 0;
+  for (var s in statusCounts) {
+    if (statusCounts[s] > maxCount) { maxCount = statusCounts[s]; commonStatus = s; }
+  }
+  var defaultKey = STATUS_DEFAULT_TEMPLATE[commonStatus] || '';
+
+  // Populate template dropdown
+  var tplSelect = document.getElementById('emailModalTemplate');
+  var opts = '<option value="">(blank — write from scratch)</option>';
+  COMPOSE_TEMPLATES.forEach(function(ct) {
+    opts += '<option value="' + ct.key + '"' + (ct.key === defaultKey ? ' selected' : '') + '>' + esc(ct.label) + '</option>';
+  });
+  tplSelect.innerHTML = opts;
+
+  // Pre-populate from template if we have a default
+  var subject = '';
+  var body = '';
+  if (defaultKey && EMAIL_TEMPLATES_JS[defaultKey]) {
+    subject = EMAIL_TEMPLATES_JS[defaultKey].subject || '';
+    body = EMAIL_TEMPLATES_JS[defaultKey].body || '';
+  }
+
   // Set up modal for bulk
   document.getElementById('emailModalTitle').textContent = 'Bulk Email (' + rows.length + ' recipients)';
   document.getElementById('emailModalTo').innerHTML = '<strong>To:</strong> ' + rows.length + ' applicants (' + emails.slice(0, 3).join(', ') + (emails.length > 3 ? ', ...' : '') + ')';
-  document.getElementById('emailModalSubject').value = '';
-  document.getElementById('emailModalTextarea').value = '';
-  document.getElementById('emailModalPreview').innerHTML = '<p style="color:#888;">Write your email using merge tags: {{first_name}}, {{retreat_name}}, {{country}}, {{deposit_link}}, {{cal_link}}, {{open_spots}}</p>';
+  document.getElementById('emailModalSubject').value = subject;
+  document.getElementById('emailModalTextarea').value = body;
+  document.getElementById('emailModalPreview').innerHTML = body ? markdownToHtmlPreview(body) : '<p style="color:#888;">Select a template or write your email using merge tags.</p>';
 
   // Show banner
   var banner = document.getElementById('emailModalBanner');
