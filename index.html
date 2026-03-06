@@ -287,6 +287,13 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .tpl-card-trigger {
   font-size: 11px; color: var(--text-muted); margin-top: 2px;
 }
+.tpl-tag {
+  display: inline-block; font-size: 9px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px; padding: 1px 6px; border-radius: 3px; vertical-align: middle;
+  margin-left: 6px; position: relative; top: -1px;
+}
+.tpl-tag-manual { background: #e8def8; color: #5b21b6; }
+.tpl-tag-auto { background: #d1fae5; color: #065f46; }
 .tpl-card-subject {
   font-size: 12px; color: var(--text-secondary); font-style: italic;
   margin-top: 3px;
@@ -1151,6 +1158,19 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   flex-shrink: 0;
 }
 .email-modal-to strong { color: var(--text-secondary); }
+.email-modal-template-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(45,42,38,0.06);
+  flex-shrink: 0;
+}
+.email-modal-template-select {
+  flex: 1; padding: 5px 8px; border: 1px solid rgba(45,42,38,0.12);
+  border-radius: 6px; font-family: var(--font-body); font-size: 12px;
+  color: var(--text); background: var(--bg);
+  outline: none; cursor: pointer;
+}
+.email-modal-template-select:focus { border-color: var(--sage); }
 .email-modal-subject {
   width: 100%; padding: 10px 16px;
   border: none; border-bottom: 1px solid rgba(45,42,38,0.06);
@@ -1844,6 +1864,10 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
     </div>
     <div class="email-modal-banner hidden" id="emailModalBanner"></div>
     <div class="email-modal-to" id="emailModalTo"></div>
+    <div class="email-modal-template-row">
+      <label style="font-size:12px;font-weight:500;color:var(--text-secondary);">Template</label>
+      <select class="email-modal-template-select" id="emailModalTemplate" onchange="switchEmailTemplate()"></select>
+    </div>
     <input class="email-modal-subject" id="emailModalSubject" placeholder="Subject...">
     <div class="email-modal-toggle">
       <button class="active" onclick="toggleEmailView('preview')">Preview</button>
@@ -1907,7 +1931,7 @@ var state = {
 var STATUSES = [
   'Applied',
   'Hard Yes','Needs Call','Call Scheduled','Waitlist',
-  'Ghosted',
+  'Offer Sent','Ghosted',
   'Deposit Paid','Payment Plan','Paid in Full',
   'Not Aligned','Maybe Next Year','No Longer Interested','Cancelled'
 ];
@@ -1918,6 +1942,7 @@ var STATUS_COLORS = {
   'Needs Call':           {bg:'#d9ead3',fg:'#38761d'},
   'Call Scheduled':       {bg:'#93c47d',fg:'#274e13'},
   'Waitlist':             {bg:'#fff2cc',fg:'#7f6003'},
+  'Offer Sent':           {bg:'#b4d7d7',fg:'#0e6251'},
   'Ghosted':              {bg:'#d9d9d9',fg:'#666666'},
   'Deposit Paid':         {bg:'#a2d9ce',fg:'#0e6251'},
   'Payment Plan':         {bg:'#76d7c4',fg:'#0e6251'},
@@ -2392,7 +2417,7 @@ function renderFilterChips() {
   // Smart filter counts
   var smartCounts = {};
   smartCounts['smart-paid'] = state.applicants.filter(function(a) { return a.status === 'Deposit Paid' || a.status === 'Payment Plan' || a.status === 'Paid in Full'; }).length;
-  smartCounts['smart-offer-sent'] = state.applicants.filter(function(a) { return a.status === 'Hard Yes' && a.emailSent; }).length;
+  smartCounts['smart-offer-sent'] = state.applicants.filter(function(a) { return !!a.emailSent; }).length;
   smartCounts['smart-needs-email'] = state.applicants.filter(function(a) { return (a.status === 'Hard Yes' || a.status === 'Needs Call') && !a.emailSent; }).length;
   smartCounts['smart-addons'] = state.applicants.filter(function(a) { return hasApplicantAddons(a); }).length;
   smartCounts['smart-waitlist'] = counts['Waitlist'] || 0;
@@ -2555,7 +2580,7 @@ function renderCard(a) {
   });
 
   // Offer email status — always built, shown/hidden dynamically
-  var showStatusExtras = (a.status === 'Hard Yes' || a.status === 'Needs Call');
+  var showStatusExtras = (a.status === 'Hard Yes');
   var offerReady = a.accommodation && a.priceType;
   var offerSent = !!a.emailSent;
   var noteClass = 'offer-email-note';
@@ -2576,8 +2601,8 @@ function renderCard(a) {
     + '<div class="offer-email-box"><div class="'+noteClass+'">'+noteText+'</div></div>'
     + sendBtnHtml + '</div></div>';
 
-  // Status-based email (Waitlist, Not Aligned) — compose available without accommodation/price
-  var statusEmailStatuses = { 'Waitlist': 'waitlist', 'Not Aligned': 'not-aligned' };
+  // Status-based email (Needs Call, Waitlist, Not Aligned) — compose available without accommodation/price
+  var statusEmailStatuses = { 'Needs Call': 'needs-call', 'Waitlist': 'waitlist', 'Not Aligned': 'not-aligned' };
   var statusEmailHtml = '';
   var statusTemplateKey = statusEmailStatuses[a.status];
   if (statusTemplateKey && !offerSent) {
@@ -2761,7 +2786,7 @@ function updateStatusExtras(row) {
   var statusEl = document.getElementById('sel-status-' + row);
   var extrasEl = document.getElementById('status-extras-' + row);
   if (!statusEl || !extrasEl) return;
-  var show = statusEl.value === 'Hard Yes' || statusEl.value === 'Needs Call';
+  var show = statusEl.value === 'Hard Yes';
   extrasEl.style.display = show ? '' : 'none';
 }
 
@@ -2882,9 +2907,9 @@ function formatNumberPlain(num) {
   return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function resolveEmailTemplate(a) {
+function resolveEmailTemplate(a, overrideTemplateKey) {
   var STATUS_TEMPLATE_MAP = { 'Hard Yes': 'hard-yes', 'Needs Call': 'needs-call', 'Waitlist': 'waitlist', 'Not Aligned': 'not-aligned' };
-  var templateKey = STATUS_TEMPLATE_MAP[a.status] || 'hard-yes';
+  var templateKey = overrideTemplateKey || STATUS_TEMPLATE_MAP[a.status] || 'hard-yes';
   var tpl = EMAIL_TEMPLATES_JS[templateKey];
   if (!tpl) return { subject: '', body: '' };
 
@@ -3000,12 +3025,45 @@ function markdownToHtmlPreview(text) {
     .replace(/\n/g, '<br>');
 }
 
+// Template labels for the compose dropdown
+var COMPOSE_TEMPLATES = [
+  { key: 'hard-yes', label: 'Hard Yes Offer' },
+  { key: 'needs-call', label: 'Needs Call / Schedule' },
+  { key: 'waitlist', label: 'Waitlist' },
+  { key: 'not-aligned', label: 'Not Aligned' },
+  { key: 'ghost-1', label: 'Ghost 1 — Just checking in' },
+  { key: 'ghost-2', label: 'Ghost 2 — Still thinking it over?' },
+  { key: 'ghost-3', label: 'Ghost 3 — Spot almost gone' },
+  { key: 'ghost-4', label: 'Ghost 4 — Last call' },
+  { key: 'deposit-reminder-1', label: 'Deposit Reminder 1' },
+  { key: 'deposit-reminder-2', label: 'Deposit Reminder 2' },
+  { key: 'payment-reminder', label: 'Payment Reminder' },
+  { key: 'waitlist-spot-open', label: 'Waitlist — Spot Opened' },
+  { key: 'waitlist-spot-filled', label: 'Waitlist — Spot Filled' }
+];
+
+// Map status to default template key
+var STATUS_DEFAULT_TEMPLATE = { 'Hard Yes': 'hard-yes', 'Needs Call': 'needs-call', 'Waitlist': 'waitlist', 'Not Aligned': 'not-aligned', 'Ghosted': 'ghost-1' };
+
 function openEmailModal(row) {
   var a = state.applicants.find(function(x) { return x.row === row; });
   if (!a) return;
   emailModalRow = row;
 
-  var resolved = resolveEmailTemplate(a);
+  // Read live status from dropdown so unsaved changes are reflected in template selection
+  var statusEl = document.getElementById('sel-status-' + row);
+  var liveStatus = statusEl ? statusEl.value : a.status;
+  var defaultKey = STATUS_DEFAULT_TEMPLATE[liveStatus] || 'hard-yes';
+
+  // Populate template dropdown
+  var tplSelect = document.getElementById('emailModalTemplate');
+  var opts = '';
+  COMPOSE_TEMPLATES.forEach(function(ct) {
+    opts += '<option value="' + ct.key + '"' + (ct.key === defaultKey ? ' selected' : '') + '>' + esc(ct.label) + '</option>';
+  });
+  tplSelect.innerHTML = opts;
+
+  var resolved = resolveEmailTemplate(Object.assign({}, a, { status: liveStatus }));
   document.getElementById('emailModalTo').innerHTML = '<strong>To:</strong> ' + esc(a.email || '');
   document.getElementById('emailModalSubject').value = resolved.subject;
   document.getElementById('emailModalTextarea').value = resolved.body;
@@ -3024,6 +3082,17 @@ function openEmailModal(row) {
 function closeEmailModal() {
   document.getElementById('emailModal').classList.add('hidden');
   emailModalRow = null;
+}
+
+function switchEmailTemplate() {
+  if (!emailModalRow) return;
+  var a = state.applicants.find(function(x) { return x.row === emailModalRow; });
+  if (!a) return;
+  var tplKey = document.getElementById('emailModalTemplate').value;
+  var resolved = resolveEmailTemplate(a, tplKey);
+  document.getElementById('emailModalSubject').value = resolved.subject;
+  document.getElementById('emailModalTextarea').value = resolved.body;
+  document.getElementById('emailModalPreview').innerHTML = markdownToHtmlPreview(resolved.body);
 }
 
 function insertMergeTag(tag) {
@@ -3221,7 +3290,7 @@ function clearSearch() {
 
 function matchesSmartFilter(a, filterId) {
   if (filterId === 'smart-paid') return a.status === 'Deposit Paid' || a.status === 'Payment Plan' || a.status === 'Paid in Full';
-  if (filterId === 'smart-offer-sent') return a.status === 'Hard Yes' && a.emailSent;
+  if (filterId === 'smart-offer-sent') return !!a.emailSent;
   if (filterId === 'smart-needs-email') return (a.status === 'Hard Yes' || a.status === 'Needs Call') && !a.emailSent;
   if (filterId === 'smart-addons') return hasApplicantAddons(a);
   if (filterId === 'smart-waitlist') return a.status === 'Waitlist';
@@ -3883,10 +3952,12 @@ function switchView(view) {
 // ── EMAIL TEMPLATES PANEL (tabbed + editable) ──
 var TEMPLATE_GROUPS = [
   {
-    id: 'manual', title: 'Manual',
+    id: 'decision', title: 'Decision',
     templates: [
-      { key: 'hard-yes', name: 'Hard Yes Offer Email', trigger: 'Sent manually when status = Hard Yes + accommodation + price type set' },
-      { key: 'needs-call', name: 'Follow-up / Schedule Call', trigger: 'Sent manually when status = Needs Call' }
+      { key: 'hard-yes', name: 'Hard Yes Offer Email', trigger: 'Sent manually when status = Hard Yes + accommodation + price type set', tag: 'manual' },
+      { key: 'needs-call', name: 'Follow-up / Schedule Call', trigger: 'Sent manually when status = Needs Call', tag: 'manual' },
+      { key: 'waitlist', name: 'Waitlist Placement', trigger: 'Sent automatically when status set to Waitlist', tag: 'auto' },
+      { key: 'not-aligned', name: 'Not Aligned', trigger: 'Sent automatically when status set to Not Aligned', tag: 'auto' }
     ]
   },
   {
@@ -3918,16 +3989,9 @@ var TEMPLATE_GROUPS = [
       { key: 'waitlist-spot-filled', name: 'Spot Filled Follow-up', trigger: '48 hours after spot-open notification' }
     ]
   },
-  {
-    id: 'status', title: 'Status Emails',
-    templates: [
-      { key: 'waitlist', name: 'Waitlist Placement', trigger: 'Sent when status set to Waitlist' },
-      { key: 'not-aligned', name: 'Not Aligned', trigger: 'Sent when status set to Not Aligned' }
-    ]
-  }
 ];
 
-var activeTplTab = 'manual';
+var activeTplTab = 'decision';
 var serverTemplates = null; // loaded from API
 
 async function loadServerTemplates() {
@@ -3968,7 +4032,7 @@ function renderTemplatesPanel() {
     html += '<div class="tpl-card" id="tpl-' + t.key + '">'
       + '<div class="tpl-card-header" onclick="toggleTplCard(\'' + t.key + '\')">'
       + '<div>'
-      + '<div class="tpl-card-name">' + esc(t.name) + '</div>'
+      + '<div class="tpl-card-name">' + esc(t.name) + (t.tag ? ' <span class="tpl-tag tpl-tag-' + t.tag + '">' + t.tag + '</span>' : '') + '</div>'
       + '<div class="tpl-card-trigger">' + esc(t.trigger) + '</div>'
       + (subject ? '<div class="tpl-card-subject">' + esc(subject) + '</div>' : '')
       + '</div>'
