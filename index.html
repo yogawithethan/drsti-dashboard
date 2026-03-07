@@ -444,6 +444,9 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .call-tz-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 2px; }
 .call-tz-time { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.2; }
 .call-tz-date { font-size: 10px; color: var(--text-muted); }
+.call-card-actions { padding: 12px 16px 4px; border-top: 1px solid var(--border); margin-top: 12px; }
+.call-zoom-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; background: #2d8cff; color: #fff; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none; transition: background 0.15s; }
+.call-zoom-btn:hover { background: #1a73e8; }
 @media (max-width: 600px) {
   .call-tz-grid { grid-template-columns: 1fr 1fr; }
 }
@@ -4295,6 +4298,7 @@ function renderCallsPanel() {
       country: a.country,
       status: a.status,
       callTime: a.callTime,
+      zoomLink: a.zoomLink || '',
       iso: new Date(a.callTime).getTime()
     };
   }).sort(function(a, b) { return a.iso - b.iso; });
@@ -4375,7 +4379,9 @@ function renderCallsPanel() {
         + '<div class="call-tz-time">' + esc(attendee.time) + '</div>'
         + '<div class="call-tz-date">' + esc(attendee.date) + '</div>'
         + '</div>'
-        + '</div></div>';
+        + '</div>'
+        + (c.zoomLink ? '<div class="call-card-actions"><a href="' + esc(c.zoomLink) + '" target="_blank" rel="noopener" class="call-zoom-btn">Join Zoom</a></div>' : '')
+        + '</div>';
     });
 
     html += '</div>';
