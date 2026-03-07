@@ -510,6 +510,7 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .compass-reframe-label.ethan { color: var(--earth); }
 .compass-reframe-label.gabi { color: #7e57a0; }
 .compass-reframe-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+.compass-reframe-alt { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--bg-warm); }
 .compass-deposit {
   background: var(--sage-mist); border-radius: var(--radius-md);
   padding: 20px; text-align: center; margin-bottom: 20px;
@@ -4553,26 +4554,42 @@ function renderCompassPanel() {
 
   var objections = [
     { text: 'I can\u2019t afford it right now',
-      ethan: 'Is it a cash flow thing, or is it more about whether this is the right time? Those are two different conversations.',
-      gabi: 'When we say we can\u2019t afford something, we sometimes mean we\u2019re not sure we\u2019re worth it. Is there any truth to that for you?' },
+      ethan: [
+        'Is it a cash flow thing, or is it more about whether this is the right time? Those are two different conversations.',
+        'What if we look at the payment plan? It\u2019s three installments \u2014 and the first one is just the deposit. Would that change anything?',
+        'If money weren\u2019t a factor at all, would you be saying yes right now? That tells us a lot about where the real hesitation is.'
+      ],
+      gabi: [
+        'When we say we can\u2019t afford something, we sometimes mean we\u2019re not sure we\u2019re worth it. Is there any truth to that for you?',
+        'I\u2019ve seen people rearrange their whole lives for things that mattered less than this. What would it take to make this a priority instead of a luxury?',
+        'What is the cost of not going? Not in euros \u2014 in how you\u2019ll feel six months from now, still in the same place.'
+      ] },
     { text: 'I need to think about it',
-      ethan: 'What specifically do you need to think through? I\u2019d rather help you get clear right now than leave you with an unanswered question.',
-      gabi: 'When you check in with your body right now \u2014 not your mind \u2014 what does it say?' },
+      ethan: ['What specifically do you need to think through? I\u2019d rather help you get clear right now than leave you with an unanswered question.'],
+      gabi: ['When you check in with your body right now \u2014 not your mind \u2014 what does it say?'] },
     { text: 'I need to ask my partner',
-      ethan: 'What do you think their main concern would be? Sometimes I can help you think through how to frame it.',
-      gabi: 'What do you think they most need to hear to feel good about this?' },
+      ethan: ['What do you think their main concern would be? Sometimes I can help you think through how to frame it.'],
+      gabi: ['What do you think they most need to hear to feel good about this?'] },
     { text: 'I\u2019ve done retreats before and nothing stuck',
-      ethan: 'That\u2019s the most common thing I hear from people who get the most from this. What was missing in those experiences?',
-      gabi: 'That tells me you\u2019ve been looking for something real for a long time. What would sticking actually feel like for you?' },
+      ethan: ['That\u2019s the most common thing I hear from people who get the most from this. What was missing in those experiences?'],
+      gabi: ['That tells me you\u2019ve been looking for something real for a long time. What would sticking actually feel like for you?'] },
     { text: 'Am I ready for this?',
-      ethan: 'Readiness isn\u2019t a feeling \u2014 it\u2019s a decision. What\u2019s making you uncertain?',
-      gabi: 'The question isn\u2019t whether you\u2019re ready \u2014 it\u2019s whether you\u2019re willing. Those are different things.' },
+      ethan: ['Readiness isn\u2019t a feeling \u2014 it\u2019s a decision. What\u2019s making you uncertain?'],
+      gabi: ['The question isn\u2019t whether you\u2019re ready \u2014 it\u2019s whether you\u2019re willing. Those are different things.'] },
     { text: 'I\u2019m waiting to see if I win the flight first',
-      ethan: 'That makes sense. But the deposit just holds your spot \u2014 it\u2019s not the full commitment. If you don\u2019t win, we figure out the rest together. I\u2019d hate for you to lose your place over timing.',
-      gabi: 'What if the flight is the universe\u2019s way of testing how much you actually want this? The deposit is the real answer to that question.' },
+      ethan: [
+        'That makes sense. But the deposit just holds your spot \u2014 it\u2019s not the full commitment. If you don\u2019t win, we figure out the rest together. I\u2019d hate for you to lose your place over timing.',
+        'The flight and the retreat are two separate decisions. One is logistics, the other is whether this is something you actually want. Which one are we really talking about?',
+        'We\u2019ve had people wait on the flight and lose their spot. The deposit is fully separate \u2014 it just holds your place while you sort the rest out.'
+      ],
+      gabi: [
+        'What if the flight is the universe\u2019s way of testing how much you actually want this? The deposit is the real answer to that question.',
+        'I hear you. But can I ask \u2014 if you don\u2019t win the flight, does that mean you wouldn\u2019t come? Or would you find a way?',
+        'Sometimes we use the thing we\u2019re waiting on as permission to say yes. You don\u2019t need the flight to give yourself permission.'
+      ] },
     { text: 'The timing isn\u2019t right / I have a lot going on',
-      ethan: 'There\u2019s never a perfect time \u2014 but you applied for a reason. What was happening in your life when you filled out that form?',
-      gabi: 'The moments we feel most called to something are usually the moments life feels most full. What is it that you\u2019re actually afraid of making space for?' }
+      ethan: ['There\u2019s never a perfect time \u2014 but you applied for a reason. What was happening in your life when you filled out that form?'],
+      gabi: ['The moments we feel most called to something are usually the moments life feels most full. What is it that you\u2019re actually afraid of making space for?'] }
   ];
 
   var tiers = [
@@ -4623,12 +4640,20 @@ function renderCompassPanel() {
   // TAB 2 — Objections
   h += '<div class="compass-tab-content' + (activeCompassTab === 'objections' ? ' active' : '') + '" id="compassTab_objections">';
   objections.forEach(function(o) {
+    var ethans = Array.isArray(o.ethan) ? o.ethan : [o.ethan];
+    var gabis = Array.isArray(o.gabi) ? o.gabi : [o.gabi];
     h += '<div class="compass-objection-card">'
       + '<div class="compass-objection-text">\u201C' + o.text + '\u201D</div>'
       + '<div class="compass-reframes">'
-      + '<div><div class="compass-reframe-label ethan">Ethan</div><div class="compass-reframe-text">\u201C' + o.ethan + '\u201D</div></div>'
-      + '<div><div class="compass-reframe-label gabi">Gabi</div><div class="compass-reframe-text">\u201C' + o.gabi + '\u201D</div></div>'
-      + '</div></div>';
+      + '<div><div class="compass-reframe-label ethan">Ethan</div>';
+    ethans.forEach(function(r, i) {
+      h += '<div class="compass-reframe-text' + (i > 0 ? ' compass-reframe-alt' : '') + '">\u201C' + r + '\u201D</div>';
+    });
+    h += '</div><div><div class="compass-reframe-label gabi">Gabi</div>';
+    gabis.forEach(function(r, i) {
+      h += '<div class="compass-reframe-text' + (i > 0 ? ' compass-reframe-alt' : '') + '">\u201C' + r + '\u201D</div>';
+    });
+    h += '</div></div></div>';
   });
   h += '</div>';
 
