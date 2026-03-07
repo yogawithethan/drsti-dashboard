@@ -451,6 +451,128 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   .call-tz-grid { grid-template-columns: 1fr 1fr; }
 }
 
+/* ── THE COMPASS PANEL ── */
+.compass-panel {
+  max-width: 800px; margin: 0 auto; padding: 32px 16px 64px;
+}
+.compass-header {
+  text-align: center; margin-bottom: 32px;
+}
+.compass-header h2 {
+  font-family: var(--font-display); font-weight: 300; font-size: 32px;
+  color: var(--sage-dark); letter-spacing: 0.02em;
+}
+.compass-header p {
+  font-size: 13px; color: var(--text-muted); margin-top: 4px;
+}
+.compass-section {
+  margin-bottom: 36px;
+}
+.compass-section-title {
+  font-family: var(--font-display); font-weight: 500; font-size: 20px;
+  color: var(--sage-dark); margin-bottom: 16px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--sand);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.compass-phase-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+@media (max-width: 700px) { .compass-phase-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .compass-phase-grid { grid-template-columns: 1fr; } }
+.compass-phase {
+  background: var(--bg-card); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm); padding: 16px; border: 1px solid rgba(0,0,0,0.04);
+}
+.compass-phase-num {
+  font-family: var(--font-display); font-size: 11px; font-weight: 600;
+  color: var(--sage); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;
+}
+.compass-phase-name {
+  font-family: var(--font-display); font-size: 18px; font-weight: 500;
+  color: var(--text); margin-bottom: 10px;
+}
+.compass-prompt {
+  font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+  padding: 6px 0; border-top: 1px solid var(--bg-warm);
+  font-style: italic;
+}
+.compass-objection-card {
+  background: var(--bg-card); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm); padding: 20px; margin-bottom: 12px;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.compass-objection-text {
+  font-size: 15px; color: var(--text-muted); font-style: italic;
+  margin-bottom: 14px; line-height: 1.4;
+}
+.compass-reframe {
+  margin-bottom: 10px;
+}
+.compass-reframe:last-child { margin-bottom: 0; }
+.compass-reframe-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; margin-bottom: 3px;
+}
+.compass-reframe-label.ethan { color: var(--sage-dark); }
+.compass-reframe-label.gabi { color: var(--terra); }
+.compass-reframe-text {
+  font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+}
+.compass-pricing-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+@media (max-width: 600px) { .compass-pricing-grid { grid-template-columns: 1fr; } }
+.compass-tier {
+  background: var(--bg-card); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm); padding: 20px; text-align: center;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.compass-tier-name {
+  font-family: var(--font-display); font-size: 20px; font-weight: 500;
+  color: var(--text); margin-bottom: 12px;
+}
+.compass-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 10px;
+}
+.compass-chip {
+  padding: 5px 12px; border-radius: var(--radius-pill);
+  background: var(--sage-light); color: var(--sage-dark);
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  border: 1px solid transparent; transition: all 0.15s;
+}
+.compass-chip:hover { background: var(--sage); color: #fff; }
+.compass-chip.copied {
+  background: var(--sage-dark); color: #fff;
+}
+.compass-perday {
+  font-size: 12px; color: var(--text-muted);
+}
+.compass-deposit {
+  background: var(--sage-mist); border-radius: var(--radius-md);
+  padding: 16px; text-align: center; margin-top: 12px;
+  border: 1.5px solid var(--sage);
+}
+.compass-deposit-amount {
+  font-family: var(--font-display); font-size: 22px; font-weight: 500;
+  color: var(--sage-dark);
+}
+.compass-deposit-note {
+  font-size: 12px; color: var(--text-muted); margin-top: 2px;
+}
+.compass-close-list {
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+  padding: 20px 0;
+}
+.compass-close-item {
+  font-family: var(--font-display); font-size: 20px; font-style: italic;
+  font-weight: 400; color: var(--text); text-align: center;
+  max-width: 500px; line-height: 1.4;
+}
+@media (max-width: 480px) {
+  .compass-close-item { font-size: 17px; }
+  .compass-header h2 { font-size: 26px; }
+}
+
 /* ── PIPELINE GUIDE PANEL (light theme) ── */
 .pipeline-panel {
   background: var(--bg);
@@ -1824,6 +1946,7 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
       <button class="nav-btn" id="navCalls" onclick="switchView('calls')" title="Upcoming Calls"><i class="ph ph-calendar"></i></button>
       <button class="nav-btn" id="navTemplates" onclick="switchView('templates')" title="Email Templates"><i class="ph ph-envelope-simple"></i></button>
       <button class="nav-btn" id="navPipeline" onclick="switchView('pipeline')" title="Pipeline Guide"><i class="ph ph-git-branch"></i></button>
+      <button class="nav-btn" id="navCompass" onclick="switchView('compass')" title="The Compass"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24,7.76 14.12,14.12 7.76,16.24 9.88,9.88" fill="currentColor" stroke="none" opacity="0.7"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg></button>
     </div>
   </div>
 </header>
@@ -1891,6 +2014,11 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
 <!-- VIEW: PIPELINE GUIDE -->
 <div class="panel-view" id="viewPipeline">
   <div class="pipeline-panel" id="pipelinePanel"></div>
+</div>
+
+<!-- VIEW: THE COMPASS -->
+<div class="panel-view" id="viewCompass">
+  <div class="compass-panel" id="compassPanel"></div>
 </div>
 
 <!-- TOAST -->
@@ -4057,7 +4185,7 @@ var currentView = 'crm';
 
 function switchView(view) {
   currentView = view;
-  ['crm', 'calls', 'templates', 'pipeline'].forEach(function(v) {
+  ['crm', 'calls', 'templates', 'pipeline', 'compass'].forEach(function(v) {
     var panel = document.getElementById('view' + v.charAt(0).toUpperCase() + v.slice(1));
     var btn = document.getElementById('nav' + v.charAt(0).toUpperCase() + v.slice(1));
     if (panel) panel.classList.toggle('active', v === view);
@@ -4066,6 +4194,7 @@ function switchView(view) {
   if (view === 'calls') renderCallsPanel();
   if (view === 'templates') renderTemplatesPanel();
   if (view === 'pipeline') renderPipelinePanel();
+  if (view === 'compass') renderCompassPanel();
 }
 
 // ── EMAIL TEMPLATES PANEL (tabbed + editable) ──
@@ -4391,6 +4520,109 @@ function renderCallsPanel() {
 }
 
 // ── PIPELINE GUIDE PANEL (dark theme, matches status-flow.html) ──
+// ── THE COMPASS PANEL ──
+function renderCompassPanel() {
+  var panel = document.getElementById('compassPanel');
+
+  var phases = [
+    { name: 'Rapport', prompts: ['Where are you calling in from?', 'How did you first come to yoga and meditation?'] },
+    { name: 'Explore', prompts: ['What\u2019s been pulling you toward something like this?', 'What have you tried before that hasn\u2019t fully stuck?'] },
+    { name: 'Vision', prompts: ['What would your life look like if this actually worked?', 'What does a real daily practice mean to you?'] },
+    { name: 'Qualify', prompts: ['Is there anything going on physically or emotionally I should know about?', 'Is this a decision you can make today, or is someone else involved?'] },
+    { name: 'Offer', prompts: ['We have three room options \u2014 want me to walk you through them?', 'Early bird pricing is still available \u2014 want to hear what that looks like?'] },
+    { name: 'Close', prompts: ['What would need to be true for you to say yes today?', 'The deposit is just \u20AC350 \u2014 everything else follows. Does that feel doable?'] }
+  ];
+
+  var objections = [
+    { text: 'I can\u2019t afford it right now',
+      ethan: 'Is it a cash flow thing, or is it more about whether this is the right time? Those are two different conversations.',
+      gabi: 'When we say we can\u2019t afford something, we sometimes mean we\u2019re not sure we\u2019re worth it. Is there any truth to that for you?' },
+    { text: 'I need to think about it',
+      ethan: 'What specifically do you need to think through? I\u2019d rather help you get clear right now than leave you with an unanswered question.',
+      gabi: 'When you check in with your body right now \u2014 not your mind \u2014 what does it say?' },
+    { text: 'I need to ask my partner',
+      ethan: 'What do you think their main concern would be? Sometimes I can help you think through how to frame it.',
+      gabi: 'What do you think they most need to hear to feel good about this?' },
+    { text: 'I\u2019ve done retreats before and nothing stuck',
+      ethan: 'That\u2019s the most common thing I hear from people who get the most from this. What was missing in those experiences?',
+      gabi: 'That tells me you\u2019ve been looking for something real for a long time. What would sticking actually feel like for you?' },
+    { text: 'Am I ready for this?',
+      ethan: 'Readiness isn\u2019t a feeling \u2014 it\u2019s a decision. What\u2019s making you uncertain?',
+      gabi: 'The question isn\u2019t whether you\u2019re ready \u2014 it\u2019s whether you\u2019re willing. Those are different things.' }
+  ];
+
+  var tiers = [
+    { name: 'Triple', prices: [{ label: 'Plan', val: '\u20AC2,850' }, { label: 'Full', val: '\u20AC2,555' }, { label: 'EB Plan', val: '\u20AC2,565' }, { label: 'EB Full', val: '\u20AC2,220' }], perday: '\u20AC255/day' },
+    { name: 'Double', prices: [{ label: 'Plan', val: '\u20AC3,240' }, { label: 'Full', val: '\u20AC2,888' }, { label: 'EB Plan', val: '\u20AC2,910' }, { label: 'EB Full', val: '\u20AC2,555' }], perday: '\u20AC288/day' },
+    { name: 'Glamping', prices: [{ label: 'Plan', val: '\u20AC3,690' }, { label: 'Full', val: '\u20AC3,690' }, { label: 'EB Plan', val: '\u20AC3,330' }, { label: 'EB Full', val: '\u20AC2,999' }], perday: '\u20AC369/day' }
+  ];
+
+  var closes = [
+    'The deposit is \u20AC350. Not the full amount.',
+    'Ask once. Then stop talking.',
+    'Silence is not awkward \u2014 it\u2019s working.',
+    'An objection is a question in disguise.',
+    'They came to this call because something in them already said yes.'
+  ];
+
+  var h = '<div class="compass-header"><h2>The Compass</h2><p>Discovery call guide for Ethan &amp; Gabi</p></div>';
+
+  // Section 1 — Call Flow
+  h += '<div class="compass-section"><div class="compass-section-title">Call Flow</div><div class="compass-phase-grid">';
+  phases.forEach(function(p, i) {
+    h += '<div class="compass-phase">'
+      + '<div class="compass-phase-num">Phase ' + (i + 1) + '</div>'
+      + '<div class="compass-phase-name">' + p.name + '</div>';
+    p.prompts.forEach(function(q) {
+      h += '<div class="compass-prompt">\u201C' + q + '\u201D</div>';
+    });
+    h += '</div>';
+  });
+  h += '</div></div>';
+
+  // Section 2 — Objections
+  h += '<div class="compass-section"><div class="compass-section-title">Objections &amp; Reframes</div>';
+  objections.forEach(function(o) {
+    h += '<div class="compass-objection-card">'
+      + '<div class="compass-objection-text">\u201C' + o.text + '\u201D</div>'
+      + '<div class="compass-reframe"><div class="compass-reframe-label ethan">Ethan</div><div class="compass-reframe-text">\u201C' + o.ethan + '\u201D</div></div>'
+      + '<div class="compass-reframe"><div class="compass-reframe-label gabi">Gabi</div><div class="compass-reframe-text">\u201C' + o.gabi + '\u201D</div></div>'
+      + '</div>';
+  });
+  h += '</div>';
+
+  // Section 3 — Pricing
+  h += '<div class="compass-section"><div class="compass-section-title">Pricing</div><div class="compass-pricing-grid">';
+  tiers.forEach(function(t) {
+    h += '<div class="compass-tier"><div class="compass-tier-name">' + t.name + '</div><div class="compass-chips">';
+    t.prices.forEach(function(p) {
+      h += '<span class="compass-chip" onclick="copyChip(this,\'' + p.val + '\')" title="Click to copy">' + p.label + ' ' + p.val + '</span>';
+    });
+    h += '</div><div class="compass-perday">' + t.perday + '</div></div>';
+  });
+  h += '</div>';
+  h += '<div class="compass-deposit"><div class="compass-deposit-amount">\u20AC350 deposit</div><div class="compass-deposit-note">secures your spot \u00B7 non-refundable</div></div>';
+  h += '</div>';
+
+  // Section 4 — Close Reminders
+  h += '<div class="compass-section"><div class="compass-section-title">Close Reminders</div><div class="compass-close-list">';
+  closes.forEach(function(c) {
+    h += '<div class="compass-close-item">\u201C' + c + '\u201D</div>';
+  });
+  h += '</div></div>';
+
+  panel.innerHTML = h;
+}
+
+function copyChip(el, val) {
+  navigator.clipboard.writeText(val).then(function() {
+    el.classList.add('copied');
+    var orig = el.textContent;
+    el.textContent = 'Copied!';
+    setTimeout(function() { el.classList.remove('copied'); el.textContent = orig; }, 1200);
+  });
+}
+
 function renderPipelinePanel() {
   var panel = document.getElementById('pipelinePanel');
   panel.innerHTML = ''
