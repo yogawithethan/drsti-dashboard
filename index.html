@@ -2728,6 +2728,7 @@ function renderCard(a) {
     + '<input type="checkbox" id="sel-video-'+a.row+'"'+(a.personalVideoSent?' checked':'')+' onchange="markCardChanged('+a.row+')">'
     + 'Personal video sent'
     + '</label>'
+    + (a.status === 'Call Scheduled' || a.callTime ? '<div class="field" style="margin-top:8px;"><div class="field-label">Call Time</div><input type="datetime-local" id="sel-calltime-'+a.row+'" value="'+(a.callTime ? a.callTime.replace('Z','').replace(/\.\d+$/,'').slice(0,16) : '')+'" onchange="markCardChanged('+a.row+')" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--card-bg);color:var(--text-primary);"></div>' : '')
     + offerHtml
     + '</div>'
     + statusEmailHtml
@@ -3256,6 +3257,8 @@ async function saveCardChanges(row) {
   var newNotes = notesEl ? notesEl.value : (a.notes || '');
   var videoEl = document.getElementById('sel-video-' + row);
   var newVideo = videoEl ? videoEl.checked : !!a.personalVideoSent;
+  var callTimeEl = document.getElementById('sel-calltime-' + row);
+  var newCallTime = callTimeEl ? (callTimeEl.value ? callTimeEl.value + ':00Z' : '') : (a.callTime || '');
 
   // Read add-on checkboxes
   var liveAddons = {};
@@ -3272,6 +3275,7 @@ async function saveCardChanges(row) {
   if (newNotes !== (a.notes || '')) fields.notes = newNotes;
   if (newAddonsJson !== (a.addonsJson || '')) fields.addonsJson = newAddonsJson;
   if (newVideo !== !!a.personalVideoSent) fields.personalVideoSent = newVideo ? "TRUE" : "";
+  if (newCallTime !== (a.callTime || '')) fields.callTime = newCallTime;
 
   if (Object.keys(fields).length === 0) {
     showToast('No changes to save', 'warning');
