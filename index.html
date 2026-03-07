@@ -452,31 +452,26 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 }
 
 /* ── THE COMPASS PANEL ── */
-.compass-panel {
-  max-width: 800px; margin: 0 auto; padding: 32px 16px 64px;
+.compass-panel { max-width: 800px; margin: 0 auto; padding: 32px 16px 64px; }
+.compass-header { text-align: center; margin-bottom: 24px; }
+.compass-header h2 { font-family: var(--font-display); font-weight: 300; font-size: 32px; color: var(--sage-dark); letter-spacing: 0.02em; }
+.compass-header p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+.compass-tabs {
+  display: flex; gap: 6px; justify-content: center; margin-bottom: 28px;
+  padding: 4px; background: var(--bg-warm); border-radius: var(--radius-pill);
+  width: fit-content; margin-left: auto; margin-right: auto;
 }
-.compass-header {
-  text-align: center; margin-bottom: 32px;
+.compass-tab {
+  padding: 8px 18px; border-radius: var(--radius-pill); border: none;
+  font-family: var(--font-body); font-size: 13px; font-weight: 500;
+  color: var(--text-muted); background: transparent; cursor: pointer;
+  transition: all 0.2s;
 }
-.compass-header h2 {
-  font-family: var(--font-display); font-weight: 300; font-size: 32px;
-  color: var(--sage-dark); letter-spacing: 0.02em;
-}
-.compass-header p {
-  font-size: 13px; color: var(--text-muted); margin-top: 4px;
-}
-.compass-section {
-  margin-bottom: 36px;
-}
-.compass-section-title {
-  font-family: var(--font-display); font-weight: 500; font-size: 20px;
-  color: var(--sage-dark); margin-bottom: 16px;
-  padding-bottom: 8px; border-bottom: 1px solid var(--sand);
-  letter-spacing: 0.04em; text-transform: uppercase;
-}
-.compass-phase-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-}
+.compass-tab:hover { color: var(--text-secondary); }
+.compass-tab.active { background: var(--sage-dark); color: #fff; }
+.compass-tab-content { display: none; }
+.compass-tab-content.active { display: block; }
+.compass-phase-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 @media (max-width: 700px) { .compass-phase-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 480px) { .compass-phase-grid { grid-template-columns: 1fr; } }
 .compass-phase {
@@ -493,8 +488,7 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 }
 .compass-prompt {
   font-size: 13px; color: var(--text-secondary); line-height: 1.5;
-  padding: 6px 0; border-top: 1px solid var(--bg-warm);
-  font-style: italic;
+  padding: 6px 0; border-top: 1px solid var(--bg-warm); font-style: italic;
 }
 .compass-objection-card {
   background: var(--bg-card); border-radius: var(--radius-md);
@@ -503,24 +497,29 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 }
 .compass-objection-text {
   font-size: 15px; color: var(--text-muted); font-style: italic;
-  margin-bottom: 14px; line-height: 1.4;
+  margin-bottom: 16px; line-height: 1.4;
 }
-.compass-reframe {
-  margin-bottom: 10px;
+.compass-reframes {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
 }
-.compass-reframe:last-child { margin-bottom: 0; }
+@media (max-width: 550px) { .compass-reframes { grid-template-columns: 1fr; gap: 10px; } }
 .compass-reframe-label {
   font-size: 11px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.08em; margin-bottom: 3px;
+  letter-spacing: 0.08em; margin-bottom: 4px;
 }
-.compass-reframe-label.ethan { color: var(--sage-dark); }
-.compass-reframe-label.gabi { color: var(--terra); }
-.compass-reframe-text {
-  font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+.compass-reframe-label.ethan { color: var(--earth); }
+.compass-reframe-label.gabi { color: #7e57a0; }
+.compass-reframe-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+.compass-deposit {
+  background: var(--sage-mist); border-radius: var(--radius-md);
+  padding: 20px; text-align: center; margin-bottom: 20px;
+  border: 1.5px solid var(--sage);
 }
-.compass-pricing-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+.compass-deposit-amount {
+  font-family: var(--font-display); font-size: 24px; font-weight: 500; color: var(--sage-dark);
 }
+.compass-deposit-note { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.compass-pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 @media (max-width: 600px) { .compass-pricing-grid { grid-template-columns: 1fr; } }
 .compass-tier {
   background: var(--bg-card); border-radius: var(--radius-md);
@@ -531,9 +530,7 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   font-family: var(--font-display); font-size: 20px; font-weight: 500;
   color: var(--text); margin-bottom: 12px;
 }
-.compass-chips {
-  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 10px;
-}
+.compass-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 10px; }
 .compass-chip {
   padding: 5px 12px; border-radius: var(--radius-pill);
   background: var(--sage-light); color: var(--sage-dark);
@@ -541,36 +538,21 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   border: 1px solid transparent; transition: all 0.15s;
 }
 .compass-chip:hover { background: var(--sage); color: #fff; }
-.compass-chip.copied {
-  background: var(--sage-dark); color: #fff;
-}
-.compass-perday {
-  font-size: 12px; color: var(--text-muted);
-}
-.compass-deposit {
-  background: var(--sage-mist); border-radius: var(--radius-md);
-  padding: 16px; text-align: center; margin-top: 12px;
-  border: 1.5px solid var(--sage);
-}
-.compass-deposit-amount {
-  font-family: var(--font-display); font-size: 22px; font-weight: 500;
-  color: var(--sage-dark);
-}
-.compass-deposit-note {
-  font-size: 12px; color: var(--text-muted); margin-top: 2px;
-}
+.compass-chip.copied { background: var(--sage-dark); color: #fff; }
+.compass-perday { font-size: 12px; color: var(--text-muted); }
 .compass-close-list {
-  display: flex; flex-direction: column; align-items: center; gap: 20px;
-  padding: 20px 0;
+  display: flex; flex-direction: column; align-items: center; gap: 32px;
+  padding: 24px 0;
 }
 .compass-close-item {
-  font-family: var(--font-display); font-size: 20px; font-style: italic;
-  font-weight: 400; color: var(--text); text-align: center;
-  max-width: 500px; line-height: 1.4;
+  font-family: var(--font-display); font-size: 21px; font-style: italic;
+  font-weight: 400; color: var(--earth); text-align: center;
+  max-width: 520px; line-height: 1.45;
 }
 @media (max-width: 480px) {
   .compass-close-item { font-size: 17px; }
   .compass-header h2 { font-size: 26px; }
+  .compass-tabs { flex-wrap: wrap; border-radius: var(--radius-md); }
 }
 
 /* ── PIPELINE GUIDE PANEL (light theme) ── */
@@ -4521,16 +4503,52 @@ function renderCallsPanel() {
 
 // ── PIPELINE GUIDE PANEL (dark theme, matches status-flow.html) ──
 // ── THE COMPASS PANEL ──
+var activeCompassTab = 'flow';
+
+function switchCompassTab(tab) {
+  activeCompassTab = tab;
+  ['flow','objections','pricing','reminders'].forEach(function(t) {
+    var el = document.getElementById('compassTab_' + t);
+    var btn = document.getElementById('compassBtn_' + t);
+    if (el) el.classList.toggle('active', t === tab);
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
+}
+
 function renderCompassPanel() {
   var panel = document.getElementById('compassPanel');
 
   var phases = [
-    { name: 'Rapport', prompts: ['Where are you calling in from?', 'How did you first come to yoga and meditation?'] },
-    { name: 'Explore', prompts: ['What\u2019s been pulling you toward something like this?', 'What have you tried before that hasn\u2019t fully stuck?'] },
-    { name: 'Vision', prompts: ['What would your life look like if this actually worked?', 'What does a real daily practice mean to you?'] },
-    { name: 'Qualify', prompts: ['Is there anything going on physically or emotionally I should know about?', 'Is this a decision you can make today, or is someone else involved?'] },
-    { name: 'Offer', prompts: ['We have three room options \u2014 want me to walk you through them?', 'Early bird pricing is still available \u2014 want to hear what that looks like?'] },
-    { name: 'Close', prompts: ['What would need to be true for you to say yes today?', 'The deposit is just \u20AC350 \u2014 everything else follows. Does that feel doable?'] }
+    { name: 'Rapport', prompts: [
+      'Where are you calling in from?',
+      'How did you first come to yoga and meditation?',
+      'What does your life look like day to day right now?'
+    ]},
+    { name: 'Explore', prompts: [
+      'What\u2019s been pulling you toward something like this?',
+      'What have you tried before that hasn\u2019t fully stuck?',
+      'What\u2019s the gap between where your practice is and where you want it to be?'
+    ]},
+    { name: 'Vision', prompts: [
+      'What would your life look like if this actually worked?',
+      'What does a real daily practice mean to you?',
+      'If you didn\u2019t come, what does the next year look like?'
+    ]},
+    { name: 'Qualify', prompts: [
+      'Is there anything going on physically or emotionally I should know about?',
+      'Is this a decision you can make today, or is someone else involved?',
+      'Is there anything that would make it hard to be fully present for 10 days?'
+    ]},
+    { name: 'Offer', prompts: [
+      'We have three room options \u2014 want me to walk you through them?',
+      'Early bird pricing is still available \u2014 want to hear what that looks like?',
+      'Which room option feels most aligned for you?'
+    ]},
+    { name: 'Close', prompts: [
+      'What would need to be true for you to say yes today?',
+      'The deposit is just \u20AC350 \u2014 everything else follows. Does that feel doable?',
+      'What\u2019s the one thing stopping you from saying yes right now?'
+    ]}
   ];
 
   var objections = [
@@ -4548,12 +4566,18 @@ function renderCompassPanel() {
       gabi: 'That tells me you\u2019ve been looking for something real for a long time. What would sticking actually feel like for you?' },
     { text: 'Am I ready for this?',
       ethan: 'Readiness isn\u2019t a feeling \u2014 it\u2019s a decision. What\u2019s making you uncertain?',
-      gabi: 'The question isn\u2019t whether you\u2019re ready \u2014 it\u2019s whether you\u2019re willing. Those are different things.' }
+      gabi: 'The question isn\u2019t whether you\u2019re ready \u2014 it\u2019s whether you\u2019re willing. Those are different things.' },
+    { text: 'I\u2019m waiting to see if I win the flight first',
+      ethan: 'That makes sense. But the deposit just holds your spot \u2014 it\u2019s not the full commitment. If you don\u2019t win, we figure out the rest together. I\u2019d hate for you to lose your place over timing.',
+      gabi: 'What if the flight is the universe\u2019s way of testing how much you actually want this? The deposit is the real answer to that question.' },
+    { text: 'The timing isn\u2019t right / I have a lot going on',
+      ethan: 'There\u2019s never a perfect time \u2014 but you applied for a reason. What was happening in your life when you filled out that form?',
+      gabi: 'The moments we feel most called to something are usually the moments life feels most full. What is it that you\u2019re actually afraid of making space for?' }
   ];
 
   var tiers = [
-    { name: 'Triple', prices: [{ label: 'Plan', val: '\u20AC2,850' }, { label: 'Full', val: '\u20AC2,555' }, { label: 'EB Plan', val: '\u20AC2,565' }, { label: 'EB Full', val: '\u20AC2,220' }], perday: '\u20AC255/day' },
-    { name: 'Double', prices: [{ label: 'Plan', val: '\u20AC3,240' }, { label: 'Full', val: '\u20AC2,888' }, { label: 'EB Plan', val: '\u20AC2,910' }, { label: 'EB Full', val: '\u20AC2,555' }], perday: '\u20AC288/day' },
+    { name: 'Triple Room', prices: [{ label: 'Plan', val: '\u20AC2,850' }, { label: 'Full', val: '\u20AC2,555' }, { label: 'EB Plan', val: '\u20AC2,565' }, { label: 'EB Full', val: '\u20AC2,220' }], perday: '\u20AC255/day' },
+    { name: 'Double Room', prices: [{ label: 'Plan', val: '\u20AC3,240' }, { label: 'Full', val: '\u20AC2,888' }, { label: 'EB Plan', val: '\u20AC2,910' }, { label: 'EB Full', val: '\u20AC2,555' }], perday: '\u20AC288/day' },
     { name: 'Glamping', prices: [{ label: 'Plan', val: '\u20AC3,690' }, { label: 'Full', val: '\u20AC3,690' }, { label: 'EB Plan', val: '\u20AC3,330' }, { label: 'EB Full', val: '\u20AC2,999' }], perday: '\u20AC369/day' }
   ];
 
@@ -4562,13 +4586,29 @@ function renderCompassPanel() {
     'Ask once. Then stop talking.',
     'Silence is not awkward \u2014 it\u2019s working.',
     'An objection is a question in disguise.',
+    'When they start doing their own math out loud, help them solve it \u2014 don\u2019t agree it\u2019s unsolvable.',
     'They came to this call because something in them already said yes.'
+  ];
+
+  var tabLabels = [
+    { id: 'flow', label: 'Call Flow' },
+    { id: 'objections', label: 'Objections' },
+    { id: 'pricing', label: 'Pricing' },
+    { id: 'reminders', label: 'Reminders' }
   ];
 
   var h = '<div class="compass-header"><h2>The Compass</h2><p>Discovery call guide for Ethan &amp; Gabi</p></div>';
 
-  // Section 1 — Call Flow
-  h += '<div class="compass-section"><div class="compass-section-title">Call Flow</div><div class="compass-phase-grid">';
+  // Tabs
+  h += '<div class="compass-tabs">';
+  tabLabels.forEach(function(t) {
+    h += '<button class="compass-tab' + (t.id === activeCompassTab ? ' active' : '') + '" id="compassBtn_' + t.id + '" onclick="switchCompassTab(\'' + t.id + '\')">' + t.label + '</button>';
+  });
+  h += '</div>';
+
+  // TAB 1 — Call Flow
+  h += '<div class="compass-tab-content' + (activeCompassTab === 'flow' ? ' active' : '') + '" id="compassTab_flow">';
+  h += '<div class="compass-phase-grid">';
   phases.forEach(function(p, i) {
     h += '<div class="compass-phase">'
       + '<div class="compass-phase-num">Phase ' + (i + 1) + '</div>'
@@ -4580,19 +4620,22 @@ function renderCompassPanel() {
   });
   h += '</div></div>';
 
-  // Section 2 — Objections
-  h += '<div class="compass-section"><div class="compass-section-title">Objections &amp; Reframes</div>';
+  // TAB 2 — Objections
+  h += '<div class="compass-tab-content' + (activeCompassTab === 'objections' ? ' active' : '') + '" id="compassTab_objections">';
   objections.forEach(function(o) {
     h += '<div class="compass-objection-card">'
       + '<div class="compass-objection-text">\u201C' + o.text + '\u201D</div>'
-      + '<div class="compass-reframe"><div class="compass-reframe-label ethan">Ethan</div><div class="compass-reframe-text">\u201C' + o.ethan + '\u201D</div></div>'
-      + '<div class="compass-reframe"><div class="compass-reframe-label gabi">Gabi</div><div class="compass-reframe-text">\u201C' + o.gabi + '\u201D</div></div>'
-      + '</div>';
+      + '<div class="compass-reframes">'
+      + '<div><div class="compass-reframe-label ethan">Ethan</div><div class="compass-reframe-text">\u201C' + o.ethan + '\u201D</div></div>'
+      + '<div><div class="compass-reframe-label gabi">Gabi</div><div class="compass-reframe-text">\u201C' + o.gabi + '\u201D</div></div>'
+      + '</div></div>';
   });
   h += '</div>';
 
-  // Section 3 — Pricing
-  h += '<div class="compass-section"><div class="compass-section-title">Pricing</div><div class="compass-pricing-grid">';
+  // TAB 3 — Pricing
+  h += '<div class="compass-tab-content' + (activeCompassTab === 'pricing' ? ' active' : '') + '" id="compassTab_pricing">';
+  h += '<div class="compass-deposit"><div class="compass-deposit-amount">\u20AC350 deposit</div><div class="compass-deposit-note">secures your spot \u00B7 non-refundable</div></div>';
+  h += '<div class="compass-pricing-grid" style="margin-top:20px;">';
   tiers.forEach(function(t) {
     h += '<div class="compass-tier"><div class="compass-tier-name">' + t.name + '</div><div class="compass-chips">';
     t.prices.forEach(function(p) {
@@ -4600,12 +4643,11 @@ function renderCompassPanel() {
     });
     h += '</div><div class="compass-perday">' + t.perday + '</div></div>';
   });
-  h += '</div>';
-  h += '<div class="compass-deposit"><div class="compass-deposit-amount">\u20AC350 deposit</div><div class="compass-deposit-note">secures your spot \u00B7 non-refundable</div></div>';
-  h += '</div>';
+  h += '</div></div>';
 
-  // Section 4 — Close Reminders
-  h += '<div class="compass-section"><div class="compass-section-title">Close Reminders</div><div class="compass-close-list">';
+  // TAB 4 — Reminders
+  h += '<div class="compass-tab-content' + (activeCompassTab === 'reminders' ? ' active' : '') + '" id="compassTab_reminders">';
+  h += '<div class="compass-close-list">';
   closes.forEach(function(c) {
     h += '<div class="compass-close-item">\u201C' + c + '\u201D</div>';
   });
