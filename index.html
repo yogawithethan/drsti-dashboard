@@ -744,10 +744,11 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 /* Objection horizontal scroll track */
 .compass-obj-scroll-wrap {
   position: relative;
+  margin: 0 -8px;
 }
 .compass-obj-scroll-wrap::before,
 .compass-obj-scroll-wrap::after {
-  content: ''; position: absolute; top: 0; bottom: 0; width: 20px;
+  content: ''; position: absolute; top: 0; bottom: 0; width: 12px;
   z-index: 2; pointer-events: none;
 }
 .compass-obj-scroll-wrap::before {
@@ -760,12 +761,12 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   display: flex; gap: 16px;
   overflow-x: auto; scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; padding: 4px 24px 20px;
+  scrollbar-width: none; padding: 8px 16px 20px;
   scroll-behavior: smooth;
 }
 .compass-obj-track::-webkit-scrollbar { display: none; }
 .compass-obj-track .compass-obj-card {
-  flex: 0 0 calc(50% - 8px);
+  flex: 0 0 calc(50% - 16px);
   scroll-snap-align: start;
   margin-bottom: 0;
 }
@@ -5104,7 +5105,7 @@ function renderCompassPanel() {
   h += '<div class="compass-obj-nav" id="compassObjNav">';
   objections3A.forEach(function(o, oi) {
     if (oi > 0) h += '<span class="compass-obj-nav-sep">\u00B7</span>';
-    h += '<span class="compass-obj-nav-label' + (oi === 0 ? ' active' : '') + '" data-objnav="' + oi + '">' + o.label + '</span>';
+    h += '<span class="compass-obj-nav-label' + (oi === 0 ? ' active' : '') + '" data-objnav="' + oi + '" onclick="scrollToObjCard(' + oi + ')">' + o.label + '</span>';
   });
   h += '</div>';
 
@@ -5246,44 +5247,22 @@ function renderCompassPanel() {
     }
   }
 
-  // Objection track: scroll observer + click-to-scroll + arrow keys
+  // Objection track: scroll observer + arrow keys
   if (activeCompassTab === 'objections') {
     var objTrack = document.getElementById('compassObjTrack');
-    var objNav = document.getElementById('compassObjNav');
-    if (objTrack && objNav) {
-      var objNavLabels = objNav.querySelectorAll('.compass-obj-nav-label');
-
-      function getObjCardPositions() {
+    if (objTrack) {
+      // Update nav highlight on scroll
+      objTrack.addEventListener('scroll', function() {
+        var navLabels = document.querySelectorAll('.compass-obj-nav-label');
         var cards = objTrack.querySelectorAll('.compass-obj-card');
-        var positions = [];
-        cards.forEach(function(card) {
-          positions.push(card.offsetLeft - objTrack.querySelector('.compass-obj-card').offsetLeft);
-        });
-        return positions;
-      }
-
-      function updateObjActiveNav() {
-        var cards = objTrack.querySelectorAll('.compass-obj-card');
-        var scrollPos = objTrack.scrollLeft;
-        var current = 0;
+        var trackRect = objTrack.getBoundingClientRect();
+        var current = 0, minDist = Infinity;
         cards.forEach(function(card, idx) {
-          var cardLeft = card.offsetLeft - cards[0].offsetLeft;
-          if (cardLeft <= scrollPos + 60) current = idx;
+          var dist = Math.abs(card.getBoundingClientRect().left - trackRect.left);
+          if (dist < minDist) { minDist = dist; current = idx; }
         });
-        objNavLabels.forEach(function(lbl, idx) {
+        navLabels.forEach(function(lbl, idx) {
           lbl.classList.toggle('active', idx === current);
-        });
-      }
-      objTrack.addEventListener('scroll', updateObjActiveNav);
-
-      objNavLabels.forEach(function(lbl) {
-        lbl.addEventListener('click', function() {
-          var idx = parseInt(lbl.dataset.objnav);
-          var cards = objTrack.querySelectorAll('.compass-obj-card');
-          if (cards[idx]) {
-            var scrollTarget = cards[idx].offsetLeft - cards[0].offsetLeft;
-            objTrack.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-          }
         });
       });
 
@@ -5294,19 +5273,18 @@ function renderCompassPanel() {
           return;
         }
         if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-        // Don't navigate if user is editing a textarea
         if (document.activeElement && document.activeElement.tagName === 'TEXTAREA') return;
         var cards = objTrack.querySelectorAll('.compass-obj-card');
-        var scrollPos = objTrack.scrollLeft;
-        var current = 0;
+        var trackRect = objTrack.getBoundingClientRect();
+        var current = 0, minDist = Infinity;
         cards.forEach(function(card, idx) {
-          var cardLeft = card.offsetLeft - cards[0].offsetLeft;
-          if (cardLeft <= scrollPos + 60) current = idx;
+          var dist = Math.abs(card.getBoundingClientRect().left - trackRect.left);
+          if (dist < minDist) { minDist = dist; current = idx; }
         });
         var next = e.key === 'ArrowRight' ? Math.min(current + 1, cards.length - 1) : Math.max(current - 1, 0);
         if (next !== current) {
           e.preventDefault();
-          objTrack.scrollTo({ left: cards[next].offsetLeft - cards[0].offsetLeft, behavior: 'smooth' });
+          scrollToObjCard(next);
         }
       });
     }
@@ -5474,6 +5452,19 @@ function ceSave(phaseIdx) {
   });
 }
 
+// ── Objection navigation ──
+function scrollToObjCard(idx) {
+  var track = document.getElementById('compassObjTrack');
+  if (!track) return;
+  var card = document.getElementById('objCard_' + idx);
+  if (!card) return;
+  // Scroll so the target card is at the left edge of the track
+  track.scrollTo({ left: card.offsetLeft - track.offsetLeft - 24, behavior: 'smooth' });
+  // Update nav labels
+  var navLabels = document.querySelectorAll('.compass-obj-nav-label');
+  navLabels.forEach(function(lbl, i) { lbl.classList.toggle('active', i === idx); });
+}
+
 // ── Objection editing ──
 function toggleObjEdit(objIdx) {
   var card = document.getElementById('objCard_' + objIdx);
@@ -5494,18 +5485,17 @@ function toggleObjEdit(objIdx) {
 function ceAddAsk(objIdx) {
   var card = document.getElementById('objCard_' + objIdx);
   if (!card) return;
-  var askSection = card.querySelector('.compass-obj-section:last-of-type');
   var addBtn = card.querySelector('.compass-add-btn');
-  var newIdx = askSection.querySelectorAll('.compass-obj-ask').length;
+  if (!addBtn) return;
   var div = document.createElement('div');
   div.className = 'compass-obj-ask compass-editable';
   div.setAttribute('data-field', 'ask');
   div.setAttribute('data-obj', objIdx);
-  div.setAttribute('data-idx', newIdx);
+  div.setAttribute('data-idx', card.querySelectorAll('.compass-obj-ask').length);
   div.innerHTML = '<span class="ce-text">\u201CNew question\u201D</span>'
     + '<span class="ce-actions"><button class="ce-btn" onclick="ceEdit(this)" title="Edit">\u270E</button>'
     + '<button class="ce-btn ce-del" onclick="ceDel(this)" title="Remove">\u2715</button></span>';
-  askSection.insertBefore(div, addBtn);
+  addBtn.parentNode.insertBefore(div, addBtn);
 }
 
 function ceObjSave(objIdx) {
