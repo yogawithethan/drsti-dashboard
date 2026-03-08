@@ -645,16 +645,19 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 }
 .compass-quick-objection {
   background: var(--bg-card); border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xs); padding: 12px 16px; margin-bottom: 8px;
+  box-shadow: var(--shadow-xs); padding: 14px 18px; margin-bottom: 10px;
   border: 1px solid rgba(0,0,0,0.04);
-  display: flex; gap: 12px; align-items: baseline;
 }
 .compass-quick-objection-label {
-  font-size: 13px; color: var(--text-muted); font-style: italic;
-  white-space: nowrap; min-width: 0; flex-shrink: 0;
+  font-size: 14px; color: var(--text); font-style: italic; font-weight: 500;
+  margin-bottom: 8px;
+}
+.compass-quick-objection-responses {
+  display: flex; flex-direction: column; gap: 5px;
 }
 .compass-quick-objection-response {
-  font-size: 13px; color: var(--text-secondary); line-height: 1.4;
+  font-size: 13px; color: var(--text-secondary); line-height: 1.45;
+  padding: 8px 12px; background: var(--bg-warm); border-radius: 6px;
 }
 .compass-pricing-note {
   font-size: 13px; color: var(--text-muted); font-style: italic;
@@ -4808,13 +4811,48 @@ function renderCompassPanel() {
   ];
 
   var quickObjections = [
-    { label: 'I can\u2019t afford it', response: 'Is this more about the total cost or the payment timing?' },
-    { label: 'I need to think about it', response: 'What specifically do you want to think through?' },
-    { label: 'I need to ask my partner', response: 'What do you think their main concern would be?' },
-    { label: 'Nothing stuck before', response: 'What was missing in those experiences?' },
-    { label: 'Am I ready?', response: 'Readiness isn\u2019t a feeling \u2014 it\u2019s a decision.' },
-    { label: 'Waiting on the flight', response: 'The deposit just holds your spot \u2014 it\u2019s separate from the flight.' },
-    { label: 'Timing isn\u2019t right', response: 'You applied for a reason. What was happening when you filled out that form?' }
+    { label: '\u201CI can\u2019t afford it\u201D', responses: [
+      'Is this more about the total cost or the timing of payments?',
+      'What would it look like if we found a way to make it workable?',
+      'If money weren\u2019t a factor at all, would this feel like a yes?',
+      'What would this transformation be worth to you over the next year of your life?'
+    ] },
+    { label: '\u201CI need to think about it\u201D', responses: [
+      'What specifically do you want to think through?',
+      'Is there a particular part that feels unclear or unresolved?',
+      'What would help you feel confident in your decision today?',
+      'Sometimes \u201CI need to think\u201D really means something else is coming up \u2014 what feels true for you?'
+    ] },
+    { label: '\u201CI need to ask my partner\u201D', responses: [
+      'What do you think their main concern would be?',
+      'If they said yes, would you be ready to move forward?',
+      'What would you want them to understand about why this matters to you?',
+      'Would it help if I sent you something you could share with them?'
+    ] },
+    { label: '\u201CNothing has stuck before\u201D', responses: [
+      'What was missing in those experiences?',
+      'What would need to be different this time for it to actually land?',
+      'That\u2019s exactly why a container like this exists \u2014 it\u2019s not something you do alone.',
+      'The fact that you\u2019re still looking tells me something in you hasn\u2019t given up.'
+    ] },
+    { label: '\u201CAm I ready?\u201D', responses: [
+      'Readiness isn\u2019t a feeling \u2014 it\u2019s a decision.',
+      'What would \u201Cready\u201D look like to you?',
+      'Most people who come don\u2019t feel ready. They just feel called.',
+      'You don\u2019t need to be ready. You just need to be willing.'
+    ] },
+    { label: '\u201CI\u2019m waiting on the flight\u201D', responses: [
+      'The deposit just holds your spot \u2014 it\u2019s completely separate from the flight.',
+      'You can secure your place now and sort the flight whenever you\u2019re ready.',
+      'A lot of people book their spot first and then figure out travel \u2014 it gives you time.',
+      'The spot is what\u2019s limited. Flights are always available.'
+    ] },
+    { label: '\u201CTiming isn\u2019t right\u201D', responses: [
+      'You applied for a reason. What was happening when you filled out that form?',
+      'When would the timing feel right? And what would actually be different then?',
+      'In my experience, the \u201Cright time\u201D doesn\u2019t arrive on its own \u2014 you create it by saying yes.',
+      'What if this is the timing, and the resistance is just part of the process?'
+    ] }
   ];
 
   var tiers = [
@@ -4937,8 +4975,11 @@ function renderCompassPanel() {
   quickObjections.forEach(function(o) {
     h += '<div class="compass-quick-objection">'
       + '<div class="compass-quick-objection-label">' + o.label + '</div>'
-      + '<div class="compass-quick-objection-response">' + o.response + '</div>'
-      + '</div>';
+      + '<div class="compass-quick-objection-responses">';
+    o.responses.forEach(function(r) {
+      h += '<div class="compass-quick-objection-response">\u201C' + r + '\u201D</div>';
+    });
+    h += '</div></div>';
   });
   h += '</div>';
 
