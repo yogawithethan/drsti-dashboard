@@ -744,29 +744,17 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 /* Objection horizontal scroll track */
 .compass-obj-scroll-wrap {
   position: relative;
-  margin: 0 -8px;
-}
-.compass-obj-scroll-wrap::before,
-.compass-obj-scroll-wrap::after {
-  content: ''; position: absolute; top: 0; bottom: 0; width: 12px;
-  z-index: 2; pointer-events: none;
-}
-.compass-obj-scroll-wrap::before {
-  left: 0; background: linear-gradient(to right, var(--bg), transparent);
-}
-.compass-obj-scroll-wrap::after {
-  right: 0; background: linear-gradient(to left, var(--bg), transparent);
 }
 .compass-obj-track {
   display: flex; gap: 16px;
   overflow-x: auto; scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; padding: 8px 16px 20px;
+  scrollbar-width: none; padding: 8px 4px 20px;
   scroll-behavior: smooth;
 }
 .compass-obj-track::-webkit-scrollbar { display: none; }
 .compass-obj-track .compass-obj-card {
-  flex: 0 0 calc(50% - 16px);
+  flex: 0 0 calc(50% - 12px);
   scroll-snap-align: start;
   margin-bottom: 0;
 }
@@ -5454,12 +5442,9 @@ function ceSave(phaseIdx) {
 
 // ── Objection navigation ──
 function scrollToObjCard(idx) {
-  var track = document.getElementById('compassObjTrack');
-  if (!track) return;
   var card = document.getElementById('objCard_' + idx);
-  if (!card) return;
-  // Scroll so the target card is at the left edge of the track
-  track.scrollTo({ left: card.offsetLeft - track.offsetLeft - 24, behavior: 'smooth' });
+  if (!card) { console.warn('objCard_' + idx + ' not found'); return; }
+  card.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
   // Update nav labels
   var navLabels = document.querySelectorAll('.compass-obj-nav-label');
   navLabels.forEach(function(lbl, i) { lbl.classList.toggle('active', i === idx); });
