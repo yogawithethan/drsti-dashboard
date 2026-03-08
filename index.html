@@ -456,13 +456,13 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .compass-header { text-align: center; margin-bottom: 8px; padding: 0 16px; }
 .compass-header h2 { font-family: var(--font-display); font-weight: 300; font-size: 32px; color: var(--sage-dark); letter-spacing: 0.02em; }
 .compass-header p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
-.compass-strip {
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 10px 16px 18px; font-size: 11px; font-weight: 500;
-  color: var(--text-muted); letter-spacing: 0.04em;
+.compass-mantra {
+  background: var(--sage-mist); color: var(--sage-dark);
+  font-family: var(--font-display); font-size: 14px; font-weight: 500;
+  text-align: center; line-height: 1.5;
+  padding: 14px 24px; margin: 0 16px 18px; border-radius: 10px;
+  border: 1px solid rgba(107,142,109,0.15);
 }
-.compass-strip-step { color: var(--sage); }
-.compass-strip-arrow { color: var(--sand); font-size: 10px; }
 .compass-tabs {
   display: flex; gap: 6px; justify-content: center; margin-bottom: 24px;
   padding: 4px; background: var(--bg-warm); border-radius: var(--radius-pill);
@@ -4691,6 +4691,7 @@ function renderCallsPanel() {
 // ── PIPELINE GUIDE PANEL (dark theme, matches status-flow.html) ──
 // ── THE COMPASS PANEL ──
 var activeCompassTab = 'flow';
+var compassCache = null;
 
 function switchCompassTab(tab) {
   activeCompassTab = tab;
@@ -4705,7 +4706,22 @@ function switchCompassTab(tab) {
 function renderCompassPanel() {
   var panel = document.getElementById('compassPanel');
 
-  var phases = [
+  // Load from API (cached after first fetch)
+  if (!compassCache) {
+    panel.innerHTML = '<div style="text-align:center;padding:60px 0;color:var(--text-muted);">Loading Compass\u2026</div>';
+    fetch(API_URL + '?action=getCompass')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.ok && data.phases) {
+          compassCache = data;
+        }
+        renderCompassPanel();
+      })
+      .catch(function() { renderCompassPanel(); });
+    return;
+  }
+
+  var phases = compassCache && compassCache.phases ? compassCache.phases : [
     { name: 'Rapport', goal: 'Relax the conversation and establish warmth.',
       anchor: 'Where are you calling from?',
       options: [
@@ -4792,13 +4808,10 @@ function renderCompassPanel() {
       ] }
   ];
 
-  var spokenPricing = [
-    { label: 'Short Version',
-      text: 'You may remember the pricing from the application page, but I\u2019ll walk you through it again so it\u2019s clear.\nWe have three accommodation options depending on the level of privacy people want.\nThe triple rooms are \u20AC2,220, the double rooms are \u20AC2,555, and the private glamping tents are \u20AC2,999.\nThe deposit to secure a spot is \u20AC350.\nWhich option feels most aligned for you?' },
-    { label: 'Full Version',
-      text: 'You may remember the pricing from the application page, but I\u2019ll walk you through it again so it\u2019s clear.\nNormally the retreat ranges from about \u20AC2,850 to \u20AC3,690 depending on the room.\nRight now the early-bird pricing is still available.\nSo the triple rooms are \u20AC2,220, the double rooms are \u20AC2,555, and the private glamping tents are \u20AC2,999.\nThe deposit to secure a spot is \u20AC350, and the rest can either be paid in full or split into installments.\nWhich option feels most aligned for you?' },
-    { label: 'Payment Plan Version',
-      text: 'If spreading it out feels easier, we also have payment plans.\nThe total ends up slightly higher because of the flexibility, but many people prefer that option.\nThe deposit is \u20AC350, and then the remaining balance is split into installments.' }
+  var spokenPricing = compassCache && compassCache.spokenPricing ? compassCache.spokenPricing : [
+    { label: 'Short Version', text: 'Loading\u2026' },
+    { label: 'Full Version', text: 'Loading\u2026' },
+    { label: 'Payment Plan Version', text: 'Loading\u2026' }
   ];
 
   var objectionFlow = [
@@ -4878,14 +4891,8 @@ function renderCompassPanel() {
 
   var h = '<div class="compass-header"><h2>The Compass</h2><p>Discovery call guide for Ethan &amp; Gabi</p></div>';
 
-  // Orientation strip
-  var steps = ['Explore', 'Vision', 'Alignment', 'Logistics', 'Decision'];
-  h += '<div class="compass-strip">';
-  steps.forEach(function(s, i) {
-    if (i > 0) h += '<span class="compass-strip-arrow">\u2192</span>';
-    h += '<span class="compass-strip-step">' + s + '</span>';
-  });
-  h += '</div>';
+  // Mantra box
+  h += '<div class="compass-mantra">This retreat is for people who have been doing the work but still feel like something fundamental hasn\u2019t shifted.</div>';
 
   // Tabs
   h += '<div class="compass-tabs">';
