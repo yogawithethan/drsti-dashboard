@@ -553,38 +553,47 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .compass-anchor {
   font-size: 17px; color: var(--text); line-height: 1.45; font-style: italic; font-weight: 500;
 }
-.compass-optional {
-  font-size: 13px; color: var(--text-muted); line-height: 1.55; font-style: italic;
-  padding: 3px 0;
-}
-.compass-transition {
-  font-size: 13px; color: var(--sage-dark); line-height: 1.4; font-weight: 500;
-  padding: 10px 14px; background: var(--sage-mist); border-radius: 8px; margin-top: 6px;
+.compass-goal {
+  font-size: 13px; color: var(--text-muted); line-height: 1.55;
+  padding: 0 0 2px;
 }
 
-/* Pricing flow subsection inside Logistics card */
-.compass-pricing-flow {
-  margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--bg-warm);
+/* More Options mini-cards */
+.compass-more-options { display: flex; flex-direction: column; gap: 6px; }
+.compass-option-chip {
+  font-size: 13px; color: var(--text-secondary); line-height: 1.45; font-style: italic;
+  padding: 10px 14px; background: var(--bg-warm); border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.03);
 }
-.compass-pricing-flow-title {
+
+/* Transition mini-cards */
+.compass-transitions { display: flex; flex-direction: column; gap: 6px; }
+.compass-transition-chip {
+  font-size: 13.5px; color: var(--sage-dark); line-height: 1.4; font-weight: 500;
+  font-style: italic;
+  padding: 11px 15px; background: var(--sage-mist); border-radius: 8px;
+  border: 1px solid rgba(107,142,109,0.1);
+}
+
+/* Spoken Pricing Flow subsection inside Logistics card */
+.compass-spoken-pricing {
+  margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--bg-warm);
+}
+.compass-spoken-pricing-title {
   font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em;
   color: var(--earth); margin-bottom: 14px;
 }
-.compass-pf-step { margin-bottom: 12px; }
-.compass-pf-label {
+.compass-script-card {
+  background: var(--bg-warm); border-radius: 10px; padding: 16px 18px;
+  margin-bottom: 10px; border: 1px solid rgba(0,0,0,0.03);
+}
+.compass-script-label {
   font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
-  color: var(--sage); margin-bottom: 2px;
+  color: var(--sage); margin-bottom: 8px;
 }
-.compass-pf-text {
-  font-size: 13px; color: var(--text-secondary); line-height: 1.5; font-style: italic;
+.compass-script-text {
+  font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; font-style: italic;
 }
-.compass-pf-rooms {
-  display: flex; gap: 16px; flex-wrap: wrap; padding: 4px 0;
-}
-.compass-pf-room {
-  font-size: 13px; color: var(--text);
-}
-.compass-pf-room strong { color: var(--sage-dark); font-weight: 600; }
 
 /* Lifelines */
 .compass-lifelines {
@@ -4683,28 +4692,97 @@ function renderCompassPanel() {
   var phases = [
     { name: 'Rapport', goal: 'Relax the conversation and establish warmth.',
       anchor: 'Where are you calling from?',
-      optional: ['How did you first come to yoga or meditation?', 'What does life look like day to day right now?'],
-      transition: 'So what made you decide to book this call?' },
+      options: [
+        'How did you first come to yoga or meditation?',
+        'What does life look like day to day for you right now?',
+        'What\u2019s been most alive for you lately?',
+        'What season of life does it feel like you\u2019re in right now?',
+        'What made now feel like the moment to explore something like this?'
+      ],
+      transitions: [
+        'So tell me \u2014 what made you decide to book this call?',
+        'What\u2019s been pulling you toward something like this now?',
+        'What feels like it\u2019s wanting to change for you?'
+      ] },
     { name: 'Explore', goal: 'Surface the real struggle or desire.',
       anchor: 'What has been pulling you toward something like this?',
-      optional: ['What have you tried before that hasn\u2019t fully stuck?', 'Where do you feel the gap right now?'],
-      transition: 'And if that actually shifted, what would change?' },
+      options: [
+        'What have you tried before that hasn\u2019t fully stuck?',
+        'Where do you feel the gap most strongly right now?',
+        'What feels hardest to shift on your own?',
+        'What keeps repeating, even though part of you is ready for something different?',
+        'If you\u2019re honest, what feels out of alignment right now?'
+      ],
+      transitions: [
+        'And if that actually shifted, what would change?',
+        'If this really worked, what would become possible?',
+        'What do you imagine life could feel like on the other side of this?'
+      ] },
     { name: 'Vision', goal: 'Expand their future identity.',
       anchor: 'What would your life look like if this really worked?',
-      optional: ['What would a real daily practice mean to you?', 'If nothing changed, what does the next year look like?'],
-      transition: 'Does this retreat feel like the kind of container that could help create that?' },
+      options: [
+        'What would a real daily practice mean to you?',
+        'If nothing changed, what does the next year look like?',
+        'What would it change for you to feel genuinely clear and grounded?',
+        'What kind of person do you feel yourself becoming if you really committed to this?',
+        'What would open up in your life if your practice became something stable and real?'
+      ],
+      transitions: [
+        'Does this retreat feel like the kind of container that could help create that?',
+        'Does this feel aligned with what you\u2019re actually looking for?',
+        'Can you see how a week like this could support that shift?'
+      ] },
     { name: 'Alignment', goal: 'Confirm desire before discussing money.',
       anchor: 'Does this retreat feel like what you\u2019ve been looking for?',
-      optional: ['If the logistics worked out, would you want to join?'],
-      transition: 'Okay, let\u2019s look at whether this makes sense practically.' },
-    { name: 'Logistics', goal: 'Walk through options calmly.',
-      anchor: 'Want me to walk you through the room options?',
-      optional: ['Mention early bird or scholarship if relevant.', 'Explain deposit structure.'],
-      transition: 'How does that land for you?' },
-    { name: 'Decision', goal: 'Surface hesitation.',
+      options: [
+        'Does this feel like the right next step for you?',
+        'If the logistics worked out, would you want to join us?',
+        'Can you feel yourself wanting to say yes to this?',
+        'Does this feel like the kind of reset you\u2019ve really been craving?',
+        'From everything we\u2019ve talked about, does this feel aligned?'
+      ],
+      transitions: [
+        'Okay, let\u2019s look at whether this makes sense practically.',
+        'Beautiful \u2014 then the next thing is just to look at the logistics.',
+        'Great. So now let\u2019s see what this would look like in practical terms.'
+      ] },
+    { name: 'Logistics', goal: 'Walk through options calmly and clearly.',
+      anchor: 'Want me to walk you through the room options and pricing?',
+      options: [
+        'You may remember the pricing from the application page, but I\u2019ll walk you through it again so it\u2019s clear.',
+        'We have three accommodation options depending on how much privacy you want during the week.',
+        'Normally the retreat ranges from about \u20AC2,850 to \u20AC3,690 depending on the room.',
+        'Right now the early-bird pricing is still available.',
+        'The deposit to secure a spot is \u20AC350, and the rest can be paid either in full or on a payment plan.'
+      ],
+      transitions: [
+        'Which option feels most aligned for you?',
+        'How does that land for you?',
+        'Which of those feels like the best fit?'
+      ] },
+    { name: 'Decision', goal: 'Surface hesitation and invite honesty.',
       anchor: 'What is the one thing stopping you from saying yes right now?',
-      optional: ['What would need to be true for you to join?'],
-      transition: null }
+      options: [
+        'What would need to be true for you to join?',
+        'What feels like the real hesitation for you?',
+        'What part of this still feels unresolved?',
+        'Is there anything practical or emotional that still feels in the way?',
+        'What\u2019s the main thing you\u2019d want to get clear on before deciding?'
+      ],
+      transitions: [
+        'Let\u2019s talk through that.',
+        'Say a bit more about that.',
+        'Okay \u2014 let\u2019s look at that together.'
+      ] }
+  ];
+
+  var spokenPricing = [
+    { label: 'Short Version',
+      text: 'You may remember the pricing from the application page, but I\u2019ll walk you through it again so it\u2019s clear.\nWe have three accommodation options depending on the level of privacy people want.\nThe triple rooms are \u20AC2,220, the double rooms are \u20AC2,555, and the private glamping tents are \u20AC2,999.\nThe deposit to secure a spot is \u20AC350.\nWhich option feels most aligned for you?' },
+    { label: 'Full Version',
+      text: 'You may remember the pricing from the application page, but I\u2019ll walk you through it again so it\u2019s clear.\nNormally the retreat ranges from about \u20AC2,850 to \u20AC3,690 depending on the room.\nRight now the early-bird pricing is still available.\nSo the triple rooms are \u20AC2,220, the double rooms are \u20AC2,555, and the private glamping tents are \u20AC2,999.\nThe deposit to secure a spot is \u20AC350, and the rest can either be paid in full or split into installments.\nWhich option feels most aligned for you?' },
+    { label: 'Payment Plan Version',
+      text: 'If spreading it out feels easier, we also have payment plans.\nThe total ends up slightly higher because of the flexibility, but many people prefer that option.\nThe deposit is \u20AC350, and then the remaining balance is split into installments.' }
   ];
 
   var objectionFlow = [
@@ -4780,38 +4858,36 @@ function renderCompassPanel() {
       + '<div class="compass-phase-num">Phase ' + (i + 1) + '</div>'
       + '<div class="compass-phase-name">' + p.name + '</div>'
       + '<div class="compass-field-label">Goal</div>'
-      + '<div class="compass-optional">' + p.goal + '</div>'
+      + '<div class="compass-goal">' + p.goal + '</div>'
       + '<div class="compass-field-label">Anchor Question</div>'
       + '<div class="compass-anchor">\u201C' + p.anchor + '\u201D</div>';
-    if (p.optional && p.optional.length) {
-      h += '<div class="compass-field-label">Optional</div>';
-      p.optional.forEach(function(q) {
-        h += '<div class="compass-optional">\u201C' + q + '\u201D</div>';
+    if (p.options && p.options.length) {
+      h += '<div class="compass-field-label">More Options</div>'
+        + '<div class="compass-more-options">';
+      p.options.forEach(function(q) {
+        h += '<div class="compass-option-chip">\u201C' + q + '\u201D</div>';
       });
+      h += '</div>';
     }
-    if (p.transition) {
-      h += '<div class="compass-field-label">Transition</div>'
-        + '<div class="compass-transition">\u201C' + p.transition + '\u201D</div>';
+    if (p.transitions && p.transitions.length) {
+      h += '<div class="compass-field-label">Transition Options</div>'
+        + '<div class="compass-transitions">';
+      p.transitions.forEach(function(t) {
+        h += '<div class="compass-transition-chip">\u201C' + t + '\u201D</div>';
+      });
+      h += '</div>';
     }
-    // Pricing Flow subsection inside Logistics card
+    // Spoken Pricing Flow inside Logistics card
     if (p.name === 'Logistics') {
-      h += '<div class="compass-pricing-flow">'
-        + '<div class="compass-pricing-flow-title">Pricing Flow</div>'
-        + '<div class="compass-pf-step"><div class="compass-pf-label">Lead With</div>'
-        + '<div class="compass-pf-text">\u201CThe deposit is just \u20AC350 to hold your spot.\u201D</div></div>'
-        + '<div class="compass-pf-step"><div class="compass-pf-label">Then Pause</div>'
-        + '<div class="compass-pf-text">Let them absorb. Don\u2019t rush to justify.</div></div>'
-        + '<div class="compass-pf-step"><div class="compass-pf-label">Room Options</div>'
-        + '<div class="compass-pf-rooms">'
-        + '<div class="compass-pf-room"><strong>Triple</strong> from \u20AC2,220</div>'
-        + '<div class="compass-pf-room"><strong>Double</strong> from \u20AC2,555</div>'
-        + '<div class="compass-pf-room"><strong>Glamping</strong> from \u20AC2,999</div>'
-        + '</div></div>'
-        + '<div class="compass-pf-step"><div class="compass-pf-label">Per-Day Frame</div>'
-        + '<div class="compass-pf-text">\u201CThat\u2019s about \u20AC255/day for everything \u2014 accommodation, all meals, every session.\u201D</div></div>'
-        + '<div class="compass-pf-step"><div class="compass-pf-label">If They Hesitate</div>'
-        + '<div class="compass-pf-text">\u201CWe also have a payment plan \u2014 want me to walk you through that?\u201D</div></div>'
-        + '</div>';
+      h += '<div class="compass-spoken-pricing">'
+        + '<div class="compass-spoken-pricing-title">Spoken Pricing Flow</div>';
+      spokenPricing.forEach(function(sp) {
+        h += '<div class="compass-script-card">'
+          + '<div class="compass-script-label">' + sp.label + '</div>'
+          + '<div class="compass-script-text">\u201C' + sp.text.replace(/\n/g, '<br>') + '\u201D</div>'
+          + '</div>';
+      });
+      h += '</div>';
     }
     h += '</div>';
   });
