@@ -452,19 +452,19 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 }
 
 /* ── THE COMPASS PANEL ── */
-.compass-panel { max-width: 800px; margin: 0 auto; padding: 32px 16px 64px; }
-.compass-header { text-align: center; margin-bottom: 8px; }
+.compass-panel { max-width: 900px; margin: 0 auto; padding: 32px 0 64px; }
+.compass-header { text-align: center; margin-bottom: 8px; padding: 0 16px; }
 .compass-header h2 { font-family: var(--font-display); font-weight: 300; font-size: 32px; color: var(--sage-dark); letter-spacing: 0.02em; }
 .compass-header p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
 .compass-strip {
   display: flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 10px 0 18px; font-size: 11px; font-weight: 500;
+  padding: 10px 16px 18px; font-size: 11px; font-weight: 500;
   color: var(--text-muted); letter-spacing: 0.04em;
 }
 .compass-strip-step { color: var(--sage); }
 .compass-strip-arrow { color: var(--sand); font-size: 10px; }
 .compass-tabs {
-  display: flex; gap: 6px; justify-content: center; margin-bottom: 28px;
+  display: flex; gap: 6px; justify-content: center; margin-bottom: 24px;
   padding: 4px; background: var(--bg-warm); border-radius: var(--radius-pill);
   width: fit-content; margin-left: auto; margin-right: auto;
 }
@@ -478,49 +478,130 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .compass-tab.active { background: var(--sage-dark); color: #fff; }
 .compass-tab-content { display: none; }
 .compass-tab-content.active { display: block; }
-.compass-phase-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-@media (max-width: 700px) { .compass-phase-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 480px) { .compass-phase-grid { grid-template-columns: 1fr; } }
+
+/* Phase progress strip */
+.compass-nav-strip {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0; padding: 0 16px 18px; flex-wrap: nowrap;
+}
+.compass-nav-label {
+  font-family: var(--font-display); font-size: 13px; font-weight: 500;
+  color: var(--sage-dark); opacity: 0.3; cursor: pointer;
+  transition: opacity 0.35s ease; white-space: nowrap;
+  padding: 4px 2px; letter-spacing: 0.01em;
+}
+.compass-nav-label:hover { opacity: 0.6; }
+.compass-nav-label.active { opacity: 1; font-weight: 600; }
+.compass-nav-sep {
+  color: var(--sand); opacity: 0.4; font-size: 11px; padding: 0 8px;
+  letter-spacing: 2px; user-select: none;
+}
+@media (max-width: 600px) {
+  .compass-nav-label { font-size: 11px; }
+  .compass-nav-sep { padding: 0 4px; font-size: 9px; letter-spacing: 1px; }
+}
+
+/* Horizontal scroll track */
+.compass-scroll-wrap {
+  position: relative;
+}
+.compass-scroll-wrap::before,
+.compass-scroll-wrap::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 40px;
+  z-index: 2; pointer-events: none;
+}
+.compass-scroll-wrap::before {
+  left: 0; background: linear-gradient(to right, var(--bg), transparent);
+}
+.compass-scroll-wrap::after {
+  right: 0; background: linear-gradient(to left, var(--bg), transparent);
+}
+.compass-phase-track {
+  display: flex; gap: 20px;
+  overflow-x: auto; scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; padding: 4px 40px 20px;
+  scroll-behavior: smooth;
+}
+.compass-phase-track::-webkit-scrollbar { display: none; }
+
+/* Large phase cards */
 .compass-phase {
-  background: var(--bg-card); border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm); padding: 16px; border: 1px solid rgba(0,0,0,0.04);
+  flex: 0 0 min(580px, calc(100vw - 80px));
+  scroll-snap-align: center;
+  background: var(--bg-card); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md); padding: 32px 28px;
+  border: 1px solid rgba(0,0,0,0.05);
+  min-height: 380px;
+}
+@media (max-width: 600px) {
+  .compass-phase { flex: 0 0 calc(100vw - 48px); padding: 24px 20px; min-height: 320px; }
 }
 .compass-phase-num {
   font-family: var(--font-display); font-size: 11px; font-weight: 600;
-  color: var(--sage); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;
+  color: var(--sage); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;
 }
 .compass-phase-name {
-  font-family: var(--font-display); font-size: 18px; font-weight: 500;
-  color: var(--text); margin-bottom: 10px;
+  font-family: var(--font-display); font-size: 26px; font-weight: 400;
+  color: var(--text); margin-bottom: 20px; letter-spacing: 0.01em;
 }
 .compass-field-label {
-  font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
-  color: var(--sage); margin-top: 10px; margin-bottom: 3px;
+  font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--sage); margin-top: 18px; margin-bottom: 5px;
 }
 .compass-field-label:first-of-type { margin-top: 0; }
 .compass-anchor {
-  font-size: 14px; color: var(--text); line-height: 1.4; font-style: italic; font-weight: 500;
+  font-size: 17px; color: var(--text); line-height: 1.45; font-style: italic; font-weight: 500;
 }
 .compass-optional {
-  font-size: 12px; color: var(--text-muted); line-height: 1.5; font-style: italic;
+  font-size: 13px; color: var(--text-muted); line-height: 1.55; font-style: italic;
   padding: 3px 0;
 }
 .compass-transition {
-  font-size: 12px; color: var(--sage-dark); line-height: 1.4; font-weight: 500;
-  padding: 6px 10px; background: var(--sage-mist); border-radius: 6px; margin-top: 4px;
+  font-size: 13px; color: var(--sage-dark); line-height: 1.4; font-weight: 500;
+  padding: 10px 14px; background: var(--sage-mist); border-radius: 8px; margin-top: 6px;
 }
+
+/* Pricing flow subsection inside Logistics card */
+.compass-pricing-flow {
+  margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--bg-warm);
+}
+.compass-pricing-flow-title {
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--earth); margin-bottom: 14px;
+}
+.compass-pf-step { margin-bottom: 12px; }
+.compass-pf-label {
+  font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--sage); margin-bottom: 2px;
+}
+.compass-pf-text {
+  font-size: 13px; color: var(--text-secondary); line-height: 1.5; font-style: italic;
+}
+.compass-pf-rooms {
+  display: flex; gap: 16px; flex-wrap: wrap; padding: 4px 0;
+}
+.compass-pf-room {
+  font-size: 13px; color: var(--text);
+}
+.compass-pf-room strong { color: var(--sage-dark); font-weight: 600; }
+
+/* Lifelines */
 .compass-lifelines {
-  margin-top: 20px; padding: 16px; background: var(--bg-card);
-  border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
+  margin: 16px 40px 0; padding: 14px 18px; background: var(--bg-card);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-xs);
   border: 1px solid rgba(0,0,0,0.04);
+  display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
 }
 .compass-lifelines-title {
-  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
-  color: var(--sage); margin-bottom: 8px;
+  font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--sage); white-space: nowrap;
 }
 .compass-lifeline {
-  font-size: 13px; color: var(--text-secondary); font-style: italic;
-  padding: 4px 0; line-height: 1.4;
+  font-size: 12px; color: var(--text-muted); font-style: italic; line-height: 1.3;
+}
+@media (max-width: 600px) {
+  .compass-lifelines { margin: 16px 16px 0; flex-direction: column; gap: 6px; align-items: flex-start; }
 }
 .compass-objection-flow {
   background: var(--bg-card); border-radius: var(--radius-md);
@@ -4684,11 +4765,18 @@ function renderCompassPanel() {
   });
   h += '</div>';
 
-  // TAB 1 — Call Flow
+  // TAB 1 — Call Flow (horizontal scroll)
   h += '<div class="compass-tab-content' + (activeCompassTab === 'flow' ? ' active' : '') + '" id="compassTab_flow">';
-  h += '<div class="compass-phase-grid">';
+  h += '<div class="compass-nav-strip" id="compassNavStrip">';
   phases.forEach(function(p, i) {
-    h += '<div class="compass-phase">'
+    if (i > 0) h += '<span class="compass-nav-sep">-----</span>';
+    h += '<span class="compass-nav-label' + (i === 0 ? ' active' : '') + '" data-nav="' + (i + 1) + '">' + p.name + '</span>';
+  });
+  h += '</div>';
+  h += '<div class="compass-scroll-wrap">';
+  h += '<div class="compass-phase-track" id="compassPhaseTrack">';
+  phases.forEach(function(p, i) {
+    h += '<div class="compass-phase" data-phase="' + (i + 1) + '">'
       + '<div class="compass-phase-num">Phase ' + (i + 1) + '</div>'
       + '<div class="compass-phase-name">' + p.name + '</div>'
       + '<div class="compass-field-label">Goal</div>'
@@ -4705,13 +4793,33 @@ function renderCompassPanel() {
       h += '<div class="compass-field-label">Transition</div>'
         + '<div class="compass-transition">\u201C' + p.transition + '\u201D</div>';
     }
+    // Pricing Flow subsection inside Logistics card
+    if (p.name === 'Logistics') {
+      h += '<div class="compass-pricing-flow">'
+        + '<div class="compass-pricing-flow-title">Pricing Flow</div>'
+        + '<div class="compass-pf-step"><div class="compass-pf-label">Lead With</div>'
+        + '<div class="compass-pf-text">\u201CThe deposit is just \u20AC350 to hold your spot.\u201D</div></div>'
+        + '<div class="compass-pf-step"><div class="compass-pf-label">Then Pause</div>'
+        + '<div class="compass-pf-text">Let them absorb. Don\u2019t rush to justify.</div></div>'
+        + '<div class="compass-pf-step"><div class="compass-pf-label">Room Options</div>'
+        + '<div class="compass-pf-rooms">'
+        + '<div class="compass-pf-room"><strong>Triple</strong> from \u20AC2,220</div>'
+        + '<div class="compass-pf-room"><strong>Double</strong> from \u20AC2,555</div>'
+        + '<div class="compass-pf-room"><strong>Glamping</strong> from \u20AC2,999</div>'
+        + '</div></div>'
+        + '<div class="compass-pf-step"><div class="compass-pf-label">Per-Day Frame</div>'
+        + '<div class="compass-pf-text">\u201CThat\u2019s about \u20AC255/day for everything \u2014 accommodation, all meals, every session.\u201D</div></div>'
+        + '<div class="compass-pf-step"><div class="compass-pf-label">If They Hesitate</div>'
+        + '<div class="compass-pf-text">\u201CWe also have a payment plan \u2014 want me to walk you through that?\u201D</div></div>'
+        + '</div>';
+    }
     h += '</div>';
   });
-  h += '</div>';
+  h += '</div></div>';
 
-  // Conversation Lifelines
+  // Conversation Lifelines (below scroll track)
   h += '<div class="compass-lifelines">'
-    + '<div class="compass-lifelines-title">Conversation Lifelines</div>'
+    + '<div class="compass-lifelines-title">Lifelines</div>'
     + '<div class="compass-lifeline">\u201CTell me more about that.\u201D</div>'
     + '<div class="compass-lifeline">\u201CHow long has that been going on?\u201D</div>'
     + '<div class="compass-lifeline">\u201CWhat made you book the call today?\u201D</div>'
@@ -4769,6 +4877,41 @@ function renderCompassPanel() {
   h += '</div></div>';
 
   panel.innerHTML = h;
+
+  // Nav strip: scroll observer + click-to-scroll
+  if (activeCompassTab === 'flow') {
+    var track = document.getElementById('compassPhaseTrack');
+    var strip = document.getElementById('compassNavStrip');
+    if (track && strip) {
+      var navLabels = strip.querySelectorAll('.compass-nav-label');
+
+      function updateActiveNav() {
+        var cards = track.querySelectorAll('.compass-phase');
+        var trackRect = track.getBoundingClientRect();
+        var center = trackRect.left + trackRect.width / 2;
+        var closest = 0;
+        var minDist = Infinity;
+        cards.forEach(function(card, idx) {
+          var r = card.getBoundingClientRect();
+          var dist = Math.abs(r.left + r.width / 2 - center);
+          if (dist < minDist) { minDist = dist; closest = idx; }
+        });
+        navLabels.forEach(function(lbl, idx) {
+          lbl.classList.toggle('active', idx === closest);
+        });
+      }
+
+      track.addEventListener('scroll', updateActiveNav);
+
+      navLabels.forEach(function(lbl) {
+        lbl.addEventListener('click', function() {
+          var idx = parseInt(lbl.dataset.nav) - 1;
+          var cards = track.querySelectorAll('.compass-phase');
+          if (cards[idx]) cards[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        });
+      });
+    }
+  }
 }
 
 function copyChip(el, val) {
