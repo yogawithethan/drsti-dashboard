@@ -5017,6 +5017,28 @@ function renderCompassPanel() {
           if (cards[idx]) cards[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         });
       });
+
+      // Arrow key navigation
+      document.addEventListener('keydown', function compassKeyNav(e) {
+        if (activeCompassTab !== 'flow' || currentView !== 'compass') {
+          document.removeEventListener('keydown', compassKeyNav);
+          return;
+        }
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        var cards = track.querySelectorAll('.compass-phase');
+        var trackRect = track.getBoundingClientRect();
+        var center = trackRect.left + trackRect.width / 2;
+        var current = 0, minDist = Infinity;
+        cards.forEach(function(card, idx) {
+          var dist = Math.abs(card.getBoundingClientRect().left + card.getBoundingClientRect().width / 2 - center);
+          if (dist < minDist) { minDist = dist; current = idx; }
+        });
+        var next = e.key === 'ArrowRight' ? Math.min(current + 1, cards.length - 1) : Math.max(current - 1, 0);
+        if (next !== current) {
+          e.preventDefault();
+          cards[next].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+      });
     }
   }
 }
