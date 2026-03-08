@@ -594,6 +594,62 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   font-size: 13.5px; color: var(--text-secondary); line-height: 1.6;
 }
 
+/* Edit mode controls */
+.compass-edit-toggle {
+  position: absolute; top: 12px; right: 12px;
+  background: none; border: none; cursor: pointer; padding: 6px;
+  color: var(--text-muted); opacity: 0.4; transition: opacity 0.2s;
+  font-size: 14px; line-height: 1;
+}
+.compass-edit-toggle:hover { opacity: 0.8; }
+.compass-edit-toggle.active { opacity: 1; color: var(--sage-dark); }
+.compass-phase { position: relative; }
+
+.compass-editable { position: relative; }
+.compass-editable .ce-actions {
+  display: none; position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  gap: 4px;
+}
+.editing .compass-editable .ce-actions { display: flex; }
+.ce-btn {
+  background: none; border: none; cursor: pointer; padding: 3px;
+  font-size: 12px; color: var(--text-muted); opacity: 0.5;
+  transition: opacity 0.15s; line-height: 1;
+}
+.ce-btn:hover { opacity: 1; }
+.ce-btn.ce-del:hover { color: #c44; }
+.compass-add-btn {
+  display: none; width: 100%; padding: 8px; margin-top: 4px;
+  background: none; border: 1px dashed var(--border); border-radius: 8px;
+  color: var(--text-muted); font-size: 12px; cursor: pointer;
+  transition: all 0.2s; font-family: var(--font-body);
+}
+.editing .compass-add-btn { display: block; }
+.compass-add-btn:hover { border-color: var(--sage); color: var(--sage-dark); background: var(--sage-mist); }
+
+.compass-edit-input {
+  width: 100%; border: 1px solid var(--sage); border-radius: 6px;
+  padding: 8px 10px; font-size: 13px; font-family: var(--font-body);
+  color: var(--text); background: #fff; line-height: 1.45;
+  resize: vertical; min-height: 36px;
+}
+.compass-edit-input:focus { outline: none; border-color: var(--sage-dark); box-shadow: 0 0 0 2px rgba(107,142,109,0.15); }
+
+.compass-save-bar {
+  display: none; text-align: center; padding: 12px 0 0;
+}
+.editing .compass-save-bar { display: block; }
+.compass-save-btn {
+  padding: 8px 24px; background: var(--sage-dark); color: #fff; border: none;
+  border-radius: var(--radius-pill); font-family: var(--font-body);
+  font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s;
+}
+.compass-save-btn:hover { background: var(--sage); }
+.compass-save-btn:disabled { opacity: 0.5; cursor: default; }
+.compass-save-status {
+  font-size: 11px; color: var(--sage-dark); margin-top: 6px;
+}
+
 /* Lifelines */
 .compass-lifelines {
   margin: 16px 40px 0; padding: 14px 18px; background: var(--bg-card);
@@ -4912,40 +4968,57 @@ function renderCompassPanel() {
   h += '<div class="compass-scroll-wrap">';
   h += '<div class="compass-phase-track" id="compassPhaseTrack">';
   phases.forEach(function(p, i) {
-    h += '<div class="compass-phase" data-phase="' + (i + 1) + '">'
+    h += '<div class="compass-phase" data-phase="' + (i + 1) + '" id="compassPhase_' + i + '">'
+      + '<button class="compass-edit-toggle" onclick="toggleCompassEdit(' + i + ')" title="Edit this phase">\u270E</button>'
       + '<div class="compass-phase-num">Phase ' + (i + 1) + '</div>'
       + '<div class="compass-phase-name">' + p.name + '</div>'
       + '<div class="compass-field-label">Goal</div>'
-      + '<div class="compass-goal">' + p.goal + '</div>'
+      + '<div class="compass-goal compass-editable" data-field="goal" data-phase="' + i + '">'
+      + '<span class="ce-text">' + p.goal + '</span>'
+      + '<span class="ce-actions"><button class="ce-btn" onclick="ceEdit(this)" title="Edit">\u270E</button></span>'
+      + '</div>'
       + '<div class="compass-field-label">Anchor Question</div>'
-      + '<div class="compass-anchor">\u201C' + p.anchor + '\u201D</div>';
-    // Spoken Pricing Flow replaces More Options for Logistics
+      + '<div class="compass-anchor compass-editable" data-field="anchor" data-phase="' + i + '">'
+      + '<span class="ce-text">\u201C' + p.anchor + '\u201D</span>'
+      + '<span class="ce-actions"><button class="ce-btn" onclick="ceEdit(this)" title="Edit">\u270E</button></span>'
+      + '</div>';
+    // Spoken Pricing Flow for Logistics
     if (p.name === 'Logistics') {
       h += '<div class="compass-spoken-pricing">'
         + '<div class="compass-spoken-pricing-title">Spoken Pricing Flow</div>';
-      spokenPricing.forEach(function(sp) {
-        h += '<div class="compass-script-card">'
+      spokenPricing.forEach(function(sp, si) {
+        h += '<div class="compass-script-card compass-editable" data-field="pricing" data-idx="' + si + '">'
           + '<div class="compass-script-label">' + sp.label + '</div>'
-          + '<div class="compass-script-text">\u201C' + sp.text.replace(/\n/g, '<br>') + '\u201D</div>'
+          + '<div class="compass-script-text"><span class="ce-text">\u201C' + sp.text.replace(/\n/g, '<br>') + '\u201D</span></div>'
+          + '<span class="ce-actions"><button class="ce-btn" onclick="ceEdit(this)" title="Edit">\u270E</button></span>'
           + '</div>';
       });
       h += '</div>';
-    } else if (p.options && p.options.length) {
+    } else {
       h += '<div class="compass-field-label">More Options</div>'
-        + '<div class="compass-more-options">';
-      p.options.forEach(function(q) {
-        h += '<div class="compass-option-chip">\u201C' + q + '\u201D</div>';
+        + '<div class="compass-more-options" id="ceOpts_' + i + '">';
+      (p.options || []).forEach(function(q, qi) {
+        h += '<div class="compass-option-chip compass-editable" data-field="option" data-phase="' + i + '" data-idx="' + qi + '">'
+          + '<span class="ce-text">\u201C' + q + '\u201D</span>'
+          + '<span class="ce-actions"><button class="ce-btn" onclick="ceEdit(this)" title="Edit">\u270E</button>'
+          + '<button class="ce-btn ce-del" onclick="ceDel(this)" title="Remove">\u2715</button></span>'
+          + '</div>';
       });
+      h += '<button class="compass-add-btn" onclick="ceAdd(' + i + ',\'option\')">+ Add option</button>';
       h += '</div>';
     }
-    if (p.transitions && p.transitions.length) {
-      h += '<div class="compass-field-label">Transition Options</div>'
-        + '<div class="compass-transitions">';
-      p.transitions.forEach(function(t) {
-        h += '<div class="compass-transition-chip">\u201C' + t + '\u201D</div>';
-      });
-      h += '</div>';
-    }
+    h += '<div class="compass-field-label">Transition Options</div>'
+      + '<div class="compass-transitions" id="ceTrans_' + i + '">';
+    (p.transitions || []).forEach(function(t, ti) {
+      h += '<div class="compass-transition-chip compass-editable" data-field="transition" data-phase="' + i + '" data-idx="' + ti + '">'
+        + '<span class="ce-text">\u201C' + t + '\u201D</span>'
+        + '<span class="ce-actions"><button class="ce-btn" onclick="ceEdit(this)" title="Edit">\u270E</button>'
+        + '<button class="ce-btn ce-del" onclick="ceDel(this)" title="Remove">\u2715</button></span>'
+        + '</div>';
+    });
+    h += '<button class="compass-add-btn" onclick="ceAdd(' + i + ',\'transition\')">+ Add transition</button>';
+    h += '</div>';
+    h += '<div class="compass-save-bar"><button class="compass-save-btn" onclick="ceSave(' + i + ')">Save Changes</button><div class="compass-save-status" id="ceSaveStatus_' + i + '"></div></div>';
     h += '</div>';
   });
   h += '</div></div>';
@@ -5089,6 +5162,164 @@ function renderCompassPanel() {
       });
     }
   }
+}
+
+// ── COMPASS INLINE EDITING ──
+function toggleCompassEdit(phaseIdx) {
+  var card = document.getElementById('compassPhase_' + phaseIdx);
+  var btn = card.querySelector('.compass-edit-toggle');
+  card.classList.toggle('editing');
+  btn.classList.toggle('active');
+  // Cancel any open edits when leaving edit mode
+  if (!card.classList.contains('editing')) {
+    card.querySelectorAll('.ce-editing').forEach(function(el) {
+      el.classList.remove('ce-editing');
+      var textarea = el.querySelector('.compass-edit-input');
+      if (textarea) textarea.remove();
+      el.querySelector('.ce-text').style.display = '';
+    });
+  }
+}
+
+function ceEdit(btn) {
+  var el = btn.closest('.compass-editable');
+  if (el.classList.contains('ce-editing')) return;
+  el.classList.add('ce-editing');
+  var textSpan = el.querySelector('.ce-text');
+  var field = el.dataset.field;
+  // Get raw text (strip quotes)
+  var raw = textSpan.textContent.replace(/^\u201C/, '').replace(/\u201D$/, '').trim();
+  if (field === 'pricing') {
+    // For pricing, get from innerHTML with <br> → \n
+    raw = textSpan.innerHTML.replace(/^\u201C/, '').replace(/\u201D$/, '').replace(/<br\s*\/?>/gi, '\n').trim();
+  }
+  textSpan.style.display = 'none';
+  var ta = document.createElement('textarea');
+  ta.className = 'compass-edit-input';
+  ta.value = raw;
+  if (field === 'pricing') ta.style.minHeight = '120px';
+  ta.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { ceCancelEdit(el); }
+    if (e.key === 'Enter' && !e.shiftKey && field !== 'pricing') { e.preventDefault(); ceCommitEdit(el, ta.value); }
+  });
+  el.insertBefore(ta, el.querySelector('.ce-actions'));
+  ta.focus();
+}
+
+function ceCancelEdit(el) {
+  el.classList.remove('ce-editing');
+  var ta = el.querySelector('.compass-edit-input');
+  if (ta) ta.remove();
+  el.querySelector('.ce-text').style.display = '';
+}
+
+function ceCommitEdit(el, val) {
+  val = val.trim();
+  if (!val) { ceCancelEdit(el); return; }
+  var field = el.dataset.field;
+  var textSpan = el.querySelector('.ce-text');
+  if (field === 'goal') {
+    textSpan.textContent = val;
+  } else if (field === 'pricing') {
+    textSpan.innerHTML = '\u201C' + val.replace(/\n/g, '<br>') + '\u201D';
+  } else {
+    textSpan.textContent = '\u201C' + val + '\u201D';
+  }
+  el.classList.remove('ce-editing');
+  var ta = el.querySelector('.compass-edit-input');
+  if (ta) ta.remove();
+  textSpan.style.display = '';
+}
+
+function ceDel(btn) {
+  var el = btn.closest('.compass-editable');
+  el.remove();
+}
+
+function ceAdd(phaseIdx, type) {
+  var container = type === 'option'
+    ? document.getElementById('ceOpts_' + phaseIdx)
+    : document.getElementById('ceTrans_' + phaseIdx);
+  var addBtn = container.querySelector('.compass-add-btn');
+  var chipClass = type === 'option' ? 'compass-option-chip' : 'compass-transition-chip';
+  var chip = document.createElement('div');
+  chip.className = chipClass + ' compass-editable ce-editing';
+  chip.dataset.field = type;
+  chip.dataset.phase = phaseIdx;
+  chip.innerHTML = '<span class="ce-text" style="display:none"></span>'
+    + '<span class="ce-actions"><button class="ce-btn" onclick="ceEdit(this)" title="Edit">\u270E</button>'
+    + '<button class="ce-btn ce-del" onclick="ceDel(this)" title="Remove">\u2715</button></span>';
+  container.insertBefore(chip, addBtn);
+  var ta = document.createElement('textarea');
+  ta.className = 'compass-edit-input';
+  ta.placeholder = type === 'option' ? 'Type a new option\u2026' : 'Type a new transition\u2026';
+  ta.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { chip.remove(); }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); var v = ta.value.trim(); if (v) { ceCommitEdit(chip, v); } else { chip.remove(); } }
+  });
+  chip.insertBefore(ta, chip.querySelector('.ce-actions'));
+  ta.focus();
+}
+
+function ceSave(phaseIdx) {
+  var statusEl = document.getElementById('ceSaveStatus_' + phaseIdx);
+  statusEl.textContent = 'Saving\u2026';
+  var saveBtn = statusEl.previousElementSibling;
+  saveBtn.disabled = true;
+
+  // Gather all phases from the DOM
+  var allPhases = [];
+  var allPricing = [];
+  for (var i = 0; i < 6; i++) {
+    var card = document.getElementById('compassPhase_' + i);
+    if (!card) continue;
+    var name = card.querySelector('.compass-phase-name').textContent;
+    var goalEl = card.querySelector('[data-field="goal"] .ce-text');
+    var anchorEl = card.querySelector('[data-field="anchor"] .ce-text');
+    var goal = goalEl ? goalEl.textContent.trim() : '';
+    var anchor = anchorEl ? anchorEl.textContent.replace(/^\u201C/, '').replace(/\u201D$/, '').trim() : '';
+
+    var options = [];
+    card.querySelectorAll('[data-field="option"] .ce-text').forEach(function(t) {
+      var v = t.textContent.replace(/^\u201C/, '').replace(/\u201D$/, '').trim();
+      if (v) options.push(v);
+    });
+
+    var transitions = [];
+    card.querySelectorAll('[data-field="transition"] .ce-text').forEach(function(t) {
+      var v = t.textContent.replace(/^\u201C/, '').replace(/\u201D$/, '').trim();
+      if (v) transitions.push(v);
+    });
+
+    // Spoken pricing from Logistics card
+    if (name === 'Logistics') {
+      card.querySelectorAll('[data-field="pricing"]').forEach(function(pe) {
+        var label = pe.querySelector('.compass-script-label').textContent;
+        var raw = pe.querySelector('.ce-text').innerHTML.replace(/^\u201C/, '').replace(/\u201D$/, '').replace(/<br\s*\/?>/gi, '\n').trim();
+        allPricing.push({ label: label, text: raw });
+      });
+    }
+
+    allPhases.push({ name: name, goal: goal, anchor: anchor, options: options, transitions: transitions });
+  }
+
+  var payload = { phases: allPhases };
+  if (allPricing.length) payload.spokenPricing = allPricing;
+
+  var url = API_URL + '?action=updateCompass&payload=' + encodeURIComponent(JSON.stringify(payload));
+  fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+    if (data.ok) {
+      statusEl.textContent = 'Saved \u2713';
+      compassCache = null; // bust cache so next render fetches fresh
+      setTimeout(function() { statusEl.textContent = ''; saveBtn.disabled = false; }, 2000);
+    } else {
+      statusEl.textContent = 'Error: ' + (data.error || 'Unknown');
+      saveBtn.disabled = false;
+    }
+  }).catch(function(err) {
+    statusEl.textContent = 'Failed to save';
+    saveBtn.disabled = false;
+  });
 }
 
 function copyChip(el, val) {
