@@ -1734,6 +1734,16 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   transition: background 0.2s, transform 0.1s;
 }
 .btn-send-email:hover { background: #3d5c40; }
+.btn-send-new-email {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 12px; margin-top: 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg-warm);
+  font-family: var(--font-body); font-size: 11px;
+  font-weight: 500; color: var(--text-secondary); cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-send-new-email:hover { background: var(--bg-card); color: var(--sage-dark); border-color: var(--sage-dark); }
 .btn-send-email:active { transform: scale(0.97); }
 
 /* ── BULK EMAIL MODE ── */
@@ -3075,6 +3085,7 @@ function renderCard(a) {
   if (offerSent) {
     noteClass += ' sent';
     noteText = '&#10003; Email sent ' + formatDate(a.emailSent);
+    sendBtnHtml = '<button class="btn-send-new-email" onclick="openEmailModal('+a.row+')" title="Send another email">+ Send new email</button>';
   } else if (offerReady) {
     noteClass += ' ready';
     noteText = '&#10003; Ready to send';
@@ -3099,7 +3110,8 @@ function renderCard(a) {
   } else if (statusTemplateKey && offerSent) {
     statusEmailHtml = '<div class="divider"></div>'
       + '<div><div class="slabel">' + esc(a.status) + ' Email</div>'
-      + '<div class="offer-email-box"><div class="offer-email-note sent">&#10003; Email sent ' + formatDate(a.emailSent) + '</div></div></div>';
+      + '<div class="offer-email-box"><div class="offer-email-note sent">&#10003; Email sent ' + formatDate(a.emailSent) + '</div></div>'
+      + '<button class="btn-send-new-email" onclick="openEmailModal('+a.row+')" title="Send another email">+ Send new email</button></div>';
   }
 
   // Room preference
