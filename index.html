@@ -698,6 +698,7 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 
 /* Objection cards (3A layout) */
 .compass-obj-card {
+  position: relative;
   background: var(--bg-card); border-radius: var(--radius-md);
   box-shadow: var(--shadow-xs); padding: 20px 22px; margin-bottom: 12px;
   border: 1px solid rgba(0,0,0,0.04);
@@ -746,7 +747,7 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 }
 .compass-obj-scroll-wrap::before,
 .compass-obj-scroll-wrap::after {
-  content: ''; position: absolute; top: 0; bottom: 0; width: 30px;
+  content: ''; position: absolute; top: 0; bottom: 0; width: 20px;
   z-index: 2; pointer-events: none;
 }
 .compass-obj-scroll-wrap::before {
@@ -759,7 +760,7 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   display: flex; gap: 16px;
   overflow-x: auto; scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; padding: 4px 30px 20px;
+  scrollbar-width: none; padding: 4px 24px 20px;
   scroll-behavior: smooth;
 }
 .compass-obj-track::-webkit-scrollbar { display: none; }
@@ -5096,7 +5097,7 @@ function renderCompassPanel() {
   h += '<div class="compass-3a-bar">'
     + '<div class="compass-3a-step"><div class="compass-3a-label ack">Acknowledge</div><div class="compass-3a-example">\u201CI hear you. And honestly, that makes complete sense.\u201D</div></div>'
     + '<div class="compass-3a-step"><div class="compass-3a-label assoc">Associate</div><div class="compass-3a-example">\u201CThat\u2019s actually the question that the people who get the most from this always ask.\u201D</div></div>'
-    + '<div class="compass-3a-step"><div class="compass-3a-label ask">Ask</div><div class="compass-3a-example">\u201CCan I ask \u2014 is it the total amount, or is it more about the timing?\u201D</div></div>'
+    + '<div class="compass-3a-step"><div class="compass-3a-label ask">Ask</div><div class="compass-3a-example">\u201CWhy that particular question?\u201D</div></div>'
     + '</div>';
 
   // Objection nav strip
@@ -5252,12 +5253,22 @@ function renderCompassPanel() {
     if (objTrack && objNav) {
       var objNavLabels = objNav.querySelectorAll('.compass-obj-nav-label');
 
+      function getObjCardPositions() {
+        var cards = objTrack.querySelectorAll('.compass-obj-card');
+        var positions = [];
+        cards.forEach(function(card) {
+          positions.push(card.offsetLeft - objTrack.querySelector('.compass-obj-card').offsetLeft);
+        });
+        return positions;
+      }
+
       function updateObjActiveNav() {
         var cards = objTrack.querySelectorAll('.compass-obj-card');
-        var trackLeft = objTrack.scrollLeft;
+        var scrollPos = objTrack.scrollLeft;
         var current = 0;
         cards.forEach(function(card, idx) {
-          if (card.offsetLeft - objTrack.offsetLeft <= trackLeft + 60) current = idx;
+          var cardLeft = card.offsetLeft - cards[0].offsetLeft;
+          if (cardLeft <= scrollPos + 60) current = idx;
         });
         objNavLabels.forEach(function(lbl, idx) {
           lbl.classList.toggle('active', idx === current);
@@ -5269,7 +5280,10 @@ function renderCompassPanel() {
         lbl.addEventListener('click', function() {
           var idx = parseInt(lbl.dataset.objnav);
           var cards = objTrack.querySelectorAll('.compass-obj-card');
-          if (cards[idx]) objTrack.scrollTo({ left: cards[idx].offsetLeft - objTrack.offsetLeft, behavior: 'smooth' });
+          if (cards[idx]) {
+            var scrollTarget = cards[idx].offsetLeft - cards[0].offsetLeft;
+            objTrack.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+          }
         });
       });
 
@@ -5283,15 +5297,16 @@ function renderCompassPanel() {
         // Don't navigate if user is editing a textarea
         if (document.activeElement && document.activeElement.tagName === 'TEXTAREA') return;
         var cards = objTrack.querySelectorAll('.compass-obj-card');
-        var trackLeft = objTrack.scrollLeft;
+        var scrollPos = objTrack.scrollLeft;
         var current = 0;
         cards.forEach(function(card, idx) {
-          if (card.offsetLeft - objTrack.offsetLeft <= trackLeft + 60) current = idx;
+          var cardLeft = card.offsetLeft - cards[0].offsetLeft;
+          if (cardLeft <= scrollPos + 60) current = idx;
         });
         var next = e.key === 'ArrowRight' ? Math.min(current + 1, cards.length - 1) : Math.max(current - 1, 0);
         if (next !== current) {
           e.preventDefault();
-          objTrack.scrollTo({ left: cards[next].offsetLeft - objTrack.offsetLeft, behavior: 'smooth' });
+          objTrack.scrollTo({ left: cards[next].offsetLeft - cards[0].offsetLeft, behavior: 'smooth' });
         }
       });
     }
