@@ -711,6 +711,20 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .compass-chip:hover { background: var(--sage); color: #fff; }
 .compass-chip.copied { background: var(--sage-dark); color: #fff; }
 .compass-perday { font-size: 12px; color: var(--text-muted); }
+/* Cost per day calculator */
+.compass-cpd { text-align: center; padding: 24px 0 20px; }
+.compass-cpd-label {
+  font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--sage); margin-bottom: 14px;
+}
+.compass-cpd-line {
+  font-family: var(--font-display); font-size: 15px; font-style: italic;
+  font-weight: 400; color: var(--earth); line-height: 1.8;
+}
+.compass-cpd-divider {
+  width: 60px; height: 1px; background: var(--bg-warm); margin: 20px auto 0;
+}
+
 .compass-close-list {
   display: flex; flex-direction: column; align-items: center; gap: 32px;
   padding: 24px 0;
@@ -4861,7 +4875,18 @@ function renderCompassPanel() {
       + '<div class="compass-goal">' + p.goal + '</div>'
       + '<div class="compass-field-label">Anchor Question</div>'
       + '<div class="compass-anchor">\u201C' + p.anchor + '\u201D</div>';
-    if (p.options && p.options.length) {
+    // Spoken Pricing Flow replaces More Options for Logistics
+    if (p.name === 'Logistics') {
+      h += '<div class="compass-spoken-pricing">'
+        + '<div class="compass-spoken-pricing-title">Spoken Pricing Flow</div>';
+      spokenPricing.forEach(function(sp) {
+        h += '<div class="compass-script-card">'
+          + '<div class="compass-script-label">' + sp.label + '</div>'
+          + '<div class="compass-script-text">\u201C' + sp.text.replace(/\n/g, '<br>') + '\u201D</div>'
+          + '</div>';
+      });
+      h += '</div>';
+    } else if (p.options && p.options.length) {
       h += '<div class="compass-field-label">More Options</div>'
         + '<div class="compass-more-options">';
       p.options.forEach(function(q) {
@@ -4874,18 +4899,6 @@ function renderCompassPanel() {
         + '<div class="compass-transitions">';
       p.transitions.forEach(function(t) {
         h += '<div class="compass-transition-chip">\u201C' + t + '\u201D</div>';
-      });
-      h += '</div>';
-    }
-    // Spoken Pricing Flow inside Logistics card
-    if (p.name === 'Logistics') {
-      h += '<div class="compass-spoken-pricing">'
-        + '<div class="compass-spoken-pricing-title">Spoken Pricing Flow</div>';
-      spokenPricing.forEach(function(sp) {
-        h += '<div class="compass-script-card">'
-          + '<div class="compass-script-label">' + sp.label + '</div>'
-          + '<div class="compass-script-text">\u201C' + sp.text.replace(/\n/g, '<br>') + '\u201D</div>'
-          + '</div>';
       });
       h += '</div>';
     }
@@ -4945,6 +4958,24 @@ function renderCompassPanel() {
 
   // TAB 4 — Reminders
   h += '<div class="compass-tab-content' + (activeCompassTab === 'reminders' ? ' active' : '') + '" id="compassTab_reminders">';
+
+  // Cost per day calculator
+  var retreatDate = new Date(2026, 5, 10); // June 10, 2026
+  var today = new Date(); today.setHours(0,0,0,0);
+  var daysUntil = Math.ceil((retreatDate - today) / 86400000);
+  var cpdPrices = [
+    { room: 'Triple', price: 2220 },
+    { room: 'Double', price: 2888 },
+    { room: 'Glamping', price: 2999 }
+  ];
+  h += '<div class="compass-cpd">';
+  h += '<div class="compass-cpd-label">Investment Per Day Until June 10</div>';
+  cpdPrices.forEach(function(r) {
+    var perDay = (r.price / daysUntil).toFixed(2);
+    h += '<div class="compass-cpd-line">' + r.room + ' \u00B7 \u20AC' + r.price.toLocaleString() + ' \u00B7 ' + daysUntil + ' days \u00B7 \u20AC' + perDay + '/day</div>';
+  });
+  h += '<div class="compass-cpd-divider"></div></div>';
+
   h += '<div class="compass-quick-objections-title" style="text-align:center;margin-bottom:16px;">Mental Reminders During Calls</div>';
   h += '<div class="compass-close-list">';
   closes.forEach(function(c) {
