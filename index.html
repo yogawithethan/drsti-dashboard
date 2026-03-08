@@ -667,53 +667,65 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 @media (max-width: 600px) {
   .compass-lifelines { margin: 16px 16px 0; flex-direction: column; gap: 6px; align-items: flex-start; }
 }
-.compass-objection-flow {
+/* 3A Framework reference bar */
+.compass-3a-bar {
+  position: sticky; top: 0; z-index: 3;
+  background: var(--bg-warm); border-radius: var(--radius-md);
+  border: 1px solid rgba(0,0,0,0.04); border-left: 3px solid var(--earth);
+  padding: 14px 18px; margin-bottom: 20px;
+  display: flex; gap: 0; justify-content: center;
+}
+.compass-3a-step { flex: 1; text-align: center; }
+.compass-3a-step + .compass-3a-step { border-left: 1px solid var(--border); }
+.compass-3a-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+.compass-3a-label.ack { color: var(--earth); }
+.compass-3a-label.assoc { color: var(--text-muted); }
+.compass-3a-label.ask { color: var(--sage-dark); }
+.compass-3a-arrow {
+  font-size: 10px; color: var(--text-muted); opacity: 0.4; padding: 0 8px;
+}
+.compass-3a-example {
+  font-size: 11px; color: var(--text-muted); line-height: 1.4;
+  font-style: italic; padding: 0 8px;
+}
+@media (max-width: 500px) {
+  .compass-3a-bar { flex-direction: column; gap: 10px; }
+  .compass-3a-step + .compass-3a-step { border-left: none; border-top: 1px solid var(--border); padding-top: 10px; }
+}
+
+/* Objection cards (3A layout) */
+.compass-obj-card {
   background: var(--bg-card); border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm); padding: 20px; margin-bottom: 20px;
+  box-shadow: var(--shadow-xs); padding: 20px 22px; margin-bottom: 12px;
   border: 1px solid rgba(0,0,0,0.04);
 }
-.compass-objection-flow-title {
-  font-family: var(--font-display); font-size: 16px; font-weight: 500;
-  color: var(--sage-dark); margin-bottom: 14px; text-transform: uppercase;
-  letter-spacing: 0.06em;
+.compass-obj-quote {
+  font-family: var(--font-display); font-size: 19px; font-style: italic;
+  font-weight: 400; color: var(--text); line-height: 1.4; margin-bottom: 16px;
 }
-.compass-flow-step {
-  display: flex; gap: 10px; padding: 6px 0;
-  border-top: 1px solid var(--bg-warm);
+.compass-obj-divider {
+  height: 1px; background: var(--bg-warm); margin: 0 0 14px;
 }
-.compass-flow-step:first-of-type { border-top: none; }
-.compass-flow-num {
-  font-size: 11px; font-weight: 700; color: var(--sage); min-width: 18px;
-  padding-top: 1px;
+.compass-obj-section { margin-bottom: 12px; }
+.compass-obj-section:last-child { margin-bottom: 0; }
+.compass-obj-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em;
+  margin-bottom: 5px;
 }
-.compass-flow-content {}
-.compass-flow-label {
-  font-size: 11px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.06em; color: var(--text); margin-bottom: 1px;
+.compass-obj-label.ack { color: var(--earth); }
+.compass-obj-label.ask { color: var(--sage-dark); }
+.compass-obj-ack {
+  font-size: 13.5px; color: var(--text-secondary); line-height: 1.5;
 }
-.compass-flow-prompt {
-  font-size: 13px; color: var(--text-secondary); line-height: 1.4;
-}
-.compass-quick-objections-title {
-  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
-  color: var(--sage); margin-bottom: 10px; margin-top: 4px;
-}
-.compass-quick-objection {
-  background: var(--bg-card); border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xs); padding: 14px 18px; margin-bottom: 10px;
-  border: 1px solid rgba(0,0,0,0.04);
-}
-.compass-quick-objection-label {
-  font-size: 14px; color: var(--text); font-weight: 500;
-  margin-bottom: 8px;
-}
-.compass-quick-objection-responses {
-  display: flex; flex-direction: column; gap: 5px;
-}
-.compass-quick-objection-response {
+.compass-obj-ask {
   font-size: 13px; color: var(--text-secondary); line-height: 1.45;
   padding: 8px 12px; background: var(--bg-warm); border-radius: 6px;
+  margin-bottom: 6px;
 }
+.compass-obj-ask:last-child { margin-bottom: 0; }
 .compass-pricing-note {
   font-size: 13px; color: var(--text-muted); font-style: italic;
   text-align: center; margin-bottom: 16px; line-height: 1.5;
@@ -4870,57 +4882,41 @@ function renderCompassPanel() {
     { label: 'Payment Plan Version', text: 'Loading\u2026' }
   ];
 
-  var objectionFlow = [
-    { label: 'Clarify', prompt: 'Is it the total cost or the timing of payments?' },
-    { label: 'Identify Priority', prompt: 'If the investment were easier, would this feel right?' },
-    { label: 'Future Value', prompt: 'What would this transformation be worth in your life?' },
-    { label: 'Priority Frame', prompt: 'Where does your personal growth sit right now?' },
-    { label: 'Soft Close', prompt: 'If we found a way to make it workable, would you want to move forward?' }
-  ];
-
-  var quickObjections = [
-    { label: '\u201CI can\u2019t afford it\u201D', responses: [
-      'Is this more about the total cost or the timing of payments?',
-      'What would it look like if we found a way to make it workable?',
-      'If money weren\u2019t a factor at all, would this feel like a yes?',
-      'What would this transformation be worth to you over the next year of your life?'
-    ] },
-    { label: '\u201CI need to think about it\u201D', responses: [
-      'What specifically do you want to think through?',
-      'Is there a particular part that feels unclear or unresolved?',
-      'What would help you feel confident in your decision today?',
-      'Sometimes \u201CI need to think\u201D really means something else is coming up \u2014 what feels true for you?'
-    ] },
-    { label: '\u201CI need to ask my partner\u201D', responses: [
-      'What do you think their main concern would be?',
-      'If they said yes, would you be ready to move forward?',
-      'What would you want them to understand about why this matters to you?',
-      'Would it help if I sent you something you could share with them?'
-    ] },
-    { label: '\u201CNothing has stuck before\u201D', responses: [
-      'What was missing in those experiences?',
-      'What would need to be different this time for it to actually land?',
-      'That\u2019s exactly why a container like this exists \u2014 it\u2019s not something you do alone.',
-      'The fact that you\u2019re still looking tells me something in you hasn\u2019t given up.'
-    ] },
-    { label: '\u201CAm I ready?\u201D', responses: [
-      'Readiness isn\u2019t a feeling \u2014 it\u2019s a decision.',
-      'What would \u201Cready\u201D look like to you?',
-      'Most people who come don\u2019t feel ready. They just feel called.',
-      'You don\u2019t need to be ready. You just need to be willing.'
-    ] },
-    { label: '\u201CI\u2019m waiting on the flight\u201D', responses: [
-      'The deposit just holds your spot \u2014 it\u2019s completely separate from the flight.',
-      'You can secure your place now and sort the flight whenever you\u2019re ready.',
-      'A lot of people book their spot first and then figure out travel \u2014 it gives you time.',
-      'The spot is what\u2019s limited. Flights are always available.'
-    ] },
-    { label: '\u201CTiming isn\u2019t right\u201D', responses: [
-      'You applied for a reason. What was happening when you filled out that form?',
-      'When would the timing feel right? And what would actually be different then?',
-      'In my experience, the \u201Cright time\u201D doesn\u2019t arrive on its own \u2014 you create it by saying yes.',
-      'What if this is the timing, and the resistance is just part of the process?'
-    ] }
+  var objections3A = [
+    { quote: 'I can\u2019t afford it right now',
+      ack: 'I hear you \u2014 and I want to be honest with you rather than just try to overcome that.',
+      asks: [
+        'Is it the total amount, or is it more about the timing of payments?',
+        'If money weren\u2019t a factor at all \u2014 would this feel like a yes?',
+        'What would it cost you to stay in the same pattern for another year?'
+      ] },
+    { quote: 'I need to think about it',
+      ack: 'Of course \u2014 this is a real decision and I respect that you\u2019re taking it seriously.',
+      asks: [
+        'What specifically do you need to think through? I\u2019d rather help you get clear now.',
+        'When you check in with your body \u2014 not your mind \u2014 what does it say?',
+        'What would make this a no?'
+      ] },
+    { quote: 'I\u2019m waiting to see if I win the flight',
+      ack: 'That makes complete sense \u2014 and I love that you\u2019re already thinking practically about how to make it work.',
+      asks: [
+        'If the flight wasn\u2019t part of the equation at all \u2014 is this something that feels right for you?',
+        'The deposit just holds your spot. If you don\u2019t win, we build a plan together. Does \u20AC350 today feel doable regardless?'
+      ] },
+    { quote: 'I\u2019ve done retreats before and nothing stuck',
+      ack: 'That\u2019s actually the most honest thing someone can say \u2014 and it tells me you\u2019ve gone deep enough to know the difference between inspiration and real change.',
+      asks: [
+        'What do you think pulled you back last time \u2014 not logistically, but internally?',
+        'What would it mean if this time it actually did stick?',
+        'The shift was real \u2014 what wasn\u2019t there was the infrastructure to sustain it. Does that feel true for you?'
+      ] },
+    { quote: 'I\u2019m not sure I\u2019m ready / what if it doesn\u2019t stick?',
+      ack: 'I\u2019m glad you said that. People who haven\u2019t gone deep don\u2019t ask that question \u2014 you\u2019re past chasing inspiration.',
+      asks: [
+        'What would another year of almost-but-not-quite cost you?',
+        'What do you think has been getting in the way \u2014 not the logistics, the internal thing?',
+        'What would your life look like if this time something fundamental actually shifted?'
+      ] }
   ];
 
   var tiers = [
@@ -5033,30 +5029,26 @@ function renderCompassPanel() {
 
   h += '</div>';
 
-  // TAB 2 — Objections
+  // TAB 2 — Objections (3A Framework)
   h += '<div class="compass-tab-content' + (activeCompassTab === 'objections' ? ' active' : '') + '" id="compassTab_objections">';
 
-  // Objection Flow framework
-  h += '<div class="compass-objection-flow">'
-    + '<div class="compass-objection-flow-title">Objection Flow</div>';
-  objectionFlow.forEach(function(s, i) {
-    h += '<div class="compass-flow-step">'
-      + '<div class="compass-flow-num">' + (i + 1) + '</div>'
-      + '<div class="compass-flow-content">'
-      + '<div class="compass-flow-label">' + s.label + '</div>'
-      + '<div class="compass-flow-prompt">' + s.prompt + '</div>'
-      + '</div></div>';
-  });
-  h += '</div>';
+  // 3A reference bar
+  h += '<div class="compass-3a-bar">'
+    + '<div class="compass-3a-step"><div class="compass-3a-label ack">Acknowledge</div><div class="compass-3a-example">\u201CI hear you. And honestly, that makes complete sense.\u201D</div></div>'
+    + '<div class="compass-3a-step"><div class="compass-3a-label assoc">Associate</div><div class="compass-3a-example">\u201CThat\u2019s actually the question that the people who get the most from this always ask.\u201D</div></div>'
+    + '<div class="compass-3a-step"><div class="compass-3a-label ask">Ask</div><div class="compass-3a-example">\u201CCan I ask \u2014 is it the total amount, or is it more about the timing?\u201D</div></div>'
+    + '</div>';
 
-  // Quick objection cards
-  h += '<div class="compass-quick-objections-title">Quick Responses</div>';
-  quickObjections.forEach(function(o) {
-    h += '<div class="compass-quick-objection">'
-      + '<div class="compass-quick-objection-label">' + o.label + '</div>'
-      + '<div class="compass-quick-objection-responses">';
-    o.responses.forEach(function(r) {
-      h += '<div class="compass-quick-objection-response">\u201C' + r + '\u201D</div>';
+  // Objection cards
+  objections3A.forEach(function(o) {
+    h += '<div class="compass-obj-card">'
+      + '<div class="compass-obj-quote">\u201C' + o.quote + '\u201D</div>'
+      + '<div class="compass-obj-divider"></div>'
+      + '<div class="compass-obj-section"><div class="compass-obj-label ack">Acknowledge</div>'
+      + '<div class="compass-obj-ack">\u201C' + o.ack + '\u201D</div></div>'
+      + '<div class="compass-obj-section"><div class="compass-obj-label ask">Ask</div>';
+    o.asks.forEach(function(a) {
+      h += '<div class="compass-obj-ask">\u201C' + a + '\u201D</div>';
     });
     h += '</div></div>';
   });
