@@ -705,7 +705,9 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .compass-obj-header {
   display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
 }
-.compass-obj-icon svg { display: block; }
+.compass-obj-icon {
+  font-size: 22px; color: #c9a96e; line-height: 1;
+}
 .compass-obj-title {
   font-size: 20px; font-weight: 700; color: var(--text); line-height: 1.3;
 }
@@ -4894,56 +4896,37 @@ function renderCompassPanel() {
     { label: 'Payment Plan Version', text: 'Loading\u2026' }
   ];
 
-  var objections3A = [
-    { label: 'Money / Affordability',
-      icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#c9a96e" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"/><line x1="10" y1="5" x2="10" y2="15"/></svg>',
-      quote: 'I can\u2019t afford it right now',
+  // Icon mapping by objection label
+  var objIconMap = {
+    'Money / Affordability': '<i class="ph ph-coin"></i>',
+    'Need to Think': '<i class="ph ph-clock"></i>',
+    'Waiting on Flight': '<i class="ph ph-airplane-tilt"></i>',
+    'Nothing Stuck Before': '<i class="ph ph-arrows-clockwise"></i>',
+    'Am I Ready?': '<i class="ph ph-plant"></i>'
+  };
+  var defaultIcon = '<i class="ph ph-chat-circle-dots"></i>';
+
+  var objections3A = compassCache && compassCache.objections && compassCache.objections.length ? compassCache.objections : [
+    { label: 'Money / Affordability', quote: 'I can\u2019t afford it right now',
       ack: 'I hear you \u2014 and I want to be honest with you rather than just try to overcome that.',
       assoc: 'That\u2019s actually what most of our committed participants said before they found a way to make it work.',
-      asks: [
-        'Is it the total amount, or is it more about the timing of payments?',
-        'If money weren\u2019t a factor at all \u2014 would this feel like a yes?',
-        'What would it cost you to stay in the same pattern for another year?'
-      ] },
-    { label: 'Need to Think',
-      icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#c9a96e" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"/><line x1="10" y1="10" x2="10" y2="6"/><line x1="10" y1="10" x2="13.5" y2="12"/></svg>',
-      quote: 'I need to think about it',
+      asks: ['Is it the total amount, or is it more about the timing of payments?', 'If money weren\u2019t a factor at all \u2014 would this feel like a yes?', 'What would it cost you to stay in the same pattern for another year?'] },
+    { label: 'Need to Think', quote: 'I need to think about it',
       ack: 'Of course \u2014 this is a real decision and I respect that you\u2019re taking it seriously.',
       assoc: 'The people who think most carefully about this decision are usually the ones who get the most from it.',
-      asks: [
-        'What specifically do you need to think through? I\u2019d rather help you get clear now.',
-        'When you check in with your body \u2014 not your mind \u2014 what does it say?',
-        'What would make this a no?'
-      ] },
-    { label: 'Waiting on Flight',
-      icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#c9a96e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14l4-2 3 1 6-4 3-1.5M6 12l-1 4M9 13l1 3"/></svg>',
-      quote: 'I\u2019m waiting to see if I win the flight',
+      asks: ['What specifically do you need to think through?', 'When you check in with your body \u2014 not your mind \u2014 what does it say?', 'What would make this a no?'] },
+    { label: 'Waiting on Flight', quote: 'I\u2019m waiting to see if I win the flight',
       ack: 'That makes complete sense \u2014 and I love that you\u2019re already thinking practically about how to make it work.',
       assoc: 'I love that you\u2019re already problem-solving how to make it happen \u2014 that tells me something about how much you want this.',
-      asks: [
-        'If the flight wasn\u2019t part of the equation at all \u2014 is this something that feels right for you?',
-        'The deposit just holds your spot. If you don\u2019t win, we build a plan together. Does \u20AC350 today feel doable regardless?'
-      ] },
-    { label: 'Nothing Stuck Before',
-      icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#c9a96e" stroke-width="1.5" stroke-linecap="round"><path d="M14 6a5.5 5.5 0 1 0-1.5 8.5"/><polyline points="14 10 14 6 18 6"/></svg>',
-      quote: 'I\u2019ve done retreats before and nothing stuck',
-      ack: 'That\u2019s actually the most honest thing someone can say \u2014 and it tells me you\u2019ve gone deep enough to know the difference between inspiration and real change.',
+      asks: ['If the flight wasn\u2019t part of the equation at all \u2014 is this something that feels right for you?', 'The deposit just holds your spot. Does \u20AC350 today feel doable regardless?'] },
+    { label: 'Nothing Stuck Before', quote: 'I\u2019ve done retreats before and nothing stuck',
+      ack: 'That\u2019s actually the most honest thing someone can say \u2014 and it tells me you\u2019ve gone deep enough to know the difference.',
       assoc: 'That\u2019s honestly the most common thing I hear from the people who end up having the biggest breakthroughs.',
-      asks: [
-        'What do you think pulled you back last time \u2014 not logistically, but internally?',
-        'What would it mean if this time it actually did stick?',
-        'The shift was real \u2014 what wasn\u2019t there was the infrastructure to sustain it. Does that feel true for you?'
-      ] },
-    { label: 'Am I Ready?',
-      icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#c9a96e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="16" x2="10" y2="8"/><path d="M7 10c0 0 1-3 3-3s3 3 3 3"/><path d="M6 8c0 0 1.5-4 4-4s4 4 4 4"/></svg>',
-      quote: 'I\u2019m not sure I\u2019m ready / what if it doesn\u2019t stick?',
-      ack: 'I\u2019m glad you said that. People who haven\u2019t gone deep don\u2019t ask that question \u2014 you\u2019re past chasing inspiration.',
+      asks: ['What do you think pulled you back last time \u2014 not logistically, but internally?', 'What would it mean if this time it actually did stick?', 'The shift was real \u2014 what wasn\u2019t there was the infrastructure to sustain it.'] },
+    { label: 'Am I Ready?', quote: 'I\u2019m not sure I\u2019m ready / what if it doesn\u2019t stick?',
+      ack: 'I\u2019m glad you said that. People who haven\u2019t gone deep don\u2019t ask that question.',
       assoc: 'The fact that you\u2019re asking that question is usually the clearest sign that you are.',
-      asks: [
-        'What would another year of almost-but-not-quite cost you?',
-        'What do you think has been getting in the way \u2014 not the logistics, the internal thing?',
-        'What would your life look like if this time something fundamental actually shifted?'
-      ] }
+      asks: ['What would another year of almost-but-not-quite cost you?', 'What do you think has been getting in the way?', 'What would your life look like if this time something fundamental actually shifted?'] }
   ];
 
   var tiers = [
@@ -5067,20 +5050,35 @@ function renderCompassPanel() {
     + '</div>';
 
   // Objection cards
-  objections3A.forEach(function(o) {
-    h += '<div class="compass-obj-card">'
-      + '<div class="compass-obj-header"><span class="compass-obj-icon">' + o.icon + '</span><span class="compass-obj-title">' + o.label + '</span></div>'
+  objections3A.forEach(function(o, oi) {
+    var icon = objIconMap[o.label] || defaultIcon;
+    h += '<div class="compass-obj-card" id="objCard_' + oi + '">'
+      + '<button class="compass-edit-toggle" onclick="toggleObjEdit(' + oi + ')" title="Edit this objection">\u270E</button>'
+      + '<div class="compass-obj-header"><span class="compass-obj-icon">' + icon + '</span><span class="compass-obj-title">' + o.label + '</span></div>'
       + '<div class="compass-obj-quote">\u201C' + o.quote + '\u201D</div>'
       + '<div class="compass-obj-divider"></div>'
       + '<div class="compass-obj-section"><div class="compass-obj-label ack">Acknowledge</div>'
-      + '<div class="compass-obj-ack">\u201C' + o.ack + '\u201D</div></div>'
+      + '<div class="compass-obj-ack compass-editable" data-field="ack" data-obj="' + oi + '">'
+      + '<span class="ce-text">\u201C' + o.ack + '\u201D</span>'
+      + '<span class="ce-actions"><button class="ce-btn" onclick="ceEdit(this)" title="Edit">\u270E</button></span>'
+      + '</div></div>'
       + '<div class="compass-obj-section"><div class="compass-obj-label assoc">Associate</div>'
-      + '<div class="compass-obj-assoc">\u201C' + o.assoc + '\u201D</div></div>'
+      + '<div class="compass-obj-assoc compass-editable" data-field="assoc" data-obj="' + oi + '">'
+      + '<span class="ce-text">\u201C' + o.assoc + '\u201D</span>'
+      + '<span class="ce-actions"><button class="ce-btn" onclick="ceEdit(this)" title="Edit">\u270E</button></span>'
+      + '</div></div>'
       + '<div class="compass-obj-section"><div class="compass-obj-label ask">Ask</div>';
-    o.asks.forEach(function(a) {
-      h += '<div class="compass-obj-ask">\u201C' + a + '\u201D</div>';
+    o.asks.forEach(function(a, ai) {
+      h += '<div class="compass-obj-ask compass-editable" data-field="ask" data-obj="' + oi + '" data-idx="' + ai + '">'
+        + '<span class="ce-text">\u201C' + a + '\u201D</span>'
+        + '<span class="ce-actions"><button class="ce-btn" onclick="ceEdit(this)" title="Edit">\u270E</button>'
+        + '<button class="ce-btn ce-del" onclick="ceDel(this)" title="Remove">\u2715</button></span>'
+        + '</div>';
     });
-    h += '</div></div>';
+    h += '<button class="compass-add-btn" onclick="ceAddAsk(' + oi + ')">+ Add question</button>';
+    h += '</div>'
+      + '<div class="compass-save-bar"><button class="compass-save-btn" onclick="ceObjSave(' + oi + ')">Save Changes</button><div class="compass-save-status" id="ceObjStatus_' + oi + '"></div></div>'
+      + '</div>';
   });
   h += '</div>';
 
@@ -5336,6 +5334,80 @@ function ceSave(phaseIdx) {
     if (data.ok) {
       statusEl.textContent = 'Saved \u2713';
       compassCache = null; // bust cache so next render fetches fresh
+      setTimeout(function() { statusEl.textContent = ''; saveBtn.disabled = false; }, 2000);
+    } else {
+      statusEl.textContent = 'Error: ' + (data.error || 'Unknown');
+      saveBtn.disabled = false;
+    }
+  }).catch(function(err) {
+    statusEl.textContent = 'Failed to save';
+    saveBtn.disabled = false;
+  });
+}
+
+// ── Objection editing ──
+function toggleObjEdit(objIdx) {
+  var card = document.getElementById('objCard_' + objIdx);
+  if (!card) return;
+  var btn = card.querySelector('.compass-edit-toggle');
+  card.classList.toggle('editing');
+  btn.classList.toggle('active');
+  if (!card.classList.contains('editing')) {
+    card.querySelectorAll('.ce-editing').forEach(function(el) {
+      el.classList.remove('ce-editing');
+      var textarea = el.querySelector('.compass-edit-input');
+      if (textarea) textarea.remove();
+      el.querySelector('.ce-text').style.display = '';
+    });
+  }
+}
+
+function ceAddAsk(objIdx) {
+  var card = document.getElementById('objCard_' + objIdx);
+  if (!card) return;
+  var askSection = card.querySelector('.compass-obj-section:last-of-type');
+  var addBtn = card.querySelector('.compass-add-btn');
+  var newIdx = askSection.querySelectorAll('.compass-obj-ask').length;
+  var div = document.createElement('div');
+  div.className = 'compass-obj-ask compass-editable';
+  div.setAttribute('data-field', 'ask');
+  div.setAttribute('data-obj', objIdx);
+  div.setAttribute('data-idx', newIdx);
+  div.innerHTML = '<span class="ce-text">\u201CNew question\u201D</span>'
+    + '<span class="ce-actions"><button class="ce-btn" onclick="ceEdit(this)" title="Edit">\u270E</button>'
+    + '<button class="ce-btn ce-del" onclick="ceDel(this)" title="Remove">\u2715</button></span>';
+  askSection.insertBefore(div, addBtn);
+}
+
+function ceObjSave(objIdx) {
+  var statusEl = document.getElementById('ceObjStatus_' + objIdx);
+  statusEl.textContent = 'Saving\u2026';
+  var saveBtn = statusEl.previousElementSibling;
+  saveBtn.disabled = true;
+
+  var card = document.getElementById('objCard_' + objIdx);
+  var label = card.querySelector('.compass-obj-title').textContent.trim();
+  var quote = card.querySelector('.compass-obj-quote').textContent.replace(/[\u201C\u201D]/g, '').trim();
+
+  var ackEl = card.querySelector('[data-field="ack"] .ce-text');
+  var ack = ackEl ? ackEl.textContent.replace(/[\u201C\u201D]/g, '').trim() : '';
+
+  var assocEl = card.querySelector('[data-field="assoc"] .ce-text');
+  var assoc = assocEl ? assocEl.textContent.replace(/[\u201C\u201D]/g, '').trim() : '';
+
+  var askEls = card.querySelectorAll('[data-field="ask"] .ce-text');
+  var asks = [];
+  askEls.forEach(function(el) {
+    var t = el.textContent.replace(/[\u201C\u201D]/g, '').trim();
+    if (t) asks.push(t);
+  });
+
+  var payload = { objIndex: objIdx, objection: { label: label, quote: quote, ack: ack, assoc: assoc, asks: asks } };
+  var url = API_URL + '?action=updateCompassObjection&payload=' + encodeURIComponent(JSON.stringify(payload));
+  fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+    if (data.ok) {
+      statusEl.textContent = 'Saved \u2713';
+      compassCache = null;
       setTimeout(function() { statusEl.textContent = ''; saveBtn.disabled = false; }, 2000);
     } else {
       statusEl.textContent = 'Error: ' + (data.error || 'Unknown');
