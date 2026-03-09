@@ -863,6 +863,66 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   .compass-tabs { flex-wrap: wrap; border-radius: var(--radius-md); }
 }
 
+/* ── SEQUENCES PANEL ── */
+.sequences-panel {
+  max-width: 720px; margin: 0 auto; padding: 24px 16px 100px;
+}
+.seq-header { text-align: center; margin-bottom: 24px; }
+.seq-header h2 { font-family: var(--font-display); font-size: 22px; font-weight: 400; color: var(--text); margin: 0 0 4px; }
+.seq-header p { font-size: 13px; color: var(--text-muted); margin: 0; }
+.seq-section { margin-bottom: 32px; }
+.seq-section-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--text-muted); margin-bottom: 12px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.seq-card {
+  background: var(--bg-card); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs); padding: 16px 18px; margin-bottom: 10px;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.seq-card-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+}
+.seq-card-name { font-size: 15px; font-weight: 600; color: var(--text); }
+.seq-card-meta { font-size: 11px; color: var(--text-muted); }
+.seq-timeline {
+  display: flex; align-items: center; gap: 0; margin: 8px 0;
+}
+.seq-step {
+  flex: 1; text-align: center; position: relative;
+  padding: 8px 4px;
+}
+.seq-step::after {
+  content: ''; position: absolute; top: 50%; right: 0;
+  width: calc(100% - 24px); height: 2px; background: var(--border);
+  transform: translateY(-50%); z-index: 0;
+}
+.seq-step:last-child::after { display: none; }
+.seq-dot {
+  width: 20px; height: 20px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; position: relative; z-index: 1;
+  border: 2px solid var(--border); background: var(--bg-card); color: var(--text-muted);
+}
+.seq-dot.done { background: var(--sage-dark); border-color: var(--sage-dark); color: #fff; }
+.seq-dot.current { background: var(--earth); border-color: var(--earth); color: #fff; animation: seq-pulse 2s infinite; }
+.seq-dot.pending { background: var(--bg-warm); border-color: var(--border); color: var(--text-muted); }
+@keyframes seq-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(201,169,110,0.4); } 50% { box-shadow: 0 0 0 6px rgba(201,169,110,0); } }
+.seq-step-label {
+  display: block; font-size: 9px; color: var(--text-muted); margin-top: 4px;
+  white-space: nowrap;
+}
+.seq-step-label.done { color: var(--sage-dark); }
+.seq-step-label.current { color: var(--earth); font-weight: 600; }
+.seq-next-info {
+  font-size: 11px; color: var(--text-muted); margin-top: 6px;
+  padding: 6px 10px; background: var(--bg-warm); border-radius: 6px;
+}
+.seq-empty {
+  text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px;
+}
+
 /* ── PIPELINE GUIDE PANEL (light theme) ── */
 .pipeline-panel {
   background: var(--bg);
@@ -2246,6 +2306,7 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
       <button class="nav-btn" id="navCalls" onclick="switchView('calls')" title="Upcoming Calls"><i class="ph ph-calendar"></i></button>
       <button class="nav-btn" id="navTemplates" onclick="switchView('templates')" title="Email Templates"><i class="ph ph-envelope-simple"></i></button>
       <button class="nav-btn" id="navPipeline" onclick="switchView('pipeline')" title="Pipeline Guide"><i class="ph ph-git-branch"></i></button>
+      <button class="nav-btn" id="navSequences" onclick="switchView('sequences')" title="Sequences"><i class="ph ph-flow-arrow"></i></button>
       <button class="nav-btn" id="navCompass" onclick="switchView('compass')" title="The Compass"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24,7.76 14.12,14.12 7.76,16.24 9.88,9.88" fill="currentColor" stroke="none" opacity="0.7"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg></button>
     </div>
   </div>
@@ -2314,6 +2375,11 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
 <!-- VIEW: PIPELINE GUIDE -->
 <div class="panel-view" id="viewPipeline">
   <div class="pipeline-panel" id="pipelinePanel"></div>
+</div>
+
+<!-- VIEW: SEQUENCES -->
+<div class="panel-view" id="viewSequences">
+  <div class="sequences-panel" id="sequencesPanel"></div>
 </div>
 
 <!-- VIEW: THE COMPASS -->
@@ -4487,7 +4553,7 @@ var currentView = 'crm';
 
 function switchView(view) {
   currentView = view;
-  ['crm', 'calls', 'templates', 'pipeline', 'compass'].forEach(function(v) {
+  ['crm', 'calls', 'templates', 'pipeline', 'sequences', 'compass'].forEach(function(v) {
     var panel = document.getElementById('view' + v.charAt(0).toUpperCase() + v.slice(1));
     var btn = document.getElementById('nav' + v.charAt(0).toUpperCase() + v.slice(1));
     if (panel) panel.classList.toggle('active', v === view);
@@ -4496,6 +4562,7 @@ function switchView(view) {
   if (view === 'calls') renderCallsPanel();
   if (view === 'templates') renderTemplatesPanel();
   if (view === 'pipeline') renderPipelinePanel();
+  if (view === 'sequences') renderSequencesPanel();
   if (view === 'compass') renderCompassPanel();
 }
 
@@ -5542,6 +5609,131 @@ function copyChip(el, val) {
     el.textContent = 'Copied!';
     setTimeout(function() { el.classList.remove('copied'); el.textContent = orig; }, 1200);
   });
+}
+
+function renderSequencesPanel() {
+  var panel = document.getElementById('sequencesPanel');
+  if (!panel) return;
+  if (!state.applicants || !state.applicants.length) {
+    panel.innerHTML = '<div class="seq-empty">Loading applicant data\u2026</div>';
+    return;
+  }
+
+  var ghostSteps = [
+    { label: 'Day 3', template: 'ghost-1', day: 3 },
+    { label: 'Day 7', template: 'ghost-2', day: 7 },
+    { label: 'Day 11', template: 'ghost-3', day: 11 },
+    { label: 'Day 15', template: 'ghost-4', day: 15 }
+  ];
+  var depSteps = [
+    { label: 'Day 3', template: 'dep-1', day: 3 },
+    { label: 'Day 5', template: 'dep-2', day: 5 }
+  ];
+
+  function daysAgo(isoStr) {
+    if (!isoStr) return null;
+    var d = new Date(isoStr);
+    if (isNaN(d.getTime())) return null;
+    return Math.floor((Date.now() - d.getTime()) / 86400000);
+  }
+
+  function buildTimeline(steps, currentStep, anchorDate) {
+    var elapsed = daysAgo(anchorDate);
+    var h = '<div class="seq-timeline">';
+    steps.forEach(function(s, i) {
+      var stepNum = i + 1;
+      var cls = 'pending';
+      var labelCls = '';
+      if (stepNum <= currentStep) { cls = 'done'; labelCls = ' done'; }
+      else if (stepNum === currentStep + 1) { cls = 'current'; labelCls = ' current'; }
+      h += '<div class="seq-step">'
+        + '<span class="seq-dot ' + cls + '">' + stepNum + '</span>'
+        + '<span class="seq-step-label' + labelCls + '">' + s.label + '</span>'
+        + '</div>';
+    });
+    h += '</div>';
+    // Next step info
+    var nextStep = currentStep + 1;
+    if (nextStep <= steps.length && elapsed !== null) {
+      var nextDay = steps[nextStep - 1].day;
+      var daysUntil = nextDay - elapsed;
+      if (daysUntil > 0) {
+        h += '<div class="seq-next-info">Next email in ~' + daysUntil + ' day' + (daysUntil !== 1 ? 's' : '') + ' (' + steps[nextStep - 1].label + ')</div>';
+      } else if (daysUntil === 0) {
+        h += '<div class="seq-next-info">Next email sends today (' + steps[nextStep - 1].label + ')</div>';
+      } else {
+        h += '<div class="seq-next-info">Next email is due (' + steps[nextStep - 1].label + ')</div>';
+      }
+    } else if (currentStep >= steps.length) {
+      h += '<div class="seq-next-info">Sequence complete</div>';
+    }
+    return h;
+  }
+
+  // Collect active sequences
+  var ghosted = [];
+  var depReminders = [];
+  var completed = [];
+  state.applicants.forEach(function(a) {
+    var name = (a.firstName || '') + ' ' + (a.lastName || '');
+    if (a.status === 'Ghosted') {
+      var step = parseInt(a.ghostStep) || 0;
+      ghosted.push({ name: name, row: a.row, step: step, anchor: a.statusChangedDate, email: a.email, total: 4 });
+    }
+    if (a.status === 'Hard Yes' && a.emailSent) {
+      var dStep = parseInt(a.depReminderStep) || 0;
+      if (dStep < 2) {
+        depReminders.push({ name: name, row: a.row, step: dStep, anchor: a.emailSent, email: a.email, total: 2 });
+      }
+    }
+    // Completed ghost sequences
+    if (a.status === 'Ghosted' && (parseInt(a.ghostStep) || 0) >= 4) {
+      // Already in ghosted list above
+    }
+  });
+
+  var h = '<div class="seq-header"><h2>Active Sequences</h2>'
+    + '<p>Automated email sequences currently running</p></div>';
+
+  if (!ghosted.length && !depReminders.length) {
+    h += '<div class="seq-empty">No active sequences right now.<br>Sequences activate when applicants enter <strong>Ghosted</strong> or <strong>Hard Yes</strong> status.</div>';
+    panel.innerHTML = h;
+    return;
+  }
+
+  // Ghost Protocol section
+  if (ghosted.length) {
+    h += '<div class="seq-section">';
+    h += '<div class="seq-section-title">Ghost Protocol (' + ghosted.length + ' active)</div>';
+    ghosted.forEach(function(g) {
+      var elapsed = daysAgo(g.anchor);
+      var dayStr = elapsed !== null ? elapsed + ' day' + (elapsed !== 1 ? 's' : '') + ' in sequence' : '';
+      h += '<div class="seq-card">'
+        + '<div class="seq-card-header"><span class="seq-card-name">' + g.name + '</span>'
+        + '<span class="seq-card-meta">' + dayStr + '</span></div>'
+        + buildTimeline(ghostSteps, g.step, g.anchor)
+        + '</div>';
+    });
+    h += '</div>';
+  }
+
+  // Deposit Reminders section
+  if (depReminders.length) {
+    h += '<div class="seq-section">';
+    h += '<div class="seq-section-title">Deposit Reminders (' + depReminders.length + ' active)</div>';
+    depReminders.forEach(function(d) {
+      var elapsed = daysAgo(d.anchor);
+      var dayStr = elapsed !== null ? elapsed + ' day' + (elapsed !== 1 ? 's' : '') + ' since offer sent' : '';
+      h += '<div class="seq-card">'
+        + '<div class="seq-card-header"><span class="seq-card-name">' + d.name + '</span>'
+        + '<span class="seq-card-meta">' + dayStr + '</span></div>'
+        + buildTimeline(depSteps, d.step, d.anchor)
+        + '</div>';
+    });
+    h += '</div>';
+  }
+
+  panel.innerHTML = h;
 }
 
 function renderPipelinePanel() {
