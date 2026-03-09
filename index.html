@@ -1496,6 +1496,7 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   background: var(--bg-card);
   text-decoration: none;
 }
+button.action-icon { padding: 0; }
 .action-icon:hover { background: var(--sage-light); border-color: rgba(122,158,126,0.3); }
 .action-icon:active { transform: scale(0.92); }
 
@@ -1895,6 +1896,25 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 }
 .btn-send-new-email:hover { background: var(--bg-card); color: var(--sage-dark); border-color: var(--sage-dark); }
 .btn-send-email:active { transform: scale(0.97); }
+
+/* ── EMAIL HISTORY ── */
+.email-history {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.email-history-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 6px 8px; border-radius: 6px;
+  background: var(--bg-warm); font-size: 12px;
+}
+.email-history-detail {
+  display: flex; flex-direction: column; gap: 1px;
+}
+.email-history-label {
+  font-weight: 500; color: var(--text);
+}
+.email-history-date {
+  color: var(--text-muted); font-size: 11px;
+}
 
 /* ── BULK EMAIL MODE ── */
 .bulk-toggle {
@@ -2567,6 +2587,7 @@ var toastTimer = null;
 var state = {
   applicants: [],
   inventory: [],
+  activityLog: [],
   lastFetch: null,
   activeFilters: [],
   sortBy: 'newest',
@@ -2938,7 +2959,10 @@ function toggleActivityLog() {
 
 async function loadActivityLog() {
   var data = await apiGet('getActivityLog');
-  if (data && data.ok) renderActivityLog(data.entries);
+  if (data && data.ok) {
+    state.activityLog = data.entries || [];
+    renderActivityLog(data.entries);
+  }
 }
 
 function renderActivityLog(entries) {
@@ -3190,7 +3214,7 @@ function renderCard(a) {
   var igHandle = a.instagram ? String(a.instagram).replace(/^@/,'').replace(/^https?:\/\/(www\.)?instagram\.com\//i,'').replace(/[?#].*$/,'').replace(/\/+$/,'') : '';
 
   // Contact icons (Phosphor Icons — all same green)
-  var contactIcons = '';
+  var contactIcons = '<button class="action-icon" title="Compose Email" onclick="event.stopPropagation();openEmailModal('+a.row+')"><i class="ph ph-paper-plane-tilt"></i></button>';
   if (a.email) contactIcons += '<a href="mailto:'+esc(a.email)+'" class="action-icon" title="Email" onclick="event.stopPropagation()"><i class="ph ph-envelope"></i></a>';
   if (a.phone) contactIcons += '<a href="'+waLink+'" target="_blank" class="action-icon" title="WhatsApp" onclick="event.stopPropagation()"><i class="ph ph-whatsapp-logo"></i></a>';
   if (igHandle) contactIcons += '<a href="https://instagram.com/'+esc(igHandle)+'" target="_blank" class="action-icon" title="@'+esc(igHandle)+'" onclick="event.stopPropagation()"><i class="ph ph-instagram-logo"></i></a>';
@@ -3320,6 +3344,7 @@ function renderCard(a) {
     + offerHtml
     + '</div>'
     + statusEmailHtml
+    + buildEmailHistory(a.row)
     + '<div class="field"><div class="field-label">Notes</div><textarea id="sel-notes-'+a.row+'" rows="3" oninput="markCardChanged('+a.row+')" placeholder="Internal notes...">'+esc(a.notes||'')+'</textarea></div>'
     + '</div></div></div>'
 
@@ -3414,6 +3439,37 @@ function buildAvatar(a) {
   var initials = avatarInitials(a);
   var bg = avatarColor((a.firstName || '') + (a.lastName || ''));
   return '<div class="card-avatar" style="background:' + bg + ';">' + esc(initials) + '</div>';
+}
+
+function buildEmailHistory(row) {
+  var emails = state.activityLog.filter(function(e) {
+    return e.row == row && e.type === 'email';
+  });
+  if (!emails.length) return '';
+  var h = '<div class="divider"></div><div class="field"><div class="field-label">Email History</div>';
+  h += '<div class="email-history">';
+  emails.forEach(function(e) {
+    var ts = e.timestamp ? new Date(e.timestamp) : null;
+    var dateStr = ts ? ts.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+    var timeStr = ts ? ts.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '';
+    // Extract template/subject from description
+    var desc = e.description || '';
+    var label = desc.replace(/^Email sent via composer:\s*/i, '').replace(/^Bulk email sent:.*?—\s*/i, '').replace(/email auto-sent.*$/i, 'auto-sent');
+    if (desc.indexOf('auto-sent') !== -1) {
+      var statusMatch = desc.match(/^(\w[\w\s]+?)\s+email auto-sent/);
+      label = statusMatch ? statusMatch[1] + ' (auto)' : 'Auto-sent';
+    }
+    if (desc.indexOf('Ghost step') !== -1) label = desc.replace(/^.*?(Ghost step.*)email sent.*$/i, '$1');
+    if (desc.indexOf('Deposit reminder') !== -1) label = desc.replace(/^.*?(Deposit reminder.*)email sent.*$/i, '$1');
+    h += '<div class="email-history-item">'
+      + '<i class="ph ph-envelope-simple" style="color:var(--sage-dark);flex-shrink:0;"></i>'
+      + '<div class="email-history-detail">'
+      + '<span class="email-history-label">' + esc(label) + '</span>'
+      + '<span class="email-history-date">' + dateStr + ' at ' + timeStr + '</span>'
+      + '</div></div>';
+  });
+  h += '</div></div>';
+  return h;
 }
 
 // ── INTERACTIONS ──
