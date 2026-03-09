@@ -950,6 +950,57 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 .seq-card-header {
   display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
 }
+.seq-card-row {
+  display: flex; gap: 16px; margin-bottom: 10px; flex-wrap: wrap;
+}
+.seq-card-detail {
+  display: flex; align-items: center; gap: 6px;
+}
+.seq-detail-label {
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.seq-detail-value {
+  font-size: 12px; color: var(--text-secondary);
+}
+.seq-status-select {
+  font-size: 12px; padding: 3px 6px; border: 1px solid var(--border);
+  border-radius: 6px; background: var(--bg-warm); color: var(--text);
+  font-family: var(--font-body); cursor: pointer;
+}
+.seq-check {
+  width: 16px; height: 16px; cursor: pointer; accent-color: var(--sage-dark);
+}
+/* Sequence bulk action bar */
+.seq-bulk-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 14px; margin-bottom: 16px;
+  background: var(--bg-card); border-radius: var(--radius-md);
+  border: 1px solid var(--earth); box-shadow: var(--shadow-xs);
+}
+.seq-bulk-count {
+  font-size: 12px; font-weight: 600; color: var(--text);
+}
+.seq-bulk-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 12px; border: none; border-radius: 6px;
+  background: var(--sage-dark); color: #fff; font-size: 12px;
+  font-weight: 500; font-family: var(--font-body); cursor: pointer;
+  transition: background 0.2s;
+}
+.seq-bulk-btn:hover { background: #3d5c40; }
+.seq-bulk-status-btn { background: var(--earth); }
+.seq-bulk-status-btn:hover { background: #b8944e; }
+.seq-bulk-status-select {
+  font-size: 12px; padding: 5px 8px; border: 1px solid var(--border);
+  border-radius: 6px; background: var(--bg-warm); font-family: var(--font-body);
+}
+.seq-bulk-cancel {
+  padding: 5px 10px; border: none; background: none;
+  font-size: 12px; color: var(--text-muted); cursor: pointer;
+  font-family: var(--font-body);
+}
+.seq-bulk-cancel:hover { color: var(--text); }
 
 /* ── PIPELINE GUIDE PANEL (light theme) ── */
 .pipeline-panel {
@@ -5654,12 +5705,14 @@ function renderSequencesPanel() {
   }
 
   var ghostSteps = [
+    { label: 'Entered', template: null, day: 0 },
     { label: 'Day 3', template: 'ghost-1', day: 3 },
     { label: 'Day 7', template: 'ghost-2', day: 7 },
     { label: 'Day 11', template: 'ghost-3', day: 11 },
     { label: 'Day 15', template: 'ghost-4', day: 15 }
   ];
   var depSteps = [
+    { label: 'Offer sent', template: null, day: 0 },
     { label: 'Day 3', template: 'dep-1', day: 3 },
     { label: 'Day 5', template: 'dep-2', day: 5 }
   ];
@@ -5676,36 +5729,80 @@ function renderSequencesPanel() {
     return '<span class="seq-status-badge" style="background:' + sc.bg + ';color:' + sc.fg + '">' + status + '</span>';
   }
 
-  function buildTimeline(steps, currentStep, anchorDate) {
+  function buildTimeline(steps, sheetStep, anchorDate) {
+    // sheetStep: 0 = no emails sent, 1 = first email sent, etc.
+    // steps[0] is always "Entered"/"Offer sent" (always done if in sequence)
+    // steps[1+] map to sheet step values
     var elapsed = daysAgo(anchorDate);
     var h = '<div class="seq-timeline">';
     steps.forEach(function(s, i) {
-      var stepNum = i + 1;
       var cls = 'pending';
       var labelCls = '';
-      if (stepNum <= currentStep) { cls = 'done'; labelCls = ' done'; }
-      else if (stepNum === currentStep + 1) { cls = 'current'; labelCls = ' current'; }
+      if (i === 0) {
+        // Step 0 is always done (they're in the sequence)
+        cls = 'done'; labelCls = ' done';
+      } else if (i <= sheetStep) {
+        cls = 'done'; labelCls = ' done';
+      } else if (i === sheetStep + 1) {
+        cls = 'current'; labelCls = ' current';
+      }
       h += '<div class="seq-step">'
-        + '<span class="seq-dot ' + cls + '">' + stepNum + '</span>'
+        + '<span class="seq-dot ' + cls + '">' + i + '</span>'
         + '<span class="seq-step-label' + labelCls + '">' + s.label + '</span>'
         + '</div>';
     });
     h += '</div>';
-    var nextStep = currentStep + 1;
-    if (nextStep <= steps.length && elapsed !== null) {
-      var nextDay = steps[nextStep - 1].day;
+    // Next email step (skip step 0 which has no email)
+    var nextEmailIdx = sheetStep + 1;
+    if (nextEmailIdx < steps.length && elapsed !== null) {
+      var nextDay = steps[nextEmailIdx].day;
       var daysUntil = nextDay - elapsed;
       if (daysUntil > 0) {
-        h += '<div class="seq-next-info">Next email in ~' + daysUntil + ' day' + (daysUntil !== 1 ? 's' : '') + ' (' + steps[nextStep - 1].label + ')</div>';
+        h += '<div class="seq-next-info">Next email in ~' + daysUntil + ' day' + (daysUntil !== 1 ? 's' : '') + ' (' + steps[nextEmailIdx].label + ')</div>';
       } else if (daysUntil === 0) {
-        h += '<div class="seq-next-info">Next email sends today (' + steps[nextStep - 1].label + ')</div>';
+        h += '<div class="seq-next-info">Next email sends today (' + steps[nextEmailIdx].label + ')</div>';
       } else {
-        h += '<div class="seq-next-info">Next email is due (' + steps[nextStep - 1].label + ')</div>';
+        h += '<div class="seq-next-info">Next email is due (' + steps[nextEmailIdx].label + ')</div>';
       }
-    } else if (currentStep >= steps.length) {
+    } else if (sheetStep >= steps.length - 1) {
       h += '<div class="seq-next-info">Sequence complete</div>';
     }
     return h;
+  }
+
+  function lastInteraction(a) {
+    var dates = [a.emailSent, a.statusChangedDate, a.lastSmsDate, a.callTime].filter(function(d) {
+      return d && !isNaN(new Date(d).getTime());
+    }).map(function(d) { return new Date(d); });
+    if (!dates.length) return null;
+    return new Date(Math.max.apply(null, dates));
+  }
+
+  function lastInteractionLabel(a) {
+    var d = lastInteraction(a);
+    if (!d) return '';
+    var now = Date.now();
+    var diff = Math.floor((now - d.getTime()) / 86400000);
+    var label = '';
+    if (diff === 0) label = 'today';
+    else if (diff === 1) label = 'yesterday';
+    else label = diff + 'd ago';
+    // Figure out what the interaction was
+    var latest = d.toISOString();
+    var type = '';
+    if (a.emailSent && latest.slice(0,10) === new Date(a.emailSent).toISOString().slice(0,10)) type = 'email';
+    else if (a.lastSmsDate && latest.slice(0,10) === new Date(a.lastSmsDate).toISOString().slice(0,10)) type = 'sms';
+    else if (a.callTime && latest.slice(0,10) === new Date(a.callTime).toISOString().slice(0,10)) type = 'call';
+    else type = 'status change';
+    return type + ' ' + label;
+  }
+
+  function seqStatusDropdown(row, currentStatus) {
+    var opts = '';
+    STATUSES.forEach(function(s) {
+      opts += '<option value="' + s + '"' + (s === currentStatus ? ' selected' : '') + '>' + s + '</option>';
+    });
+    return '<select class="seq-status-select" data-row="' + row + '" onchange="seqChangeStatus(' + row + ',this.value)">' + opts + '</select>';
   }
 
   // Collect active sequences
@@ -5715,12 +5812,12 @@ function renderSequencesPanel() {
     var name = (a.firstName || '') + ' ' + (a.lastName || '');
     if (a.status === 'Ghosted') {
       var step = parseInt(a.ghostStep) || 0;
-      ghosted.push({ name: name, row: a.row, step: step, anchor: a.statusChangedDate, email: a.email, status: a.status });
+      ghosted.push({ name: name, row: a.row, step: step, anchor: a.statusChangedDate, email: a.email, status: a.status, applicant: a });
     }
     if (a.status === 'Hard Yes' && a.emailSent) {
       var dStep = parseInt(a.depReminderStep) || 0;
       if (dStep < 2) {
-        depReminders.push({ name: name, row: a.row, step: dStep, anchor: a.emailSent, email: a.email, status: a.status });
+        depReminders.push({ name: name, row: a.row, step: dStep, anchor: a.emailSent, email: a.email, status: a.status, applicant: a });
       }
     }
   });
@@ -5733,8 +5830,8 @@ function renderSequencesPanel() {
   // Filter tabs
   h += '<div class="seq-filters">';
   h += '<button class="seq-filter-btn' + (activeSeqFilter === 'all' ? ' active' : '') + '" onclick="switchSeqFilter(\'all\')">All <span class="seq-filter-count">' + totalCount + '</span></button>';
-  h += '<button class="seq-filter-btn seq-filter-ghost' + (activeSeqFilter === 'ghost' ? ' active' : '') + '" onclick="switchSeqFilter(\'ghost\')"><span class="seq-filter-dot" style="background:#d9d9d9"></span>Ghost Protocol <span class="seq-filter-count">' + ghosted.length + '</span></button>';
-  h += '<button class="seq-filter-btn seq-filter-dep' + (activeSeqFilter === 'deposit' ? ' active' : '') + '" onclick="switchSeqFilter(\'deposit\')"><span class="seq-filter-dot" style="background:#b6d7a8"></span>Deposit Reminders <span class="seq-filter-count">' + depReminders.length + '</span></button>';
+  h += '<button class="seq-filter-btn' + (activeSeqFilter === 'ghost' ? ' active' : '') + '" onclick="switchSeqFilter(\'ghost\')"><span class="seq-filter-dot" style="background:#d9d9d9"></span>Ghost Protocol <span class="seq-filter-count">' + ghosted.length + '</span></button>';
+  h += '<button class="seq-filter-btn' + (activeSeqFilter === 'deposit' ? ' active' : '') + '" onclick="switchSeqFilter(\'deposit\')"><span class="seq-filter-dot" style="background:#b6d7a8"></span>Deposit Reminders <span class="seq-filter-count">' + depReminders.length + '</span></button>';
   h += '</div>';
 
   if (!totalCount) {
@@ -5743,20 +5840,45 @@ function renderSequencesPanel() {
     return;
   }
 
+  // Bulk action bar
+  h += '<div class="seq-bulk-bar" id="seqBulkBar" style="display:none;">'
+    + '<span class="seq-bulk-count" id="seqBulkCount">0 selected</span>'
+    + '<button class="seq-bulk-btn" onclick="seqBulkEmail()"><i class="ph ph-envelope-simple"></i> Send Email</button>'
+    + '<button class="seq-bulk-btn seq-bulk-status-btn" onclick="seqBulkStatusApply()">Apply</button>'
+    + '<select class="seq-bulk-status-select" id="seqBulkStatusSelect">'
+    + '<option value="">Change status\u2026</option>';
+  STATUSES.forEach(function(s) {
+    h += '<option value="' + s + '">' + s + '</option>';
+  });
+  h += '</select>'
+    + '<button class="seq-bulk-cancel" onclick="seqBulkClear()">Clear</button>'
+    + '</div>';
+
+  function buildCard(item, steps, seqType) {
+    var a = item.applicant;
+    var elapsed = daysAgo(item.anchor);
+    var dayStr = elapsed !== null ? elapsed + 'd' : '';
+    var liLabel = lastInteractionLabel(a);
+    return '<div class="seq-card">'
+      + '<div class="seq-card-header">'
+      + '<div class="seq-card-left">'
+      + '<input type="checkbox" class="seq-check" data-row="' + item.row + '" data-email="' + (item.email || '') + '" onchange="seqUpdateBulk()">'
+      + '<span class="seq-card-name">' + item.name + '</span>' + statusBadge(item.status)
+      + '</div>'
+      + '<span class="seq-card-meta">' + dayStr + '</span></div>'
+      + '<div class="seq-card-row">'
+      + '<div class="seq-card-detail"><span class="seq-detail-label">Status</span>' + seqStatusDropdown(item.row, item.status) + '</div>'
+      + '<div class="seq-card-detail"><span class="seq-detail-label">Last interaction</span><span class="seq-detail-value">' + (liLabel || 'none') + '</span></div>'
+      + '</div>'
+      + buildTimeline(steps, item.step, item.anchor)
+      + '</div>';
+  }
+
   // Ghost Protocol section
   if (ghosted.length && (activeSeqFilter === 'all' || activeSeqFilter === 'ghost')) {
     h += '<div class="seq-section">';
     h += '<div class="seq-section-title">Ghost Protocol (' + ghosted.length + ')</div>';
-    ghosted.forEach(function(g) {
-      var elapsed = daysAgo(g.anchor);
-      var dayStr = elapsed !== null ? elapsed + 'd in sequence' : '';
-      h += '<div class="seq-card">'
-        + '<div class="seq-card-header">'
-        + '<div class="seq-card-left"><span class="seq-card-name">' + g.name + '</span>' + statusBadge(g.status) + '</div>'
-        + '<span class="seq-card-meta">' + dayStr + '</span></div>'
-        + buildTimeline(ghostSteps, g.step, g.anchor)
-        + '</div>';
-    });
+    ghosted.forEach(function(g) { h += buildCard(g, ghostSteps, 'ghost'); });
     h += '</div>';
   }
 
@@ -5764,20 +5886,82 @@ function renderSequencesPanel() {
   if (depReminders.length && (activeSeqFilter === 'all' || activeSeqFilter === 'deposit')) {
     h += '<div class="seq-section">';
     h += '<div class="seq-section-title">Deposit Reminders (' + depReminders.length + ')</div>';
-    depReminders.forEach(function(d) {
-      var elapsed = daysAgo(d.anchor);
-      var dayStr = elapsed !== null ? elapsed + 'd since offer sent' : '';
-      h += '<div class="seq-card">'
-        + '<div class="seq-card-header">'
-        + '<div class="seq-card-left"><span class="seq-card-name">' + d.name + '</span>' + statusBadge(d.status) + '</div>'
-        + '<span class="seq-card-meta">' + dayStr + '</span></div>'
-        + buildTimeline(depSteps, d.step, d.anchor)
-        + '</div>';
-    });
+    depReminders.forEach(function(d) { h += buildCard(d, depSteps, 'deposit'); });
     h += '</div>';
   }
 
   panel.innerHTML = h;
+}
+
+// ── Sequences bulk actions ──
+function seqUpdateBulk() {
+  var checked = document.querySelectorAll('.seq-check:checked');
+  var bar = document.getElementById('seqBulkBar');
+  var countEl = document.getElementById('seqBulkCount');
+  if (checked.length > 0) {
+    bar.style.display = '';
+    countEl.textContent = checked.length + ' selected';
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function seqBulkClear() {
+  document.querySelectorAll('.seq-check:checked').forEach(function(cb) { cb.checked = false; });
+  seqUpdateBulk();
+}
+
+function seqBulkEmail() {
+  var checked = document.querySelectorAll('.seq-check:checked');
+  if (!checked.length) return;
+  // Collect rows and trigger the existing bulk email modal
+  // First enable bulk mode in the CRM so the modal works
+  var rows = [];
+  checked.forEach(function(cb) { rows.push(parseInt(cb.dataset.row)); });
+  // Build a fake bulk selection then open the modal
+  // Switch to CRM, enable bulk mode, check the matching rows, then open modal
+  switchView('crm');
+  if (!document.body.classList.contains('bulk-mode')) toggleBulkMode();
+  setTimeout(function() {
+    // Check matching rows in the CRM
+    document.querySelectorAll('.bulk-check').forEach(function(cb) {
+      cb.checked = rows.indexOf(parseInt(cb.dataset.row)) !== -1;
+    });
+    updateBulkCount();
+    openBulkEmailModal();
+  }, 200);
+}
+
+function seqBulkStatusApply() {
+  var newStatus = document.getElementById('seqBulkStatusSelect').value;
+  if (!newStatus) { alert('Select a status first'); return; }
+  var checked = document.querySelectorAll('.seq-check:checked');
+  if (!checked.length) return;
+  var rows = [];
+  checked.forEach(function(cb) { rows.push(parseInt(cb.dataset.row)); });
+  // Update each applicant
+  var promises = rows.map(function(row) {
+    return apiUpdate('updateApplicant', { row: row, status: newStatus });
+  });
+  Promise.all(promises).then(function() {
+    // Update local state
+    rows.forEach(function(row) {
+      var a = state.applicants.find(function(x) { return x.row === row; });
+      if (a) a.status = newStatus;
+    });
+    renderSequencesPanel();
+    showToast(rows.length + ' applicant' + (rows.length > 1 ? 's' : '') + ' updated to ' + newStatus);
+  });
+}
+
+function seqChangeStatus(row, newStatus) {
+  apiUpdate('updateApplicant', { row: row, status: newStatus }).then(function() {
+    var a = state.applicants.find(function(x) { return x.row === row; });
+    if (a) a.status = newStatus;
+    showToast('Status updated to ' + newStatus);
+    // Re-render after short delay so user sees the change
+    setTimeout(function() { renderSequencesPanel(); }, 800);
+  });
 }
 
 function renderPipelinePanel() {
