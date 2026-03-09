@@ -5750,25 +5750,21 @@ function renderSequencesPanel() {
     steps.forEach(function(s, i) {
       var cls = 'pending';
       var labelCls = '';
-      var dateStr = '';
       if (i === 0) {
         cls = 'done'; labelCls = ' done';
-        if (anchorD && !isNaN(anchorD.getTime())) dateStr = formatDate(anchorD);
       } else if (i <= sheetStep) {
         cls = 'done'; labelCls = ' done';
-        // Calculate sent date: anchor + step day offset
-        if (anchorD && !isNaN(anchorD.getTime())) {
-          var sentDate = new Date(anchorD.getTime() + s.day * 86400000);
-          dateStr = formatDate(sentDate);
-        }
       } else if (i === sheetStep + 1) {
         cls = 'current'; labelCls = ' current';
       }
-      var labelText = s.label;
-      if (cls === 'done' && dateStr) {
-        if (i === 0) labelText = s.label + ' &bull; ' + dateStr;
-        else labelText = 'Sent &bull; ' + dateStr;
+      // Calculate date for every step
+      var dateStr = '';
+      if (anchorD && !isNaN(anchorD.getTime())) {
+        var stepDate = new Date(anchorD.getTime() + s.day * 86400000);
+        dateStr = formatDate(stepDate);
       }
+      var labelText = s.label;
+      if (dateStr) labelText = s.label + ' &bull; ' + dateStr;
       h += '<div class="seq-step">'
         + '<span class="seq-dot ' + cls + '">' + i + '</span>'
         + '<span class="seq-step-label' + labelCls + '">' + labelText + '</span>'
