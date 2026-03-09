@@ -970,7 +970,18 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 }
 .seq-check {
   width: 16px; height: 16px; cursor: pointer; accent-color: var(--sage-dark);
+  display: none;
 }
+.seq-select-mode .seq-check { display: inline-block; }
+.seq-select-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg-card); color: var(--text); font-size: 12px;
+  font-weight: 500; font-family: var(--font-body); cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.seq-select-btn:hover { border-color: var(--sage-dark); }
+.seq-select-btn.active { background: var(--sage-dark); color: #fff; border-color: var(--sage-dark); }
 /* Sequence bulk action bar */
 .seq-bulk-bar {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
@@ -5734,21 +5745,33 @@ function renderSequencesPanel() {
     // steps[0] is always "Entered"/"Offer sent" (always done if in sequence)
     // steps[1+] map to sheet step values
     var elapsed = daysAgo(anchorDate);
+    var anchorD = anchorDate ? new Date(anchorDate) : null;
     var h = '<div class="seq-timeline">';
     steps.forEach(function(s, i) {
       var cls = 'pending';
       var labelCls = '';
+      var dateStr = '';
       if (i === 0) {
-        // Step 0 is always done (they're in the sequence)
         cls = 'done'; labelCls = ' done';
+        if (anchorD && !isNaN(anchorD.getTime())) dateStr = formatDate(anchorD);
       } else if (i <= sheetStep) {
         cls = 'done'; labelCls = ' done';
+        // Calculate sent date: anchor + step day offset
+        if (anchorD && !isNaN(anchorD.getTime())) {
+          var sentDate = new Date(anchorD.getTime() + s.day * 86400000);
+          dateStr = formatDate(sentDate);
+        }
       } else if (i === sheetStep + 1) {
         cls = 'current'; labelCls = ' current';
       }
+      var labelText = s.label;
+      if (cls === 'done' && dateStr) {
+        if (i === 0) labelText = s.label + ' &bull; ' + dateStr;
+        else labelText = 'Sent &bull; ' + dateStr;
+      }
       h += '<div class="seq-step">'
         + '<span class="seq-dot ' + cls + '">' + i + '</span>'
-        + '<span class="seq-step-label' + labelCls + '">' + s.label + '</span>'
+        + '<span class="seq-step-label' + labelCls + '">' + labelText + '</span>'
         + '</div>';
     });
     h += '</div>';
@@ -5832,6 +5855,7 @@ function renderSequencesPanel() {
   h += '<button class="seq-filter-btn' + (activeSeqFilter === 'all' ? ' active' : '') + '" onclick="switchSeqFilter(\'all\')">All <span class="seq-filter-count">' + totalCount + '</span></button>';
   h += '<button class="seq-filter-btn' + (activeSeqFilter === 'ghost' ? ' active' : '') + '" onclick="switchSeqFilter(\'ghost\')"><span class="seq-filter-dot" style="background:#d9d9d9"></span>Ghost Protocol <span class="seq-filter-count">' + ghosted.length + '</span></button>';
   h += '<button class="seq-filter-btn' + (activeSeqFilter === 'deposit' ? ' active' : '') + '" onclick="switchSeqFilter(\'deposit\')"><span class="seq-filter-dot" style="background:#b6d7a8"></span>Deposit Reminders <span class="seq-filter-count">' + depReminders.length + '</span></button>';
+  h += '<button class="seq-select-btn" id="seqSelectBtn" onclick="seqToggleSelect()"><i class="ph ph-check-square"></i> Select</button>';
   h += '</div>';
 
   if (!totalCount) {
@@ -5842,6 +5866,7 @@ function renderSequencesPanel() {
 
   // Bulk action bar
   h += '<div class="seq-bulk-bar" id="seqBulkBar" style="display:none;">'
+    + '<button class="seq-bulk-btn" onclick="seqSelectAll()" id="seqSelectAllBtn"><i class="ph ph-check-square"></i> Select All</button>'
     + '<span class="seq-bulk-count" id="seqBulkCount">0 selected</span>'
     + '<button class="seq-bulk-btn" onclick="seqBulkEmail()"><i class="ph ph-envelope-simple"></i> Send Email</button>'
     + '<button class="seq-bulk-btn seq-bulk-status-btn" onclick="seqBulkStatusApply()">Apply</button>'
@@ -5896,40 +5921,91 @@ function renderSequencesPanel() {
 // ── Sequences bulk actions ──
 function seqUpdateBulk() {
   var checked = document.querySelectorAll('.seq-check:checked');
-  var bar = document.getElementById('seqBulkBar');
   var countEl = document.getElementById('seqBulkCount');
-  if (checked.length > 0) {
-    bar.style.display = '';
-    countEl.textContent = checked.length + ' selected';
-  } else {
-    bar.style.display = 'none';
-  }
+  if (countEl) countEl.textContent = checked.length + ' selected';
+}
+
+function seqToggleSelect() {
+  var panel = document.getElementById('sequencesPanel');
+  var btn = document.getElementById('seqSelectBtn');
+  if (!panel || !btn) return;
+  var active = panel.classList.toggle('seq-select-mode');
+  btn.classList.toggle('active', active);
+  if (!active) seqBulkClear();
+  // Show bulk bar when entering select mode
+  var bar = document.getElementById('seqBulkBar');
+  if (bar) bar.style.display = active ? '' : 'none';
+}
+
+function seqSelectAll() {
+  var boxes = document.querySelectorAll('.seq-check');
+  var allChecked = Array.prototype.every.call(boxes, function(cb) { return cb.checked; });
+  boxes.forEach(function(cb) { cb.checked = !allChecked; });
+  seqUpdateBulk();
 }
 
 function seqBulkClear() {
   document.querySelectorAll('.seq-check:checked').forEach(function(cb) { cb.checked = false; });
   seqUpdateBulk();
+  // Exit select mode
+  var panel = document.getElementById('sequencesPanel');
+  var btn = document.getElementById('seqSelectBtn');
+  if (panel) panel.classList.remove('seq-select-mode');
+  if (btn) btn.classList.remove('active');
+  var bar = document.getElementById('seqBulkBar');
+  if (bar) bar.style.display = 'none';
 }
 
 function seqBulkEmail() {
   var checked = document.querySelectorAll('.seq-check:checked');
   if (!checked.length) return;
-  // Collect rows and trigger the existing bulk email modal
-  // First enable bulk mode in the CRM so the modal works
   var rows = [];
-  checked.forEach(function(cb) { rows.push(parseInt(cb.dataset.row)); });
-  // Build a fake bulk selection then open the modal
-  // Switch to CRM, enable bulk mode, check the matching rows, then open modal
-  switchView('crm');
-  if (!document.body.classList.contains('bulk-mode')) toggleBulkMode();
-  setTimeout(function() {
-    // Check matching rows in the CRM
-    document.querySelectorAll('.bulk-check').forEach(function(cb) {
-      cb.checked = rows.indexOf(parseInt(cb.dataset.row)) !== -1;
-    });
-    updateBulkCount();
-    openBulkEmailModal();
-  }, 200);
+  var emails = [];
+  checked.forEach(function(cb) {
+    rows.push(Number(cb.dataset.row));
+    if (cb.dataset.email) emails.push(cb.dataset.email);
+  });
+
+  // Open bulk email modal directly without switching views
+  emailModalRow = null;
+  window._bulkRows = rows;
+
+  var statusCounts = {};
+  rows.forEach(function(r) {
+    var a = state.applicants.find(function(x) { return x.row === r; });
+    if (a) statusCounts[a.status] = (statusCounts[a.status] || 0) + 1;
+  });
+  var commonStatus = '', maxCount = 0;
+  for (var s in statusCounts) {
+    if (statusCounts[s] > maxCount) { maxCount = statusCounts[s]; commonStatus = s; }
+  }
+  var defaultKey = STATUS_DEFAULT_TEMPLATE[commonStatus] || '';
+
+  var tplSelect = document.getElementById('emailModalTemplate');
+  var opts = '<option value="">(blank \u2014 write from scratch)</option>';
+  COMPOSE_TEMPLATES.forEach(function(ct) {
+    opts += '<option value="' + ct.key + '"' + (ct.key === defaultKey ? ' selected' : '') + '>' + esc(ct.label) + '</option>';
+  });
+  tplSelect.innerHTML = opts;
+
+  var subject = '', body = '';
+  if (defaultKey && EMAIL_TEMPLATES_JS[defaultKey]) {
+    subject = EMAIL_TEMPLATES_JS[defaultKey].subject || '';
+    body = EMAIL_TEMPLATES_JS[defaultKey].body || '';
+  }
+
+  document.getElementById('emailModalTitle').textContent = 'Bulk Email (' + rows.length + ' recipients)';
+  document.getElementById('emailModalTo').innerHTML = '<strong>To:</strong> ' + rows.length + ' applicants (' + emails.slice(0, 3).join(', ') + (emails.length > 3 ? ', ...' : '') + ')';
+  document.getElementById('emailModalSubject').value = subject;
+  document.getElementById('emailModalTextarea').value = body;
+  document.getElementById('emailModalPreview').innerHTML = body ? markdownToHtmlPreview(body) : '<p style="color:#888;">Select a template or write your email.</p>';
+
+  var toggleBtns = document.querySelectorAll('.email-modal-toggle button');
+  toggleBtns[0].classList.add('active');
+  toggleBtns[1].classList.remove('active');
+  document.getElementById('emailModalPreview').style.display = '';
+  document.getElementById('emailModalTextarea').style.display = 'none';
+  document.getElementById('emailModal').classList.remove('hidden');
 }
 
 function seqBulkStatusApply() {
