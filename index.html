@@ -4929,9 +4929,11 @@ function getDayKeyInTz(isoStr, tz) {
 function renderCallsPanel() {
   var panel = document.getElementById('callsPanel');
 
-  // Gather all applicants with callTime and status = Call Scheduled
+  // Gather all applicants with callTime and status = Call Scheduled, excluding past calls
+  var now = Date.now();
   var calls = state.applicants.filter(function(a) {
-    return a.callTime && a.status === 'Call Scheduled';
+    if (!a.callTime || a.status !== 'Call Scheduled') return false;
+    return new Date(a.callTime).getTime() >= now - 3600000; // include calls up to 1hr ago (in case still ongoing)
   }).map(function(a) {
     return {
       row: a.row,
