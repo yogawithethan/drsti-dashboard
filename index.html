@@ -881,9 +881,6 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   box-shadow: var(--shadow-xs); padding: 16px 18px; margin-bottom: 10px;
   border: 1px solid rgba(0,0,0,0.04);
 }
-.seq-card-header {
-  display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
-}
 .seq-card-name { font-size: 15px; font-weight: 600; color: var(--text); }
 .seq-card-meta { font-size: 11px; color: var(--text-muted); }
 .seq-timeline {
@@ -921,6 +918,37 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 }
 .seq-empty {
   text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px;
+}
+/* Sequence filter tabs */
+.seq-filters {
+  display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.seq-filter-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--bg-card);
+  font-family: var(--font-body); font-size: 12px; font-weight: 500;
+  color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+}
+.seq-filter-btn:hover { border-color: var(--text-muted); color: var(--text); }
+.seq-filter-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+.seq-filter-dot {
+  width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+}
+.seq-filter-count {
+  font-size: 10px; font-weight: 700; opacity: 0.6;
+}
+/* Status badge inside sequence cards */
+.seq-status-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.seq-card-left {
+  display: flex; align-items: center; gap: 8px;
+}
+.seq-card-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
 }
 
 /* ── PIPELINE GUIDE PANEL (light theme) ── */
@@ -5611,6 +5639,12 @@ function copyChip(el, val) {
   });
 }
 
+var activeSeqFilter = 'all';
+function switchSeqFilter(filter) {
+  activeSeqFilter = filter;
+  renderSequencesPanel();
+}
+
 function renderSequencesPanel() {
   var panel = document.getElementById('sequencesPanel');
   if (!panel) return;
@@ -5637,6 +5671,11 @@ function renderSequencesPanel() {
     return Math.floor((Date.now() - d.getTime()) / 86400000);
   }
 
+  function statusBadge(status) {
+    var sc = STATUS_COLORS[status] || { bg: '#eee', fg: '#666' };
+    return '<span class="seq-status-badge" style="background:' + sc.bg + ';color:' + sc.fg + '">' + status + '</span>';
+  }
+
   function buildTimeline(steps, currentStep, anchorDate) {
     var elapsed = daysAgo(anchorDate);
     var h = '<div class="seq-timeline">';
@@ -5652,7 +5691,6 @@ function renderSequencesPanel() {
         + '</div>';
     });
     h += '</div>';
-    // Next step info
     var nextStep = currentStep + 1;
     if (nextStep <= steps.length && elapsed !== null) {
       var nextDay = steps[nextStep - 1].day;
@@ -5673,43 +5711,48 @@ function renderSequencesPanel() {
   // Collect active sequences
   var ghosted = [];
   var depReminders = [];
-  var completed = [];
   state.applicants.forEach(function(a) {
     var name = (a.firstName || '') + ' ' + (a.lastName || '');
     if (a.status === 'Ghosted') {
       var step = parseInt(a.ghostStep) || 0;
-      ghosted.push({ name: name, row: a.row, step: step, anchor: a.statusChangedDate, email: a.email, total: 4 });
+      ghosted.push({ name: name, row: a.row, step: step, anchor: a.statusChangedDate, email: a.email, status: a.status });
     }
     if (a.status === 'Hard Yes' && a.emailSent) {
       var dStep = parseInt(a.depReminderStep) || 0;
       if (dStep < 2) {
-        depReminders.push({ name: name, row: a.row, step: dStep, anchor: a.emailSent, email: a.email, total: 2 });
+        depReminders.push({ name: name, row: a.row, step: dStep, anchor: a.emailSent, email: a.email, status: a.status });
       }
     }
-    // Completed ghost sequences
-    if (a.status === 'Ghosted' && (parseInt(a.ghostStep) || 0) >= 4) {
-      // Already in ghosted list above
-    }
   });
+
+  var totalCount = ghosted.length + depReminders.length;
 
   var h = '<div class="seq-header"><h2>Active Sequences</h2>'
     + '<p>Automated email sequences currently running</p></div>';
 
-  if (!ghosted.length && !depReminders.length) {
+  // Filter tabs
+  h += '<div class="seq-filters">';
+  h += '<button class="seq-filter-btn' + (activeSeqFilter === 'all' ? ' active' : '') + '" onclick="switchSeqFilter(\'all\')">All <span class="seq-filter-count">' + totalCount + '</span></button>';
+  h += '<button class="seq-filter-btn seq-filter-ghost' + (activeSeqFilter === 'ghost' ? ' active' : '') + '" onclick="switchSeqFilter(\'ghost\')"><span class="seq-filter-dot" style="background:#d9d9d9"></span>Ghost Protocol <span class="seq-filter-count">' + ghosted.length + '</span></button>';
+  h += '<button class="seq-filter-btn seq-filter-dep' + (activeSeqFilter === 'deposit' ? ' active' : '') + '" onclick="switchSeqFilter(\'deposit\')"><span class="seq-filter-dot" style="background:#b6d7a8"></span>Deposit Reminders <span class="seq-filter-count">' + depReminders.length + '</span></button>';
+  h += '</div>';
+
+  if (!totalCount) {
     h += '<div class="seq-empty">No active sequences right now.<br>Sequences activate when applicants enter <strong>Ghosted</strong> or <strong>Hard Yes</strong> status.</div>';
     panel.innerHTML = h;
     return;
   }
 
   // Ghost Protocol section
-  if (ghosted.length) {
+  if (ghosted.length && (activeSeqFilter === 'all' || activeSeqFilter === 'ghost')) {
     h += '<div class="seq-section">';
-    h += '<div class="seq-section-title">Ghost Protocol (' + ghosted.length + ' active)</div>';
+    h += '<div class="seq-section-title">Ghost Protocol (' + ghosted.length + ')</div>';
     ghosted.forEach(function(g) {
       var elapsed = daysAgo(g.anchor);
-      var dayStr = elapsed !== null ? elapsed + ' day' + (elapsed !== 1 ? 's' : '') + ' in sequence' : '';
+      var dayStr = elapsed !== null ? elapsed + 'd in sequence' : '';
       h += '<div class="seq-card">'
-        + '<div class="seq-card-header"><span class="seq-card-name">' + g.name + '</span>'
+        + '<div class="seq-card-header">'
+        + '<div class="seq-card-left"><span class="seq-card-name">' + g.name + '</span>' + statusBadge(g.status) + '</div>'
         + '<span class="seq-card-meta">' + dayStr + '</span></div>'
         + buildTimeline(ghostSteps, g.step, g.anchor)
         + '</div>';
@@ -5718,14 +5761,15 @@ function renderSequencesPanel() {
   }
 
   // Deposit Reminders section
-  if (depReminders.length) {
+  if (depReminders.length && (activeSeqFilter === 'all' || activeSeqFilter === 'deposit')) {
     h += '<div class="seq-section">';
-    h += '<div class="seq-section-title">Deposit Reminders (' + depReminders.length + ' active)</div>';
+    h += '<div class="seq-section-title">Deposit Reminders (' + depReminders.length + ')</div>';
     depReminders.forEach(function(d) {
       var elapsed = daysAgo(d.anchor);
-      var dayStr = elapsed !== null ? elapsed + ' day' + (elapsed !== 1 ? 's' : '') + ' since offer sent' : '';
+      var dayStr = elapsed !== null ? elapsed + 'd since offer sent' : '';
       h += '<div class="seq-card">'
-        + '<div class="seq-card-header"><span class="seq-card-name">' + d.name + '</span>'
+        + '<div class="seq-card-header">'
+        + '<div class="seq-card-left"><span class="seq-card-name">' + d.name + '</span>' + statusBadge(d.status) + '</div>'
         + '<span class="seq-card-meta">' + dayStr + '</span></div>'
         + buildTimeline(depSteps, d.step, d.anchor)
         + '</div>';
