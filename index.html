@@ -3283,7 +3283,6 @@ function renderCard(a) {
     + '<div class="card-header" onclick="toggleCard('+a.row+')">'
     + '<div class="bulk-check-wrap"><input type="checkbox" class="bulk-check" data-row="'+a.row+'" onclick="event.stopPropagation();updateBulkCount()" data-email="'+(a.email||'')+'"></div>'
     + '<div class="card-header-left">'
-    + buildAvatar(a)
     + '<div class="card-header-name">'
     + '<h2>'+name+'</h2>'
     + '<p>'+meta+addonHtml+'</p>'
