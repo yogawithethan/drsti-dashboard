@@ -1235,6 +1235,9 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   color: var(--sage-dark);
   white-space: nowrap;
 }
+.inv-pill { cursor: pointer; }
+.inv-pill:hover { border-color: var(--sage); }
+.inv-pill.active { border-color: var(--sage-dark); background: var(--sage-mist); }
 .inv-pill.full {
   background: #fef2f2;
   border-color: rgba(153,0,0,0.1);
@@ -1245,6 +1248,8 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   border-color: rgba(122,158,126,0.15);
 }
 .inv-pill.total-pill .inv-nums { color: var(--sage-dark); font-weight: 700; }
+.inv-pending { color: #b8860b; font-weight: 600; font-size: 11px; margin-left: 2px; }
+.inv-pill.warn { background: #fef9e7; border-color: rgba(184,134,11,0.3); }
 
 /* ── INLINE SEARCH (compact, inside filter bar) ── */
 .search-wrap {
@@ -1981,7 +1986,13 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
   padding: 10px 16px; background: var(--sage-light);
   font-size: 12px; color: var(--sage-dark); font-weight: 500;
   border-bottom: 1px solid rgba(45,42,38,0.06);
-  flex-shrink: 0;
+  flex-shrink: 0; display: flex; align-items: center; gap: 6px;
+}
+.email-modal-banner.warn {
+  background: #fef3cd; color: #856404; border-bottom-color: rgba(133,100,4,0.15);
+}
+.email-modal-banner.info {
+  background: #e8f4f8; color: #0c5460; border-bottom-color: rgba(12,84,96,0.15);
 }
 .bulk-progress {
   font-size: 12px; color: var(--text-secondary); font-weight: 500;
@@ -2603,7 +2614,7 @@ var STATUSES = [
   'Hard Yes','Needs Call','Call Scheduled','Waitlist',
   'Offer Sent','Ghosted',
   'Deposit Paid','Payment Plan','Paid in Full',
-  'Not Aligned','Maybe Next Year','No Longer Interested','Cancelled'
+  'Offer Expired','Not Aligned','Maybe Next Year','No Longer Interested','Cancelled'
 ];
 
 var STATUS_COLORS = {
@@ -2617,6 +2628,7 @@ var STATUS_COLORS = {
   'Deposit Paid':         {bg:'#a2d9ce',fg:'#0e6251'},
   'Payment Plan':         {bg:'#76d7c4',fg:'#0e6251'},
   'Paid in Full':         {bg:'#45b39d',fg:'#ffffff'},
+  'Offer Expired':        {bg:'#fce5cd',fg:'#7f6003'},
   'Not Aligned':          {bg:'#f4cccc',fg:'#990000'},
   'Maybe Next Year':      {bg:'#fce5cd',fg:'#783f04'},
   'No Longer Interested': {bg:'#e6b8af',fg:'#85200c'},
@@ -3001,27 +3013,38 @@ function updateLastFetched() {
 }
 
 // ── RENDER: INVENTORY ──
+var OFFER_HOLD_DAYS = 5;
 function computeClientInventory() {
   var capacity = { 'Triple': 6, 'Double': 8, 'Glamping': 2 };
   var confirmed = { 'Triple': 0, 'Double': 0, 'Glamping': 0 };
+  var pending = { 'Triple': 0, 'Double': 0, 'Glamping': 0 };
   var totalConfirmed = 0;
+  var totalPending = 0;
+  var now = Date.now();
+  var holdMs = OFFER_HOLD_DAYS * 86400000;
   state.applicants.forEach(function(a) {
+    var accom = String(a.accommodation || '').trim();
     if (CONFIRMED_STATUSES.indexOf(a.status) !== -1) {
       totalConfirmed++;
-      var accom = String(a.accommodation || '').trim();
-      if (accom && confirmed.hasOwnProperty(accom)) {
-        confirmed[accom]++;
+      if (accom && confirmed.hasOwnProperty(accom)) confirmed[accom]++;
+    } else if (a.emailSent && accom && pending.hasOwnProperty(accom)) {
+      // Pending = has accommodation + offer sent within hold period + not confirmed/expired
+      var sentTime = new Date(a.emailSent).getTime();
+      if (!isNaN(sentTime) && (now - sentTime) < holdMs && a.status !== 'Offer Expired' && a.status !== 'Not Aligned' && a.status !== 'Cancelled' && a.status !== 'No Longer Interested') {
+        pending[accom]++;
+        totalPending++;
       }
     }
   });
   var inv = [];
   ['Triple', 'Double', 'Glamping'].forEach(function(name) {
-    inv.push({ item: name, total: capacity[name], confirmed: confirmed[name] });
+    inv.push({ item: name, total: capacity[name], confirmed: confirmed[name], pending: pending[name] });
   });
-  inv.push({ item: 'TOTAL PARTICIPANTS', total: MAX_PARTICIPANTS, confirmed: totalConfirmed });
+  inv.push({ item: 'TOTAL PARTICIPANTS', total: MAX_PARTICIPANTS, confirmed: totalConfirmed, pending: totalPending });
   return inv;
 }
 
+var activeInvFilter = '';
 function renderInventory() {
   var strip = document.getElementById('invStrip');
   var html = '';
@@ -3029,16 +3052,39 @@ function renderInventory() {
   for (var i = 0; i < inv.length; i++) {
     var item = inv[i];
     var isTotal = item.item === 'TOTAL PARTICIPANTS';
-    var isFull = item.confirmed >= item.total;
-    var cls = 'inv-pill' + (isFull ? ' full' : '') + (isTotal ? ' total-pill' : '');
+    var held = item.confirmed + item.pending;
+    var isFull = held >= item.total;
+    var isWarn = !isFull && item.pending > 0 && held >= item.total - 1;
+    var isActive = activeInvFilter === item.item;
+    var cls = 'inv-pill' + (isFull ? ' full' : '') + (isWarn ? ' warn' : '') + (isTotal ? ' total-pill' : '') + (isActive ? ' active' : '');
     var label = isTotal ? 'Total' : item.item;
-    html += '<div class="'+cls+'">'
+    var pendingHtml = item.pending > 0 ? '<span class="inv-pending">(+' + item.pending + ')</span>' : '';
+    html += '<div class="'+cls+'" onclick="filterByRoom(\''+item.item+'\')">'
       + '<span class="inv-label">'+esc(label)+'</span>'
-      + '<span class="inv-nums">'+item.confirmed+'/'+item.total+'</span>'
+      + '<span class="inv-nums">'+item.confirmed+'/'+item.total+pendingHtml+'</span>'
       + '</div>';
   }
   html += '<button class="bulk-toggle" id="bulkToggle" onclick="toggleBulkMode()">Select</button>';
   strip.innerHTML = html;
+}
+
+function filterByRoom(roomType) {
+  if (activeInvFilter === roomType) {
+    activeInvFilter = '';
+  } else {
+    activeInvFilter = roomType;
+  }
+  renderInventory();
+  renderCards();
+}
+
+function getRoomAvailability(accomType) {
+  if (!accomType) return null;
+  var inv = computeClientInventory();
+  for (var i = 0; i < inv.length; i++) {
+    if (inv[i].item === accomType) return inv[i];
+  }
+  return null;
 }
 
 // ── RENDER: RETREAT BAR ──
@@ -3786,11 +3832,36 @@ function openEmailModal(row) {
   document.getElementById('emailModalPreview').style.display = '';
   document.getElementById('emailModalTextarea').style.display = 'none';
 
+  // Room capacity warning
+  var banner = document.getElementById('emailModalBanner');
+  var accomEl = document.getElementById('sel-accom-' + row);
+  var liveAccom = accomEl ? accomEl.value : (a.accommodation || '');
+  if (liveAccom && (defaultKey === 'hard-yes' || (resolved.body && resolved.body.indexOf('{{deposit_link}}') !== -1))) {
+    var roomInfo = getRoomAvailability(liveAccom);
+    if (roomInfo) {
+      var held = roomInfo.confirmed + roomInfo.pending;
+      if (held >= roomInfo.total) {
+        banner.innerHTML = '<i class="ph ph-warning"></i> All <b>' + esc(liveAccom) + '</b> rooms are held or confirmed (' + roomInfo.confirmed + ' paid + ' + roomInfo.pending + ' pending offers). You can still send, but there may not be a spot.';
+        banner.className = 'email-modal-banner warn';
+      } else if (held >= roomInfo.total - 1) {
+        banner.innerHTML = '<i class="ph ph-info"></i> Only <b>1 ' + esc(liveAccom) + '</b> spot remaining (' + roomInfo.confirmed + ' paid + ' + roomInfo.pending + ' pending).';
+        banner.className = 'email-modal-banner info';
+      } else {
+        banner.className = 'email-modal-banner hidden';
+      }
+    } else {
+      banner.className = 'email-modal-banner hidden';
+    }
+  } else {
+    banner.className = 'email-modal-banner hidden';
+  }
+
   document.getElementById('emailModal').classList.remove('hidden');
 }
 
 function closeEmailModal() {
   document.getElementById('emailModal').classList.add('hidden');
+  document.getElementById('emailModalBanner').className = 'email-modal-banner hidden';
   emailModalRow = null;
 }
 
@@ -4050,6 +4121,13 @@ function getFilteredSorted() {
       }
       return passesStatus && passesSmart;
     });
+  }
+  if (activeInvFilter) {
+    if (activeInvFilter === 'TOTAL PARTICIPANTS') {
+      list = list.filter(function(a) { return !!a.accommodation; });
+    } else {
+      list = list.filter(function(a) { return String(a.accommodation || '').trim() === activeInvFilter; });
+    }
   }
   if (state.searchQuery) {
     var q = state.searchQuery;
