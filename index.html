@@ -3214,8 +3214,8 @@ function renderCard(a) {
   var igHandle = a.instagram ? String(a.instagram).replace(/^@/,'').replace(/^https?:\/\/(www\.)?instagram\.com\//i,'').replace(/[?#].*$/,'').replace(/\/+$/,'') : '';
 
   // Contact icons (Phosphor Icons — all same green)
-  var contactIcons = '<button class="action-icon" title="Compose Email" onclick="event.stopPropagation();openEmailModal('+a.row+')"><i class="ph ph-paper-plane-tilt"></i></button>';
-  if (a.email) contactIcons += '<a href="mailto:'+esc(a.email)+'" class="action-icon" title="Email" onclick="event.stopPropagation()"><i class="ph ph-envelope"></i></a>';
+  var contactIcons = '';
+  if (a.email) contactIcons += '<button class="action-icon" title="Compose Email" onclick="event.stopPropagation();openEmailModal('+a.row+')"><i class="ph ph-envelope"></i></button>';
   if (a.phone) contactIcons += '<a href="'+waLink+'" target="_blank" class="action-icon" title="WhatsApp" onclick="event.stopPropagation()"><i class="ph ph-whatsapp-logo"></i></a>';
   if (igHandle) contactIcons += '<a href="https://instagram.com/'+esc(igHandle)+'" target="_blank" class="action-icon" title="@'+esc(igHandle)+'" onclick="event.stopPropagation()"><i class="ph ph-instagram-logo"></i></a>';
 
