@@ -1013,6 +1013,73 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 }
 .seq-bulk-cancel:hover { color: var(--text); }
 
+/* ── SCHEDULED BLASTS PANEL ── */
+.blasts-panel {
+  max-width: 720px; margin: 0 auto; padding: 24px 16px 100px;
+}
+.blasts-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.blasts-header h2 { font-family: var(--font-display); font-size: 22px; font-weight: 400; color: var(--text); margin: 0; }
+.blasts-header p  { font-size: 13px; color: var(--text-muted); margin: 4px 0 0; }
+.blast-card {
+  background: var(--bg-card); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs); padding: 16px 18px; margin-bottom: 10px;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.blast-card-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.blast-card-name { font-size: 15px; font-weight: 600; color: var(--text); }
+.blast-card-meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+.blast-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.03em; white-space: nowrap;
+}
+.blast-badge.pending  { background: #fef3c7; color: #92400e; }
+.blast-badge.sent     { background: #d1fae5; color: #065f46; }
+.blast-badge.cancelled { background: #f1f5f9; color: #64748b; }
+.blast-cancel-btn {
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  font-size: 12px; padding: 4px 8px; border-radius: 6px; white-space: nowrap;
+}
+.blast-cancel-btn:hover { background: var(--bg-hover); color: var(--text); }
+.blasts-empty { text-align: center; padding: 48px 16px; color: var(--text-muted); font-size: 14px; }
+
+/* Blast compose modal */
+.blast-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999; padding: 16px;
+}
+.blast-modal {
+  background: var(--bg); border-radius: var(--radius-lg); padding: 28px 28px 24px;
+  width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+}
+.blast-modal h3 { font-family: var(--font-display); font-size: 20px; font-weight: 400; margin: 0 0 20px; }
+.blast-field { margin-bottom: 16px; }
+.blast-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.06em; }
+.blast-field input, .blast-field textarea, .blast-field select {
+  width: 100%; box-sizing: border-box;
+  padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg-card); color: var(--text); font-size: 14px; font-family: inherit;
+}
+.blast-field input:focus, .blast-field textarea:focus, .blast-field select:focus {
+  outline: none; border-color: var(--accent);
+}
+.blast-field textarea { min-height: 120px; resize: vertical; }
+.blast-status-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; margin-top: 4px;
+}
+.blast-status-chip {
+  display: flex; align-items: center; gap: 6px; padding: 6px 10px;
+  border: 1px solid var(--border); border-radius: 6px; cursor: pointer;
+  font-size: 12px; background: var(--bg-card); transition: all 0.15s;
+}
+.blast-status-chip.selected { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.08); }
+.blast-status-chip input { width: auto; margin: 0; padding: 0; }
+.blast-preview-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.blast-preview-count { font-size: 13px; color: var(--text-muted); }
+.blast-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+.blast-tz-note { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
 /* ── PIPELINE GUIDE PANEL (light theme) ── */
 .pipeline-panel {
   background: var(--bg);
@@ -2428,6 +2495,7 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
       <button class="nav-btn" id="navTemplates" onclick="switchView('templates')" title="Email Templates"><i class="ph ph-envelope-simple"></i></button>
       <button class="nav-btn" id="navPipeline" onclick="switchView('pipeline')" title="Pipeline Guide"><i class="ph ph-git-branch"></i></button>
       <button class="nav-btn" id="navSequences" onclick="switchView('sequences')" title="Sequences"><i class="ph ph-flow-arrow"></i></button>
+      <button class="nav-btn" id="navBlasts" onclick="switchView('blasts')" title="Scheduled Blasts"><i class="ph ph-paper-plane-tilt"></i></button>
       <button class="nav-btn" id="navCompass" onclick="switchView('compass')" title="The Compass"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24,7.76 14.12,14.12 7.76,16.24 9.88,9.88" fill="currentColor" stroke="none" opacity="0.7"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg></button>
     </div>
   </div>
@@ -2501,6 +2569,11 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
 <!-- VIEW: SEQUENCES -->
 <div class="panel-view" id="viewSequences">
   <div class="sequences-panel" id="sequencesPanel"></div>
+</div>
+
+<!-- VIEW: BLASTS -->
+<div class="panel-view" id="viewBlasts">
+  <div class="blasts-panel" id="blastsPanel"></div>
 </div>
 
 <!-- VIEW: THE COMPASS -->
@@ -3688,9 +3761,13 @@ function resolveEmailTemplate(a, overrideTemplateKey) {
   var PRICE_LABELS = {'Payment Plan':'Payment Plan','Pay Full':'Pay in Full','EB Plan':'Early Bird Plan','EB Full':'Early Bird Full'};
   var priceLabel = PRICE_LABELS[a.priceType] || a.priceType;
 
-  // Calculate add-on total
+  // Calculate add-on total (merge legacy columns + addonsJson)
   var selectedAddons = {};
-  try { if (a.addonsJson) selectedAddons = JSON.parse(a.addonsJson); } catch(e) {}
+  if (a.addonBodywork === 'Yes') selectedAddons['Bodywork'] = true;
+  if (a.addonHealing === 'Yes') selectedAddons['Healing'] = true;
+  if (a.addonPhotoshoot === 'Yes') selectedAddons['Photoshoot'] = true;
+  if (a.addonCoaching === 'Yes') selectedAddons['Coaching'] = true;
+  try { if (a.addonsJson) { var pj = JSON.parse(a.addonsJson); for (var pk in pj) { if (pj[pk]) selectedAddons[pk] = true; else delete selectedAddons[pk]; } } } catch(e) {}
   var addonTotal = 0;
   var addonLines = '';
   ADDON_DEFS.forEach(function(ad) {
@@ -3983,12 +4060,24 @@ async function saveCardChanges(row) {
   });
   var newAddonsJson = Object.keys(liveAddons).length > 0 ? JSON.stringify(liveAddons) : '';
 
+  // Build the baseline addons from both legacy columns and addonsJson
+  // so unchecking a legacy add-on is detected as a real change
+  var oldAddons = {};
+  if (a.addonBodywork === 'Yes') oldAddons['Bodywork'] = true;
+  if (a.addonHealing === 'Yes') oldAddons['Healing'] = true;
+  if (a.addonPhotoshoot === 'Yes') oldAddons['Photoshoot'] = true;
+  if (a.addonCoaching === 'Yes') oldAddons['Coaching'] = true;
+  if (a.addonsJson) {
+    try { var oj = JSON.parse(a.addonsJson); for (var ok in oj) { if (oj[ok]) oldAddons[ok] = true; } } catch(e) {}
+  }
+  var oldAddonsJson = Object.keys(oldAddons).length > 0 ? JSON.stringify(oldAddons) : '';
+
   if (newStatus !== a.status) fields.status = newStatus;
   if (newAccom !== a.accommodation) fields.accommodation = newAccom;
   if (newPrice !== a.priceType) fields.priceType = newPrice;
   if (newScholarship !== String(a.scholarship || '')) fields.scholarship = newScholarship;
   if (newNotes !== (a.notes || '')) fields.notes = newNotes;
-  if (newAddonsJson !== (a.addonsJson || '')) fields.addonsJson = newAddonsJson;
+  if (newAddonsJson !== oldAddonsJson) fields.addonsJson = newAddonsJson;
   if (newVideo !== !!a.personalVideoSent) fields.personalVideoSent = newVideo ? "TRUE" : "";
   if (newCallTime !== (a.callTime || '')) fields.callTime = newCallTime;
 
@@ -4776,7 +4865,7 @@ var currentView = 'crm';
 
 function switchView(view) {
   currentView = view;
-  ['crm', 'calls', 'templates', 'pipeline', 'sequences', 'compass'].forEach(function(v) {
+  ['crm', 'calls', 'templates', 'pipeline', 'sequences', 'blasts', 'compass'].forEach(function(v) {
     var panel = document.getElementById('view' + v.charAt(0).toUpperCase() + v.slice(1));
     var btn = document.getElementById('nav' + v.charAt(0).toUpperCase() + v.slice(1));
     if (panel) panel.classList.toggle('active', v === view);
@@ -4786,7 +4875,225 @@ function switchView(view) {
   if (view === 'templates') renderTemplatesPanel();
   if (view === 'pipeline') renderPipelinePanel();
   if (view === 'sequences') renderSequencesPanel();
+  if (view === 'blasts') renderBlastsPanel();
   if (view === 'compass') renderCompassPanel();
+}
+
+// ── SCHEDULED BLASTS PANEL ──
+
+var VALID_STATUSES_FOR_BLAST = [
+  'Applied','Hard Yes','Needs Call','Call Scheduled','Waitlist','Offer Sent',
+  'Ghosted','Deposit Paid','Payment Plan','Paid in Full',
+  'Offer Expired','Not Aligned','Maybe Next Year','No Longer Interested','Cancelled'
+];
+
+// Portugal (Europe/Lisbon) offset: UTC+1 in summer (WEST), UTC+0 in winter (WET)
+// June 2026 = WEST = UTC+1
+function utcToLisbon(isoStr) {
+  if (!isoStr) return '';
+  try {
+    return new Date(isoStr).toLocaleString('en-GB', {
+      timeZone: 'Europe/Lisbon',
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    }) + ' (PT)';
+  } catch(e) { return isoStr; }
+}
+
+function lisbonToUtc(localDatetimeStr) {
+  // localDatetimeStr is "YYYY-MM-DDTHH:MM" from datetime-local input
+  // Interpret as Europe/Lisbon, return UTC ISO string
+  // Approach: use Intl to find the offset and subtract
+  if (!localDatetimeStr) return '';
+  try {
+    var d = new Date(localDatetimeStr);
+    // Get the UTC time that corresponds to this local time in Lisbon
+    var lisbonStr = d.toLocaleString('en-US', { timeZone: 'Europe/Lisbon', hour12: false,
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    var lisbonMs = new Date(lisbonStr).getTime();
+    var localMs  = d.getTime();
+    var offset   = localMs - lisbonMs; // offset in ms
+    return new Date(localMs + offset).toISOString();
+  } catch(e) { return new Date(localDatetimeStr).toISOString(); }
+}
+
+async function renderBlastsPanel() {
+  var panel = document.getElementById('blastsPanel');
+  if (!panel) return;
+  panel.innerHTML = '<div class="blasts-empty">Loading\u2026</div>';
+
+  var data = await apiGet('getScheduledBlasts', activeRetreat);
+  if (!data || !data.ok) {
+    panel.innerHTML = '<div class="blasts-empty">Failed to load blasts.</div>';
+    return;
+  }
+
+  var blasts = data.blasts || [];
+
+  var h = '<div class="blasts-header">';
+  h += '<div><h2>Scheduled Blasts</h2><p>Compose an email to a filtered group — it fires automatically at the scheduled time.</p></div>';
+  h += '<button class="btn-primary" onclick="openNewBlastModal()"><i class="ph ph-plus"></i> New Blast</button>';
+  h += '</div>';
+
+  if (!blasts.length) {
+    h += '<div class="blasts-empty">No blasts scheduled yet.<br>Hit "New Blast" to create one.</div>';
+  } else {
+    // Sort: pending first, then sent, then cancelled
+    blasts.sort(function(a, b) {
+      var order = { pending: 0, sent: 1, cancelled: 2 };
+      return (order[blastStatus(a)] || 0) - (order[blastStatus(b)] || 0);
+    });
+
+    blasts.forEach(function(b) {
+      var status = blastStatus(b);
+      var badgeCls = status;
+      var badgeLabel = status === 'sent' ? 'Sent' : status === 'cancelled' ? 'Cancelled' : 'Pending';
+
+      var statusLabels = b.statusFilter ? b.statusFilter.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+      var filterSummary = statusLabels.length ? statusLabels.join(', ') : 'All statuses';
+      if (b.requireEmailSent === 'yes') filterSummary += ' · has received email';
+      if (b.requireEmailSent === 'no')  filterSummary += ' · no email yet';
+      if (b.retreatId) filterSummary += ' · ' + b.retreatId;
+
+      h += '<div class="blast-card">';
+      h += '<div class="blast-card-row">';
+      h += '<div><div class="blast-card-name">' + escHtml(b.name) + '</div>';
+      h += '<div class="blast-card-meta">';
+      h += '\uD83D\uDCCC ' + escHtml(filterSummary) + '<br>';
+      if (status === 'sent') {
+        h += '\u2705 Sent ' + utcToLisbon(b.sentAt) + ' &bull; ' + b.recipientCount + ' recipient(s)<br>';
+      } else {
+        h += '\uD83D\uDD52 Scheduled: ' + utcToLisbon(b.scheduledTimeUtc) + '<br>';
+      }
+      h += '\uD83D\uDCDD ' + escHtml(b.subject);
+      h += '</div></div>';
+      h += '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">';
+      h += '<span class="blast-badge ' + badgeCls + '">' + badgeLabel + '</span>';
+      if (status === 'pending') {
+        h += '<button class="blast-cancel-btn" onclick="cancelBlast(\'' + b.blastId + '\')">Cancel</button>';
+      }
+      h += '</div></div></div>';
+    });
+  }
+
+  panel.innerHTML = h;
+}
+
+function blastStatus(b) {
+  if (b.cancelled) return 'cancelled';
+  if (b.sentAt)    return 'sent';
+  return 'pending';
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function cancelBlast(blastId) {
+  if (!confirm('Cancel this blast? It will not fire.')) return;
+  var result = await apiUpdate('cancelScheduledBlast', { blastId: blastId });
+  if (result && result.ok) {
+    renderBlastsPanel();
+  } else {
+    alert('Error: ' + ((result && result.error) || 'Unknown error'));
+  }
+}
+
+function openNewBlastModal() {
+  var overlay = document.createElement('div');
+  overlay.className = 'blast-modal-overlay';
+  overlay.id = 'blastModalOverlay';
+
+  var statusChips = VALID_STATUSES_FOR_BLAST.map(function(s) {
+    return '<label class="blast-status-chip" id="chip_' + s.replace(/\s/g,'_') + '">'
+      + '<input type="checkbox" value="' + s + '" onchange="updateStatusChip(this)"> ' + s + '</label>';
+  }).join('');
+
+  overlay.innerHTML = '<div class="blast-modal">'
+    + '<h3>New Scheduled Blast</h3>'
+    + '<div class="blast-field"><label>Name</label><input id="blastName" type="text" placeholder="e.g. Spring promo — Group A"></div>'
+    + '<div class="blast-field"><label>Status filter <span style="font-weight:400;text-transform:none">(leave empty = all statuses)</span></label>'
+    + '<div class="blast-status-grid">' + statusChips + '</div></div>'
+    + '<div class="blast-field"><label>Has received email?</label>'
+    + '<select id="blastReqEmail"><option value="either">Either</option><option value="yes">Yes — only people who received an email</option><option value="no">No — only people who haven\'t received an email</option></select></div>'
+    + '<div class="blast-field">'
+    + '<div class="blast-preview-row"><button class="btn-secondary" onclick="previewBlastCount()">Preview recipients</button><span class="blast-preview-count" id="blastPreviewCount"></span></div>'
+    + '</div>'
+    + '<div class="blast-field"><label>Subject</label><input id="blastSubject" type="text" placeholder="Subject line (merge tags like {{first_name}} work)"></div>'
+    + '<div class="blast-field"><label>Body (markdown, merge tags supported)</label><textarea id="blastBody" placeholder="Hey {{first_name}},\n\n..."></textarea></div>'
+    + '<div class="blast-field"><label>Send time — Portugal time (Europe/Lisbon)</label>'
+    + '<input id="blastSendTime" type="datetime-local">'
+    + '<div class="blast-tz-note">Enter the time you want in Portugal. The system converts to UTC automatically.</div></div>'
+    + '<div class="blast-field"><label>Notes (optional)</label><input id="blastNotes" type="text" placeholder="Internal notes"></div>'
+    + '<div class="blast-modal-actions">'
+    + '<button class="btn-secondary" onclick="closeBlastModal()">Cancel</button>'
+    + '<button class="btn-primary" onclick="submitNewBlast()">Schedule Blast</button>'
+    + '</div></div>';
+
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) closeBlastModal(); });
+}
+
+function updateStatusChip(checkbox) {
+  var chip = checkbox.closest('.blast-status-chip');
+  if (chip) chip.classList.toggle('selected', checkbox.checked);
+}
+
+async function previewBlastCount() {
+  var statusFilter = Array.from(document.querySelectorAll('.blast-status-chip input:checked')).map(function(c) { return c.value; });
+  var requireEmailSent = document.getElementById('blastReqEmail').value;
+  var countEl = document.getElementById('blastPreviewCount');
+  countEl.textContent = 'Checking\u2026';
+  var result = await apiUpdate('previewBlastRecipients', {
+    retreatId: activeRetreat,
+    statusFilter: statusFilter,
+    requireEmailSent: requireEmailSent
+  });
+  if (result && result.ok) {
+    countEl.textContent = result.count + ' recipient' + (result.count !== 1 ? 's' : '');
+  } else {
+    countEl.textContent = 'Error';
+  }
+}
+
+function closeBlastModal() {
+  var overlay = document.getElementById('blastModalOverlay');
+  if (overlay) overlay.remove();
+}
+
+async function submitNewBlast() {
+  var name             = (document.getElementById('blastName').value || '').trim();
+  var subject          = (document.getElementById('blastSubject').value || '').trim();
+  var body             = (document.getElementById('blastBody').value || '').trim();
+  var sendTimeLocal    = (document.getElementById('blastSendTime').value || '').trim();
+  var requireEmailSent = document.getElementById('blastReqEmail').value;
+  var notes            = (document.getElementById('blastNotes').value || '').trim();
+  var statusFilter     = Array.from(document.querySelectorAll('.blast-status-chip input:checked')).map(function(c) { return c.value; });
+
+  if (!name)          { alert('Please enter a name.'); return; }
+  if (!subject)       { alert('Please enter a subject line.'); return; }
+  if (!body)          { alert('Please enter the email body.'); return; }
+  if (!sendTimeLocal) { alert('Please set a send time.'); return; }
+
+  var scheduledTimeUtc = lisbonToUtc(sendTimeLocal);
+
+  var result = await apiUpdate('createScheduledBlast', {
+    name:             name,
+    retreatId:        activeRetreat,
+    statusFilter:     statusFilter,
+    requireEmailSent: requireEmailSent,
+    subject:          subject,
+    body:             body,
+    scheduledTimeUtc: scheduledTimeUtc,
+    notes:            notes
+  });
+
+  if (result && result.ok) {
+    closeBlastModal();
+    renderBlastsPanel();
+  } else {
+    alert('Error: ' + ((result && result.error) || 'Unknown error'));
+  }
 }
 
 // ── EMAIL TEMPLATES PANEL (tabbed + editable) ──
