@@ -4091,6 +4091,14 @@ async function saveCardChanges(row) {
 
   // Optimistic update
   for (var k in fields) a[k] = fields[k];
+  // When addonsJson is saved, clear legacy add-on columns in local state
+  // so the re-render doesn't re-check them from stale legacy values
+  if (fields.hasOwnProperty('addonsJson')) {
+    a.addonBodywork = '';
+    a.addonHealing = '';
+    a.addonPhotoshoot = '';
+    a.addonCoaching = '';
+  }
 
   if (fields.status) {
     var badge = document.querySelector('[data-row="'+row+'"] .status-badge');
