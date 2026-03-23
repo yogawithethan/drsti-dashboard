@@ -4370,6 +4370,25 @@ function formatCurrency(amount) {
   return '\u20AC' + parts.join('.');
 }
 
+async function createInvoiceFromDashboard(row, type) {
+  var typeLabels = { deposit: 'Deposit', full: 'Full Payment', plan: 'Payment Plan', remaining: 'Remaining Balance' };
+  var label = typeLabels[type] || type;
+  if (!confirm('Create and send ' + label + ' invoice via Stripe?')) return;
+
+  showToast('Creating ' + label + ' invoice\u2026', 'info');
+  var result = await apiUpdate('createInvoice', { row: row, type: type });
+  if (result && result.ok) {
+    var msg = label + ' invoice created and sent!';
+    if (result.invoiceUrl) msg += ' Link copied to clipboard.';
+    showToast(msg, 'success');
+    if (result.invoiceUrl) {
+      try { navigator.clipboard.writeText(result.invoiceUrl); } catch(e) {}
+    }
+  } else {
+    showToast('Error: ' + ((result && result.error) || 'Unknown error'), 'error');
+  }
+}
+
 function buildPaymentSection(a) {
   if (!a.accommodation || !a.priceType) {
     return '<div style="padding-top:12px;padding-bottom:4px;"><p style="font-size:12px;color:var(--text-muted);line-height:1.5;">Set accommodation and price type in Overview to see payment details.</p></div>';
@@ -4468,11 +4487,11 @@ function buildPaymentSection(a) {
   // Buttons
   planHtml += '<div class="pay-btn-grid">';
   planHtml += '<div class="pay-btn-row">';
-  planHtml += '<button class="pay-btn pay-btn-secondary"'+(offerSent||depositPaid?' disabled':'')+' onclick="event.stopPropagation();showToast(\'Deposit invoice \u2014 coming soon\',\'warning\')">Send Deposit Invoice</button>';
-  planHtml += '<button class="pay-btn pay-btn-primary" onclick="event.stopPropagation();showToast(\'Payment schedule \u2014 coming soon\',\'warning\')">Send Payment Schedule</button>';
+  planHtml += '<button class="pay-btn pay-btn-secondary"'+(offerSent||depositPaid?' disabled':'')+' onclick="event.stopPropagation();createInvoiceFromDashboard('+row+',\'deposit\')">Send Deposit Invoice</button>';
+  planHtml += '<button class="pay-btn pay-btn-primary" onclick="event.stopPropagation();createInvoiceFromDashboard('+row+',\'plan\')">Send Payment Schedule</button>';
   planHtml += '</div>';
   planHtml += '<div class="pay-btn-row">';
-  planHtml += '<button class="pay-btn pay-btn-secondary" onclick="event.stopPropagation();showToast(\'Remaining invoice \u2014 coming soon\',\'warning\')" title="Calculates total due minus any payments already recorded in the Finances tab.">Send Remaining Invoice '+tooltip('Calculates total due minus any payments already recorded in the Finances tab. Works even if no deposit has been paid yet.')+'</button>';
+  planHtml += '<button class="pay-btn pay-btn-secondary" onclick="event.stopPropagation();createInvoiceFromDashboard('+row+',\'remaining\')" title="Calculates total due minus any payments already recorded in the Finances tab.">Send Remaining Invoice '+tooltip('Calculates total due minus any payments already recorded in the Finances tab. Works even if no deposit has been paid yet.')+'</button>';
   planHtml += '<button class="pay-btn pay-btn-ghost">'+formatCurrency(remainingAfterDeposit)+'</button>';
   planHtml += '</div>';
   planHtml += '<p class="pay-btn-note">'+(depositPaid?'Deposit paid':'Deposit not yet paid')+' \u00B7 Remaining = base \u2212 scholarship'+(depositPaid?' \u2212 deposit':'')+'</p>';
@@ -4510,11 +4529,11 @@ function buildPaymentSection(a) {
   // Buttons
   fullHtml += '<div class="pay-btn-grid">';
   fullHtml += '<div class="pay-btn-row">';
-  fullHtml += '<button class="pay-btn pay-btn-secondary"'+(offerSent||depositPaid?' disabled':'')+' onclick="event.stopPropagation();showToast(\'Deposit invoice \u2014 coming soon\',\'warning\')">Send Deposit Invoice</button>';
-  fullHtml += '<button class="pay-btn pay-btn-primary" onclick="event.stopPropagation();showToast(\'Full invoice \u2014 coming soon\',\'warning\')">Send Full Invoice</button>';
+  fullHtml += '<button class="pay-btn pay-btn-secondary"'+(offerSent||depositPaid?' disabled':'')+' onclick="event.stopPropagation();createInvoiceFromDashboard('+row+',\'deposit\')">Send Deposit Invoice</button>';
+  fullHtml += '<button class="pay-btn pay-btn-primary" onclick="event.stopPropagation();createInvoiceFromDashboard('+row+',\'full\')">Send Full Invoice</button>';
   fullHtml += '</div>';
   fullHtml += '<div class="pay-btn-row">';
-  fullHtml += '<button class="pay-btn pay-btn-secondary" onclick="event.stopPropagation();showToast(\'Remaining invoice \u2014 coming soon\',\'warning\')" title="Calculates total due minus any payments already recorded.">Send Remaining Invoice '+tooltip('Calculates total due minus any payments already recorded in the Finances tab. Works even if no deposit has been paid yet.')+'</button>';
+  fullHtml += '<button class="pay-btn pay-btn-secondary" onclick="event.stopPropagation();createInvoiceFromDashboard('+row+',\'remaining\')" title="Calculates total due minus any payments already recorded.">Send Remaining Invoice '+tooltip('Calculates total due minus any payments already recorded in the Finances tab. Works even if no deposit has been paid yet.')+'</button>';
   fullHtml += '<button class="pay-btn pay-btn-ghost">'+formatCurrency(fullRemaining)+'</button>';
   fullHtml += '</div>';
   fullHtml += '<p class="pay-btn-note">Remaining = full amount \u2212 scholarship'+(depositPaid?' \u2212 deposit':'')+'</p>';
