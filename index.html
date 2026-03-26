@@ -1400,7 +1400,7 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
 /* ── FILTER BAR ── */
 .filter-bar {
   display: flex; align-items: center;
-  padding: 10px 16px 12px; gap: 8px;
+  padding: 10px 0 12px; gap: 0;
   border-bottom: none;
   background: var(--bg);
   margin: 4px 12px 0;
@@ -1408,14 +1408,34 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   background: var(--bg-card);
   box-shadow: var(--shadow-xs), var(--shadow-inner);
   border: 1px solid rgba(122,100,70,0.05);
+  overflow: hidden;
+  position: relative;
+}
+.filter-chips-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.filter-chips-wrap::after {
+  content: '';
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: 32px;
+  background: linear-gradient(to right, rgba(255,255,255,0), var(--bg-card));
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
 }
 .filter-chips {
   display: flex; gap: 6px;
   overflow-x: auto; flex: 1;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  padding: 0 20px 0 14px;
 }
 .filter-chips::-webkit-scrollbar { display: none; }
+.filter-bar .search-wrap { margin-right: 8px; }
+.filter-bar .sort-select { margin-right: 12px; }
 
 .chip {
   flex-shrink: 0;
@@ -2480,9 +2500,11 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
   }
   .filter-bar .search-wrap:focus-within { width: auto; }
   .filter-bar .sort-select { order: 2; flex-shrink: 0; }
-  .filter-bar .filter-chips {
+  .filter-bar .filter-chips-wrap {
     order: 3; width: 100%; flex: 0 0 100%;
-    padding-right: 16px;
+  }
+  .filter-bar .filter-chips {
+    padding-right: 20px;
     scroll-snap-type: x proximity;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -2499,7 +2521,7 @@ body.bulk-mode .bulk-check-wrap { display: flex; align-items: center; }
   .header-top { padding: 16px 24px 8px; }
   .retreat-bar { padding: 0 24px 12px; }
   .inv-strip { padding: 10px 24px 14px; }
-  .filter-bar { padding: 10px 20px 12px; margin: 6px 24px 0; max-width: 552px; margin-left: auto; margin-right: auto; }
+  .filter-bar { padding: 10px 0 12px; margin: 6px 24px 0; max-width: 552px; margin-left: auto; margin-right: auto; }
   .filter-summary { padding: 8px 24px 2px; max-width: 600px; margin: 0 auto; }
   .search-wrap { width: 150px; }
   .search-wrap:focus-within { width: 200px; }
@@ -2690,7 +2712,9 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 
 <!-- FILTER BAR -->
 <nav class="filter-bar" id="filterBar">
-  <div class="filter-chips" id="filterChips"></div>
+  <div class="filter-chips-wrap">
+    <div class="filter-chips" id="filterChips"></div>
+  </div>
   <div class="search-wrap">
     <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
     <input type="text" class="search-input" id="searchInput" placeholder="Search..." oninput="applySearch(this.value)" autocomplete="off" spellcheck="false">
