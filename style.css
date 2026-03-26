@@ -1406,7 +1406,6 @@ body.save-bar-visible .tcot-fab { bottom: 72px; }
   background: linear-gradient(to right, rgba(255,255,255,0), var(--bg-card));
   z-index: 2;
   pointer-events: none;
-  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
 }
 .filter-chips {
   display: flex; gap: 6px;
