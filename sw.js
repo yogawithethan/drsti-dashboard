@@ -1,5 +1,5 @@
-var CACHE_NAME = 'tcot-v36';
-var SHELL_FILES = ['index.html', 'manifest.json', 'drsti.png', 'tcot-logo-gold.jpg'];
+var CACHE_NAME = 'tcot-v37';
+var SHELL_FILES = ['index.html', 'style.css', 'app.js', 'manifest.json', 'drsti.png', 'tcot-logo-gold.jpg'];
 
 self.addEventListener('install', function(e) {
   e.waitUntil(
