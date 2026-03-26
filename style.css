@@ -2626,3 +2626,67 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 .summary-box, .installment-box {
   box-shadow: var(--shadow-inner);
 }
+
+/* ── NAV TOOLTIPS ── */
+.nav-btn[data-tooltip] {
+  position: relative;
+}
+.nav-btn[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--text);
+  color: var(--bg-card);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
+  z-index: 200;
+}
+.nav-btn[data-tooltip]:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  transition-delay: 0.35s;
+}
+
+/* ── FILTER SCROLL INDICATORS (left fade) ── */
+.filter-chips-wrap::before {
+  content: '';
+  position: absolute; top: 0; left: 0; bottom: 0;
+  width: 24px;
+  background: linear-gradient(to left, rgba(255,255,255,0), var(--bg-card));
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.filter-chips-wrap.scroll-left::before {
+  opacity: 1;
+}
+
+/* ── IMPROVED EMPTY STATES ── */
+.calls-empty, .blasts-empty, .seq-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+  font-style: italic;
+}
+.empty-state-icon {
+  font-size: 48px;
+  opacity: 0.25;
+  margin-bottom: 12px;
+  color: var(--sage);
+}

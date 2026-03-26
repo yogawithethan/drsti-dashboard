@@ -576,6 +576,18 @@ function renderFilterChips() {
   });
   container.innerHTML = html;
 
+  // Update left-fade scroll indicator
+  var wrap = container.closest('.filter-chips-wrap');
+  if (wrap) {
+    var updateScrollFade = function() {
+      wrap.classList.toggle('scroll-left', container.scrollLeft > 8);
+    };
+    container.removeEventListener('scroll', container._scrollFade);
+    container._scrollFade = updateScrollFade;
+    container.addEventListener('scroll', updateScrollFade, { passive: true });
+    updateScrollFade();
+  }
+
   renderFilterSummary();
 }
 
@@ -2374,7 +2386,7 @@ async function renderBlastsPanel() {
   h += '</div>';
 
   if (!blasts.length) {
-    h += '<div class="blasts-empty">No blasts scheduled yet.<br>Hit "New Blast" to create one.</div>';
+    h += '<div class="blasts-empty"><i class="ph ph-paper-plane-tilt empty-state-icon"></i>No blasts queued.<br>Hit "+ New Blast" when you\'re ready to reach out.</div>';
   } else {
     // Sort: pending first, then sent, then cancelled
     blasts.sort(function(a, b) {
@@ -2777,7 +2789,7 @@ function renderCallsPanel() {
     + '</div>';
 
   if (calls.length === 0) {
-    html += '<div class="calls-empty">No upcoming calls scheduled.</div>';
+    html += '<div class="calls-empty"><i class="ph ph-calendar-blank empty-state-icon"></i>No calls on the horizon — enjoy the stillness.</div>';
     requestAnimationFrame(function() { panel.innerHTML = html; });
     return;
   }
@@ -3735,7 +3747,7 @@ function renderSequencesPanel() {
   h += '</div>';
 
   if (!totalCount) {
-    h += '<div class="seq-empty">No active sequences right now.<br>Sequences activate when applicants enter <strong>Ghosted</strong> or <strong>Hard Yes</strong> status.</div>';
+    h += '<div class="seq-empty"><i class="ph ph-flow-arrow empty-state-icon"></i>No active sequences right now.<br>Sequences activate when applicants enter <strong>Ghosted</strong> or <strong>Hard Yes</strong> status.</div>';
     requestAnimationFrame(function() { panel.innerHTML = h; });
     return;
   }
