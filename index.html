@@ -3460,6 +3460,30 @@ function renderFilterSummary() {
   el.innerHTML = '<strong>Filtered by:</strong> ' + labels.map(esc).join(', ') + ' &middot; ' + count + ' applicant' + (count !== 1 ? 's' : '');
 }
 
+// Debounce utility
+function debounce(fn, delay) {
+  var timer;
+  return function() {
+    var args = arguments;
+    var ctx = this;
+    clearTimeout(timer);
+    timer = setTimeout(function() { fn.apply(ctx, args); }, delay);
+  };
+}
+
+// rAF-guarded render
+var _renderCardsScheduled = false;
+function scheduleRenderCards() {
+  if (_renderCardsScheduled) return;
+  _renderCardsScheduled = true;
+  requestAnimationFrame(function() {
+    _renderCardsScheduled = false;
+    renderCards();
+  });
+}
+
+var _debouncedRenderCards = debounce(function() { renderCards(); }, 200);
+
 // ── RENDER: CARDS ──
 function renderCards() {
   var container = document.getElementById('cardsContainer');
@@ -3485,22 +3509,35 @@ function renderCards() {
     }
   }
   container.innerHTML = html;
+
+  // Re-expand any cards that were previously expanded
+  for (var row in state.expandedCards) {
+    if (state.expandedCards[row]) {
+      var card = container.querySelector('[data-row="'+row+'"]');
+      if (card) {
+        var a = state.applicants.find(function(x) { return x.row === parseInt(row); });
+        if (a) {
+          card.classList.add('expanded');
+          var body = card.querySelector('.card-body');
+          if (body) body.innerHTML = renderCardDetail(a);
+        }
+      }
+    }
+  }
 }
 
 function renderCard(a) {
   var sc = STATUS_COLORS[a.status] || {bg:'#efefef',fg:'#999'};
-  var expanded = state.expandedCards[a.row];
-  var cardClass = 'card' + (expanded ? ' expanded' : '');
+  var cardClass = 'card';
   var name = esc(a.firstName + ' ' + a.lastName);
   var meta = esc(countryName(a.country)) + ' &middot; ' + timeAgo(a.timestamp);
 
-  // Addons
+  // Addons (for summary badges)
   var addons = [];
   if (a.addonBodywork === 'Yes') addons.push('Bodywork');
   if (a.addonHealing === 'Yes') addons.push('Healing');
   if (a.addonPhotoshoot === 'Yes') addons.push('Photoshoot');
   if (a.addonCoaching === 'Yes') addons.push('Coaching');
-  // Also parse addonsJson
   if (a.addonsJson) {
     try {
       var aj = JSON.parse(a.addonsJson);
@@ -3511,17 +3548,6 @@ function renderCard(a) {
   if (addons.length) {
     addonHtml = '<div class="addon-badges">' + addons.map(function(x){return '<span class="addon-badge">'+esc(x)+'</span>';}).join('') + '</div>';
   }
-
-  // Build add-on checkboxes for Overview
-  var addonCheckboxes = '<div class="field"><div class="field-label">Add-ons</div><div class="addon-check-group">';
-  ADDON_DEFS.forEach(function(ad) {
-    var checked = addons.indexOf(ad.key) !== -1 ? ' checked' : '';
-    addonCheckboxes += '<div class="addon-check-row"><div class="addon-check-left">'
-      + '<input type="checkbox" id="addon-'+ad.key+'-'+a.row+'"'+checked+' onchange="markCardChanged('+a.row+')">'
-      + '<label for="addon-'+ad.key+'-'+a.row+'">'+esc(ad.label)+'</label></div>'
-      + '<span class="addon-check-price">'+formatCurrency(ad.price)+'</span></div>';
-  });
-  addonCheckboxes += '</div></div>';
 
   // WhatsApp link
   var waLink = '#';
@@ -3536,6 +3562,58 @@ function renderCard(a) {
   if (a.email) contactIcons += '<button class="action-icon" title="Compose Email" onclick="event.stopPropagation();openEmailModal('+a.row+')"><i class="ph ph-envelope"></i></button>';
   if (a.phone) contactIcons += '<a href="'+waLink+'" target="_blank" class="action-icon" title="WhatsApp" onclick="event.stopPropagation()"><i class="ph ph-whatsapp-logo"></i></a>';
   if (igHandle) contactIcons += '<a href="https://instagram.com/'+esc(igHandle)+'" target="_blank" class="action-icon" title="@'+esc(igHandle)+'" onclick="event.stopPropagation()"><i class="ph ph-instagram-logo"></i></a>';
+
+  var collapseArrow = '<svg class="card-collapse-arrow" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>';
+
+  return '<article class="'+cardClass+'" data-row="'+a.row+'" data-status="'+esc(a.status)+'">'
+
+    // ── HEADER ──
+    + '<div class="card-header" onclick="toggleCard('+a.row+')">'
+    + '<div class="bulk-check-wrap"><input type="checkbox" class="bulk-check" data-row="'+a.row+'" onclick="event.stopPropagation();updateBulkCount()" data-email="'+(a.email||'')+'"></div>'
+    + '<div class="card-header-left">'
+    + '<div class="card-header-name">'
+    + '<h2>'+name+'</h2>'
+    + '<p>'+meta+addonHtml+'</p>'
+    + '</div></div>'
+    + '<div class="card-header-right">'
+    + '<div class="action-icons">'+contactIcons+'</div>'
+    + '<div style="display:flex;align-items:center;gap:6px;">'
+    + (a.status === 'Hard Yes' && a.emailSent ? '<span class="offer-sent-badge">Offer Sent &#10003;</span>' : '')
+    + '<div class="status-badge" style="background:'+sc.bg+';color:'+sc.fg+'">'+esc(a.status)+'</div>'
+    + collapseArrow
+    + '</div></div></div>'
+
+    // ── BODY (empty — detail injected on expand) ──
+    + '<div class="card-body"></div>'
+    + '</article>';
+}
+
+function renderCardDetail(a) {
+  // Addons
+  var addons = [];
+  if (a.addonBodywork === 'Yes') addons.push('Bodywork');
+  if (a.addonHealing === 'Yes') addons.push('Healing');
+  if (a.addonPhotoshoot === 'Yes') addons.push('Photoshoot');
+  if (a.addonCoaching === 'Yes') addons.push('Coaching');
+  if (a.addonsJson) {
+    try {
+      var aj = JSON.parse(a.addonsJson);
+      for (var ak in aj) { if (aj[ak] && addons.indexOf(ak) === -1) addons.push(ak); }
+    } catch(e) {}
+  }
+
+  // Build add-on checkboxes for Overview
+  var addonCheckboxes = '<div class="field"><div class="field-label">Add-ons</div><div class="addon-check-group">';
+  ADDON_DEFS.forEach(function(ad) {
+    var checked = addons.indexOf(ad.key) !== -1 ? ' checked' : '';
+    addonCheckboxes += '<div class="addon-check-row"><div class="addon-check-left">'
+      + '<input type="checkbox" id="addon-'+ad.key+'-'+a.row+'"'+checked+' onchange="markCardChanged('+a.row+')">'
+      + '<label for="addon-'+ad.key+'-'+a.row+'">'+esc(ad.label)+'</label></div>'
+      + '<span class="addon-check-price">'+formatCurrency(ad.price)+'</span></div>';
+  });
+  addonCheckboxes += '</div></div>';
+
+  var igHandle = a.instagram ? String(a.instagram).replace(/^@/,'').replace(/^https?:\/\/(www\.)?instagram\.com\//i,'').replace(/[?#].*$/,'').replace(/\/+$/,'') : '';
 
   // Status select options — grouped
   var STATUS_GROUPS = [
@@ -3617,28 +3695,9 @@ function renderCard(a) {
 
   // SVG arrows
   var arrowSvg = '<svg class="accordion-arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
-  var collapseArrow = '<svg class="card-collapse-arrow" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>';
 
-  return '<article class="'+cardClass+'" data-row="'+a.row+'" data-status="'+esc(a.status)+'">'
-
-    // ── HEADER ──
-    + '<div class="card-header" onclick="toggleCard('+a.row+')">'
-    + '<div class="bulk-check-wrap"><input type="checkbox" class="bulk-check" data-row="'+a.row+'" onclick="event.stopPropagation();updateBulkCount()" data-email="'+(a.email||'')+'"></div>'
-    + '<div class="card-header-left">'
-    + '<div class="card-header-name">'
-    + '<h2>'+name+'</h2>'
-    + '<p>'+meta+addonHtml+'</p>'
-    + '</div></div>'
-    + '<div class="card-header-right">'
-    + '<div class="action-icons">'+contactIcons+'</div>'
-    + '<div style="display:flex;align-items:center;gap:6px;">'
-    + (a.status === 'Hard Yes' && a.emailSent ? '<span class="offer-sent-badge">Offer Sent &#10003;</span>' : '')
-    + '<div class="status-badge" style="background:'+sc.bg+';color:'+sc.fg+'">'+esc(a.status)+'</div>'
-    + collapseArrow
-    + '</div></div></div>'
-
-    // ── BODY ──
-    + '<div class="card-body">'
+  // Return INNER content of .card-body (not the wrapper div)
+  return ''
 
     // Overview accordion (open by default when card expands)
     + '<div class="accordion">'
@@ -3724,9 +3783,7 @@ function renderCard(a) {
     + sysRow('Dep Reminder Step', a.depReminderStep || '0')
     + sysRow('CK Tag', a.ckTag || '—')
     + sysRow('Migration Import', a.migrationImport ? 'Yes' : 'No')
-    + '</div></div></div>'
-
-    + '</div></article>';
+    + '</div></div></div>';
 }
 
 function qaRow(label, text) {
@@ -3792,9 +3849,23 @@ function buildEmailHistory(row) {
 
 // ── INTERACTIONS ──
 function toggleCard(row) {
-  state.expandedCards[row] = !state.expandedCards[row];
+  var expanding = !state.expandedCards[row];
+  state.expandedCards[row] = expanding;
   var card = document.querySelector('[data-row="'+row+'"]');
-  if (card) card.classList.toggle('expanded', state.expandedCards[row]);
+  if (!card) return;
+
+  if (expanding) {
+    var a = state.applicants.find(function(x) { return x.row === row; });
+    if (a) {
+      var body = card.querySelector('.card-body');
+      if (body) body.innerHTML = renderCardDetail(a);
+    }
+    card.classList.add('expanded');
+  } else {
+    var body = card.querySelector('.card-body');
+    if (body) body.innerHTML = '';
+    card.classList.remove('expanded');
+  }
 }
 
 function toggleAccordion(trigger) {
@@ -3851,6 +3922,8 @@ function rerenderSingleCard(row) {
   if (wasExpanded) {
     state.expandedCards[row] = true;
     newCard.classList.add('expanded');
+    var body = newCard.querySelector('.card-body');
+    if (body) body.innerHTML = renderCardDetail(a);
   }
 }
 
@@ -4360,8 +4433,7 @@ function applyFilter(filter) {
     }
   }
   renderFilterChips();
-  // Defer card re-render so mobile touch sequence completes before DOM swap
-  setTimeout(renderCards, 0);
+  scheduleRenderCards();
 }
 
 function applySort(sortBy) {
@@ -4373,7 +4445,7 @@ function applySearch(query) {
   state.searchQuery = query.trim().toLowerCase();
   var clearBtn = document.getElementById('searchClear');
   if (clearBtn) clearBtn.className = 'search-clear' + (query ? ' visible' : '');
-  renderCards();
+  _debouncedRenderCards();
 }
 
 function clearSearch() {
@@ -5202,7 +5274,7 @@ async function renderBlastsPanel() {
     });
   }
 
-  panel.innerHTML = h;
+  requestAnimationFrame(function() { panel.innerHTML = h; });
 }
 
 function blastStatus(b) {
@@ -5566,7 +5638,7 @@ function renderCallsPanel() {
 
   if (calls.length === 0) {
     html += '<div class="calls-empty">No upcoming calls scheduled.</div>';
-    panel.innerHTML = html;
+    requestAnimationFrame(function() { panel.innerHTML = html; });
     return;
   }
 
@@ -5643,7 +5715,7 @@ function renderCallsPanel() {
     html += '</div>';
   });
 
-  panel.innerHTML = html;
+  requestAnimationFrame(function() { panel.innerHTML = html; });
 }
 
 // ── PIPELINE GUIDE PANEL (dark theme, matches status-flow.html) ──
@@ -6524,7 +6596,7 @@ function renderSequencesPanel() {
 
   if (!totalCount) {
     h += '<div class="seq-empty">No active sequences right now.<br>Sequences activate when applicants enter <strong>Ghosted</strong> or <strong>Hard Yes</strong> status.</div>';
-    panel.innerHTML = h;
+    requestAnimationFrame(function() { panel.innerHTML = h; });
     return;
   }
 
@@ -6579,7 +6651,7 @@ function renderSequencesPanel() {
     h += '</div>';
   }
 
-  panel.innerHTML = h;
+  requestAnimationFrame(function() { panel.innerHTML = h; });
 }
 
 // ── Sequences bulk actions ──
